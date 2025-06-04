@@ -31,7 +31,7 @@ public class Post {
     private Set<String> likedUser= new HashSet<>();
 
     @ManyToOne()
-    private Person person;
+    private User user;
     @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER,mappedBy = "post",orphanRemoval = true)
     private List<Comment> comments=new ArrayList<>();
     @Column(updatable = false)

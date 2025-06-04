@@ -4,14 +4,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.example.instaKing.models.enums.ERole;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
+@Table(name = "users")
 @Data
-public class Person {
+
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,7 +38,7 @@ public class Person {
             joinColumns = @JoinColumn(name = "user_id"))
     private Set<ERole> roles = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "person", orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
     @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
@@ -43,10 +48,10 @@ public class Person {
     @Transient
     private Collection<? extends GrantedAuthority> authorities;
 
-    public Person() {
+    public User() {
     }
 
-    public Person(Long id,
+    public User(Long id,
                 String username,
                 String email,
                 String password,
@@ -63,10 +68,73 @@ public class Person {
         this.createdDate = LocalDateTime.now();
     }
 
+    public Set<ERole> getRoles() {
+        return roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
     /**
      * SECURITY
      */
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
+    @Override
+    public String getUsername(){
+        return username;
+    }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
 
