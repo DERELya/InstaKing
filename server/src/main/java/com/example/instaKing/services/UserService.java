@@ -1,5 +1,6 @@
 package com.example.instaKing.services;
 
+import com.example.instaKing.exceptions.UserExistException;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.ERole;
 import com.example.instaKing.payload.request.SignUpRequest;

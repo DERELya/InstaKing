@@ -68,37 +68,7 @@ public class User implements UserDetails {
         this.createdDate = LocalDateTime.now();
     }
 
-    public Set<ERole> getRoles() {
-        return roles;
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
 
     /**
      * SECURITY
