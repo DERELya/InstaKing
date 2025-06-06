@@ -1,10 +1,5 @@
 package com.example.instaKing.security;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instaKing.models.User;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -12,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +25,7 @@ public class JWTTokenProvider {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", user.getUsername());
-        claims.put("name", user.getName());
+        claims.put("name", user.getFirstname());
         claims.put("lastname", user.getLastname());
         return Jwts. builder()
                 .setSubject(userId)

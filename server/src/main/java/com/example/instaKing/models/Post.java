@@ -24,7 +24,7 @@ public class Post {
 
     private String location;
 
-    private int liked;
+    private int likes;
 
     @Column()
     @ElementCollection(targetClass = String.class)
