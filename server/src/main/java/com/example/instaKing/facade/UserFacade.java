@@ -10,7 +10,7 @@ public class UserFacade {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
-        userDTO.setFirstName(user.getFirstname());
+        userDTO.setFirstName(user.getName());
         userDTO.setLastName(user.getLastname());
         userDTO.setBio(user.getBio());
 

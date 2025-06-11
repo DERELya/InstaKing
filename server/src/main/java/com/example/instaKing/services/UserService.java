@@ -31,7 +31,7 @@ public class UserService {
     public User createUser(SignUpRequest userIn) {
         User user = new User();
         user.setEmail(userIn.getEmail());
-        user.setFirstname(userIn.getName());
+        user.setName(userIn.getName());
         user.setLastname(userIn.getLastname());
         user.setUsername(userIn.getUsername());
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
@@ -49,7 +49,7 @@ public class UserService {
     public User updateUser(UserDTO userDTO, Principal principal) {
 
         User  user =getUserByPrincipal(principal);
-        user.setFirstname(userDTO.getFirstName());
+        user.setName(userDTO.getFirstName());
         user.setLastname(userDTO.getLastName());
         user.setBio(userDTO.getBio());
 
@@ -64,5 +64,10 @@ public class UserService {
         String username = principal.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with username"+username));
+    }
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("username not found with userid"+userId));
     }
 }

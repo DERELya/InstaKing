@@ -12,6 +12,7 @@ import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-
 @RequestMapping("/api/auth")
 @PreAuthorize("permitAll()")
 public class AuthController {
@@ -55,19 +55,19 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,BindingResult bindingResult){
-        ResponseEntity<Object> erros = responseErrorValidator.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(erros))  return erros;
-
+    public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
+        ResponseEntity<Object> errors = responseErrorValidator.mapValidationService(bindingResult);
+        if (!ObjectUtils.isEmpty(errors)) return errors;
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(),
                 loginRequest.getPassword()
         ));
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = SecurityConstants.TOKEN_PREFIX + jwtTokenProvider.generateToken(authentication);
 
-        return ResponseEntity.ok(new JWTTokenSuccessResponse(true,jwt));
+        return ResponseEntity.ok(new JWTTokenSuccessResponse(true, jwt));
     }
 
 

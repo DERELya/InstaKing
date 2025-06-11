@@ -25,9 +25,9 @@ public class JWTTokenProvider {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", user.getUsername());
-        claims.put("name", user.getFirstname());
+        claims.put("name", user.getName());
         claims.put("lastname", user.getLastname());
-        return Jwts. builder()
+        return Jwts.builder()
                 .setSubject(userId)
                 .addClaims(claims)
                 .setIssuedAt(now)
