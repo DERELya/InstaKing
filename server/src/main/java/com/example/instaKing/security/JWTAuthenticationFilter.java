@@ -9,7 +9,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -26,6 +28,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private final JWTTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
     public JWTAuthenticationFilter(JWTTokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.customUserDetailsService = customUserDetailsService;
@@ -34,21 +37,35 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     public static final Logger LOGGER = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException,AuthenticationException {
 
-        try{
+        LOGGER.info("JWT filter triggered for URI: {}", request.getRequestURI());
+
+        try {
             String jwt = getJWTFromRequest(request);
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 Long userId = tokenProvider.getUserIdFromToken(jwt);
                 User userDetails = customUserDetailsService.loadUserById(userId);
-                System.out.println("gg");
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, Collections.emptyList());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                LOGGER.info("Аутентификация прошла: {}", userDetails.getUsername());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
             }
-        }catch (Exception e){
-            LOGGER.error("Could not get JWT token");
+            if (!StringUtils.hasText(jwt)) {
+                LOGGER.warn("JWT отсутствует — пользователь анонимный");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // переносим сюда
+        } catch (AuthenticationException ex) {
+            System.out.println("daun");
+            SecurityContextHolder.clearContext(); // на всякий случай
+            LOGGER.error("Ошибка аутентификации: {}", ex.getMessage());
+            // передаём ошибку дальше, чтобы её перехватил AuthenticationEntryPoint
+            throw ex;
         }
 
         filterChain.doFilter(request, response);

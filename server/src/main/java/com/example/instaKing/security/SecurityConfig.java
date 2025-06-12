@@ -32,21 +32,22 @@ public class SecurityConfig {
     private final JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomUserDetailsService customUserDetailsService;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
-
+    private final JWTTokenProvider jwtTokenProvider;
     @Autowired
     public SecurityConfig(JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint,
                           CustomUserDetailsService customUserDetailsService,
-                          JWTAuthenticationFilter jwtAuthenticationFilter) {
+                          JWTAuthenticationFilter jwtAuthenticationFilter, JWTTokenProvider jwtTokenProvider) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SecurityConstants.SIGN_UP_URLS).permitAll()
                         .anyRequest().authenticated())
@@ -59,6 +60,12 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+    @Bean
+    public JWTAuthenticationFilter jwtAuthenticationFilter() {
+        return new JWTAuthenticationFilter(jwtTokenProvider, customUserDetailsService);
+    }
+
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

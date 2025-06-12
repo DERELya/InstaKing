@@ -56,8 +56,8 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
-        ResponseEntity<Object> errors = responseErrorValidator.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(errors)) return errors;
+        //ResponseEntity<Object> errors = responseErrorValidator.mapValidationService(bindingResult);
+        //if (!ObjectUtils.isEmpty(errors)) return errors;
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(),
