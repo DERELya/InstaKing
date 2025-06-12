@@ -4,7 +4,9 @@ import com.example.instaKing.models.ImageModel;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,14 +38,22 @@ public class ImageController {
     }
 
     @GetMapping("/profileImage")
-    public ResponseEntity<ImageModel> getImageForUser(Principal principal) throws IOException {
-        ImageModel userImage=imageService.getImageToUser(principal);
-        return new ResponseEntity<>(userImage, HttpStatus.OK);
+    public ResponseEntity<Resource> getImageForUser(Principal principal) throws IOException {
+        Resource userImage = imageService.getImageToUser(principal);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
+                .body(userImage);
     }
 
+
     @GetMapping("/{postId}/image")
-    public ResponseEntity<ImageModel> getImageForPost(@PathVariable("postId") String postId) throws IOException {
-        ImageModel imagePost=imageService.getImageToPost(Long.parseLong(postId));
-        return new ResponseEntity<>(imagePost, HttpStatus.OK);
+    public ResponseEntity<Resource> getImageForPost(@PathVariable("postId") Long postId) throws IOException {
+        Resource imageResource = imageService.getImageToPost(postId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // Или другой формат, если требуется
+                .body(imageResource);
     }
+
 }
