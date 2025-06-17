@@ -61,11 +61,19 @@ export class IndexComponent implements OnInit{
     ngOnInit(): void {
     this.postService.getAllPosts()
       .subscribe(data=>{
-        console.log(data);
-        this.posts=data;
-        this.getImagesToPosts(this.posts);
-        this.getCommentsToPost(this.posts);
-        this.isPostsLoaded=true;
+        try {
+          console.log('[POSTS]', data);
+          this.posts = data;
+          this.getImagesToPosts(this.posts);
+          this.getCommentsToPost(this.posts);
+          this.isPostsLoaded = true;
+          console.log(this.isPostsLoaded)
+          console.log(this.isUserDataLoaded)
+          console.log(this.posts.length)
+          console.log(this.posts[1].image)
+        } catch (e) {
+          console.error('Ошибка при загрузке постов:', e);
+        }
       });
 
     this.userService.getCurrentUser()

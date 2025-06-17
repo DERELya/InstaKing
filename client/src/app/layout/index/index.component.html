@@ -1,4 +1,4 @@
-@if (isUserDataLoaded) {
+@if (isPostsLoaded && isUserDataLoaded) {
   <div class="index-page">
     @for(post of posts; let i = $index; track post.id){
       <mat-card class="post-card">
