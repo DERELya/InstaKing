@@ -25,12 +25,14 @@ export class ImageUploadService {
     return this.http.post(IMAGE_API+postId+'/upload',uploadData);
   }
 
-  getProfileImage(): Observable<any>{
-    return this.http.get(IMAGE_API+'profileImage');
+  getProfileImage(): Observable<Blob> {
+    return this.http.get(IMAGE_API + 'profileImage', { responseType: 'blob' });
   }
 
-  getImageToPost(postId:number): Observable<any>{
-    return this.http.get(IMAGE_API+postId+'/image');
+
+  getImageToPost(postId: number): Observable<Blob> {
+    return this.http.get(IMAGE_API + postId + '/image', { responseType: 'blob' });
   }
+
 
 }

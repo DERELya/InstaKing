@@ -3,39 +3,45 @@ import {setEnableTemplateSourceLocations} from '@angular/compiler';
 
 const TOKEN_KEY='auth-token';
 const USER_KEY='auth-user';
-
 @Injectable({
   providedIn: 'root'
 })
 export class TokenStorageService {
+  constructor() {}
 
-  constructor() {
-
+  public saveToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('auth-token', encodeURIComponent(token));
+      console.log(token);
+    }
   }
 
-  public saveToken(token : string): void{
-    window.sessionStorage.removeItem(TOKEN_KEY);
-    window.sessionStorage.setItem(TOKEN_KEY,token);
-
+  public getToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('auth-token');
+    }
+    return null;
   }
 
-  public getToken(): string{
-    return <string>sessionStorage.getItem(TOKEN_KEY);
+  public saveUser(user: any): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('auth-user', JSON.stringify(user));
+    }
   }
 
-  public saveUser(user: any): void{
-    window.sessionStorage.removeItem(USER_KEY);
-    window.sessionStorage.setItem(USER_KEY,JSON.stringify(user));
-
-  }
-  public getUser():any{
-    return JSON.parse(<string>sessionStorage.getItem(USER_KEY));
-  }
-
-
-  logOut():void{
-    window.sessionStorage.clear();
-    window.location.reload();
+  public getUser(): any {
+    if (typeof window !== 'undefined') {
+      const data = sessionStorage.getItem('auth-user');
+      return data ? JSON.parse(data) : null;
+    }
+    return null;
   }
 
+  public logOut(): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.clear();
+      window.location.reload();
+    }
+  }
 }
+

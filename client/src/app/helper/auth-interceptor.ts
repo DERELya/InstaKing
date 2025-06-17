@@ -4,7 +4,7 @@ import {Observable} from 'rxjs';
 import {TokenStorageService} from '../services/token-storage.service';
 
 
-const TOKEN_HEADER_KEY='Authorization ';
+const TOKEN_HEADER_KEY='Authorization';
 @Injectable({
   providedIn: 'root'
 })
@@ -17,11 +17,16 @@ export class AuthInterceptor implements HttpInterceptor {
         let authRequest= req;
         const token =this.tokenService.getToken();
 
-        if (token!=null){
-          authRequest=req.clone({headers: req.headers.set(TOKEN_HEADER_KEY,token)})
+    if (token != null) {
+      authRequest = req.clone({
+        setHeaders: {
+          [TOKEN_HEADER_KEY]: ' ' + decodeURIComponent(token)
         }
+      });
+    }
 
-        return next.handle(authRequest);
+
+    return next.handle(authRequest);
     }
 
 

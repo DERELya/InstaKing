@@ -6,7 +6,7 @@ import {NotificationService} from '../../services/notification.service';
 import {Router, RouterLink} from '@angular/router';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {HttpClientModule} from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +24,7 @@ import {HttpClient, HttpClientModule} from '@angular/common/http';
     HttpClientModule
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit{
 
@@ -48,14 +48,14 @@ export class LoginComponent implements OnInit{
 
   createLoginForm():FormGroup{
     return this.fb.group({
-        username: ['',Validators.compose([Validators.required])],
+        email: ['',Validators.compose([Validators.required]),Validators.email],
         password: ['',Validators.compose([Validators.required])],
     })
   }
 
   submit(): void{
     this.authService.login({
-      username: this.loginForm.value.username,
+      email: this.loginForm.value.email,
       password: this.loginForm.value.password
     }).subscribe(data=>{
       console.log(data);

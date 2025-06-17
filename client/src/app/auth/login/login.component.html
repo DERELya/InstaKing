@@ -1,13 +1,13 @@
 <div class="login-page">
   <h2>Login</h2>
-  <form [formGroup]="loginForm" ]>
+  <form [formGroup]="loginForm">
 
       <div>
         <div class="justify-content-center">
           <div></div>
           <mat-form-field appearance="outline">
             <mat-label>Username</mat-label>
-            <input matInput formControlName="username">
+            <input matInput formControlName="email">
           </mat-form-field>
         </div>
         <div class="justify-content-center">
@@ -24,11 +24,6 @@
 
           <a routerLink="/register">Register</a>
         </div>
-
-
-
       </div>
-
-
   </form>
 </div>

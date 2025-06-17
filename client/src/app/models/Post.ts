@@ -4,8 +4,8 @@ export interface Post{
   title: string;
   location: string;
   caption: string;
-  image?: File;
-  userLiked?: string[];
+  image?: string;
+  usersLiked?: string[];
   comments?: Comment [];
   username?: string;
 }
