@@ -21,7 +21,7 @@ public class JWTTokenProvider {
         Date now = new Date(System.currentTimeMillis());
         Date expiryDate = new Date(now.getTime() + SecurityConstants.EXPIRATION_TIME);
 
-        String userId=Long.toString(user.getId());
+        String userId = Long.toString(user.getId());
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", user.getUsername());
@@ -36,17 +36,17 @@ public class JWTTokenProvider {
                 .compact();
     }
 
-    public Boolean validateToken(String token)  {
+    public Boolean validateToken(String token) {
         try {
             Jwts.parser()
                     .setSigningKey(SecurityConstants.SECRET)
                     .build()
                     .parseClaimsJws(token);
             return true;
-        }catch (MalformedJwtException|
-                ExpiredJwtException|
-                UnsupportedJwtException|
-                IllegalArgumentException e){
+        } catch (MalformedJwtException |
+                 ExpiredJwtException |
+                 UnsupportedJwtException |
+                 IllegalArgumentException e) {
             LOGGER.error(e.getMessage());
             return false;
         }
@@ -54,12 +54,12 @@ public class JWTTokenProvider {
     }
 
     public Long getUserIdFromToken(String token) {
-            Claims claims= Jwts.parser()
-                    .setSigningKey(SecurityConstants.SECRET)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            String id=(String)claims.get("userId");
-            return Long.parseLong(id);
+        Claims claims = Jwts.parser()
+                .setSigningKey(SecurityConstants.SECRET)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        String id = (String) claims.get("userId");
+        return Long.parseLong(id);
     }
 }

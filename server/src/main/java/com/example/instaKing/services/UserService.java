@@ -37,18 +37,18 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.getRoles().add(ERole.ROLE_USER);
 
-        try{
+        try {
             log.info("UserService created", user.getUsername());
             return userRepository.save(user);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("error during registration" + e.getMessage());
-            throw new UserExistException("the user "+user.getUsername()+" already exist");
+            throw new UserExistException("the user " + user.getUsername() + " already exist");
         }
     }
 
     public User updateUser(UserDTO userDTO, Principal principal) {
 
-        User  user =getUserByPrincipal(principal);
+        User user = getUserByPrincipal(principal);
         user.setFirstname(userDTO.getFirstName());
         user.setLastname(userDTO.getLastName());
         user.setBio(userDTO.getBio());
@@ -63,11 +63,11 @@ public class UserService {
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("username not found with username"+username));
+                .orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
     }
 
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("username not found with userid"+userId));
+                .orElseThrow(() -> new UsernameNotFoundException("username not found with userid" + userId));
     }
 }

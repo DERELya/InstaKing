@@ -2,7 +2,6 @@ package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.facade.PostFacade;
-import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.PostService;
@@ -24,10 +23,9 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class PostController {
 
+    private final ResponseErrorValidator responseErrorValidator;
     private PostFacade postFacade;
     private PostService postService;
-
-    private final ResponseErrorValidator responseErrorValidator;
 
     @Autowired
     public PostController(PostFacade postFacade, PostService postService, ResponseErrorValidator responseErrorValidator) {
@@ -41,10 +39,10 @@ public class PostController {
                                              BindingResult bindingResult,
                                              Principal principal) {
         ResponseEntity<Object> errorResponse = responseErrorValidator.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(errorResponse))return errorResponse;
+        if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
 
-        Post post = postService.createPost(postDTO,principal);
-        PostDTO createdPost=postFacade.postToPostDTO(post);
+        Post post = postService.createPost(postDTO, principal);
+        PostDTO createdPost = postFacade.postToPostDTO(post);
 
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
@@ -62,7 +60,7 @@ public class PostController {
 
     @GetMapping("/user/posts")
     public ResponseEntity<List<PostDTO>> getAllPostsForUser(Principal principal) {
-        List<PostDTO> postsDTO=postService.getAllPostsForUser(principal)
+        List<PostDTO> postsDTO = postService.getAllPostsForUser(principal)
                 .stream()
                 .map(postFacade::postToPostDTO)
                 .collect(Collectors.toList());
@@ -73,16 +71,16 @@ public class PostController {
     @PostMapping("/{postId}/{username}/like")
     public ResponseEntity<PostDTO> likePost(@PathVariable("postId") String postId,
                                             @PathVariable("username") String username) {
-        Post post=postService.likePost(Long.parseLong(postId),username);
-        PostDTO postDTO=postFacade.postToPostDTO(post);
+        Post post = postService.likePost(Long.parseLong(postId), username);
+        PostDTO postDTO = postFacade.postToPostDTO(post);
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }
 
 
     @PostMapping("/{postId}/delete")
-    public ResponseEntity<MessageResponse> deletePost(@PathVariable("postId") String postId,Principal principal) {
-        postService.deletePost(Long.parseLong(postId),principal);
+    public ResponseEntity<MessageResponse> deletePost(@PathVariable("postId") String postId, Principal principal) {
+        postService.deletePost(Long.parseLong(postId), principal);
         return new ResponseEntity<>(new MessageResponse("PostService deleted successfully"), HttpStatus.OK);
     }
 }

@@ -10,6 +10,7 @@ import {EditUserComponent} from '../edit-user/edit-user.component';
 import {RouterOutlet} from '@angular/router';
 import {MatDivider} from '@angular/material/divider';
 import {MatButton} from '@angular/material/button';
+
 @Component({
   selector: 'app-profile',
   imports: [
@@ -23,13 +24,14 @@ import {MatButton} from '@angular/material/button';
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
-export class ProfileComponent implements OnInit{
+export class ProfileComponent implements OnInit {
 
   user!: User;
-  isUserDataLoaded=false;
+  isUserDataLoaded = false;
   selectedFile!: File;
   userProfileImage?: string;
   previewImageURL: any;
+
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
               private dialog: MatDialog,
@@ -38,51 +40,54 @@ export class ProfileComponent implements OnInit{
               private userService: UserService,
               private cd: ChangeDetectorRef) {
   }
-    ngOnInit(): void {
-        this.userService.getCurrentUser()
-          .subscribe(data=>{
-            this.user=data;
-            this.isUserDataLoaded=true;
-          })
 
-      this.imageService.getProfileImage()
-        .subscribe({
-          next: blob => {
-            console.log('Blob size', blob.size);        // ← должно быть > 0
-            this.userProfileImage = URL.createObjectURL(blob);
-            this.cd.markForCheck();
-          },
-          error: err => {
-            console.warn('Image load failed', err);
-            /* fallback */
-            this.userProfileImage= 'assets/placeholder.jpg';
-          }
-        })
-    }
+  ngOnInit(): void {
+    this.userService.getCurrentUser()
+      .subscribe(data => {
+        this.user = data;
+        this.isUserDataLoaded = true;
+      })
+
+    this.imageService.getProfileImage()
+      .subscribe({
+        next: blob => {
+          console.log('Blob size', blob.size);        // ← должно быть > 0
+          this.userProfileImage = URL.createObjectURL(blob);
+          this.cd.markForCheck();
+        },
+        error: err => {
+          console.warn('Image load failed', err);
+          /* fallback */
+          this.userProfileImage = 'assets/placeholder.jpg';
+        }
+      })
+  }
 
 
-    onFileSelected(event:any): void{
+  onFileSelected(event: any): void {
     this.selectedFile = event.target.file[0];
-    const reader = new FileReader();reader.readAsDataURL(this.selectedFile);
-    reader.onload= ()=>{
+    const reader = new FileReader();
+    reader.readAsDataURL(this.selectedFile);
+    reader.onload = () => {
       this.previewImageURL = reader.result;
-      };
-    }
+    };
+  }
 
-    openEditDialog(): void{
-      const dialogUserEditConfig = new MatDialogConfig();
-      dialogUserEditConfig.width='400px';
-      dialogUserEditConfig.data={
-        user: this.user
-      }
-      this.dialog.open(EditUserComponent,dialogUserEditConfig);
+  openEditDialog(): void {
+    const dialogUserEditConfig = new MatDialogConfig();
+    dialogUserEditConfig.width = '400px';
+    dialogUserEditConfig.data = {
+      user: this.user
     }
+    this.dialog.open(EditUserComponent, dialogUserEditConfig);
+  }
 
 
   onUpload(): void {
-    if (this.selectedFile !=null){}
+    if (this.selectedFile != null) {
+    }
     this.imageService.uploadImageToUser(this.selectedFile)
-      .subscribe(data=>{
+      .subscribe(data => {
         this.notificationService.showSnackBar('Profile image updated successfully')
       })
   }

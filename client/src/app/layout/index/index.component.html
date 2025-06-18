@@ -1,4 +1,3 @@
-
 @if (isPostsLoaded) {
 
 
@@ -8,8 +7,8 @@
 
       <mat-card-header>
         <div mat-card-avatar class="example-header-image"></div>
-        <mat-card-title>   {{ post.title    }} </mat-card-title>
-        <mat-card-subtitle>{{ post.location }} </mat-card-subtitle>
+        <mat-card-title> {{ post.title }}</mat-card-title>
+        <mat-card-subtitle>{{ post.location }}</mat-card-subtitle>
       </mat-card-header>
 
       <img mat-card-image
@@ -53,7 +52,7 @@
         <input matInput
                #message
                maxlength="128"
-               (keyup.enter)="postComment(message.value, post.id!, i)" />
+               (keyup.enter)="postComment(message.value, post.id!, i)"/>
         <mat-hint align="end">
           {{ message.value.length || 0 }} / 128
         </mat-hint>

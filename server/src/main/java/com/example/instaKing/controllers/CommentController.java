@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class CommentController {
     private CommentService commentService;
-    private CommentFacade  commentFacade;
+    private CommentFacade commentFacade;
     private ResponseErrorValidator responseErrorValidator;
 
     @Autowired
@@ -39,9 +39,9 @@ public class CommentController {
                                                 BindingResult bindingResult,
                                                 Principal principal) {
         ResponseEntity<Object> errorResponse = responseErrorValidator.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(errorResponse))return errorResponse;
+        if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
 
-        Comment comment = commentService.saveComment(Long.parseLong(postId),commentDTO,principal);
+        Comment comment = commentService.saveComment(Long.parseLong(postId), commentDTO, principal);
         CommentDTO createdComment = commentFacade.CommentToCommentDTO(comment);
 
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
@@ -50,7 +50,7 @@ public class CommentController {
 
     @GetMapping("/{postId}/all")
     public ResponseEntity<List<CommentDTO>> getAllComments(@PathVariable("postId") String postId) {
-        List<CommentDTO> commentsDTOList=commentService.getAllCommentForPost(Long.parseLong(postId))
+        List<CommentDTO> commentsDTOList = commentService.getAllCommentForPost(Long.parseLong(postId))
                 .stream()
                 .map(commentFacade::CommentToCommentDTO)
                 .collect(Collectors.toList());

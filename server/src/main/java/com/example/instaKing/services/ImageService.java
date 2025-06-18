@@ -4,7 +4,6 @@ import com.example.instaKing.exceptions.ImageNotFoundException;
 import com.example.instaKing.models.ImageModel;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
-import com.example.instaKing.repositories.CommentRepository;
 import com.example.instaKing.repositories.ImageRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,9 +25,6 @@ import java.security.Principal;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 import static com.example.instaKing.security.SecurityConstants.UPLOAD_DIR;
 
@@ -58,8 +53,6 @@ public class ImageService {
         return fileName; // Сохраняем имя в базе данных
     }
 
-
-
     public ImageModel uploadImageToUser(MultipartFile file, Principal principal) throws IOException {
         User user = getUserByPrincipal(principal);
 
@@ -80,11 +73,11 @@ public class ImageService {
         return imageRepository.save(imageModel);
     }
 
-    public ImageModel uploadImageToPost(MultipartFile file, Principal principal,Long postId) throws IOException {
+    public ImageModel uploadImageToPost(MultipartFile file, Principal principal, Long postId) throws IOException {
         User user = getUserByPrincipal(principal);
-        Post post=user.getPosts()
+        Post post = user.getPosts()
                 .stream()
-                .filter(p->p.getId().equals(postId))
+                .filter(p -> p.getId().equals(postId))
                 .collect(toSinglePostCollector());
 
         String fileName = saveImage(file);
@@ -110,7 +103,6 @@ public class ImageService {
         return resource; // Возвращаем файл как ресурс
     }
 
-
     public Resource getImageToPost(Long postId) throws IOException {
         ImageModel imageModel = imageRepository.findByPostId(postId)
                 .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
@@ -125,43 +117,6 @@ public class ImageService {
         return resource; // Возвращаем файл как ресурс
     }
 
-
-
-    private byte[] compressBytes(byte[] data) {
-        Deflater deflater = new Deflater();
-        deflater.setInput(data);
-        deflater.finish();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] buffer = new byte[1024];
-        while (!deflater.finished()) {
-            int count = deflater.deflate(buffer);
-            outputStream.write(buffer, 0, count);
-        }
-        try {
-            outputStream.close();
-        } catch (IOException e) {
-
-        }
-        System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
-        return outputStream.toByteArray();
-    }
-
-    private static byte[] decompressBytes(byte[] data) {
-        Inflater inflater = new Inflater();
-        inflater.setInput(data);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] buffer = new byte[1024];
-        try {
-            while (!inflater.finished()) {
-                int count = inflater.inflate(buffer);
-                outputStream.write(buffer, 0, count);
-            }
-            outputStream.close();
-        } catch (IOException | DataFormatException e) {
-
-        }
-        return outputStream.toByteArray();
-    }
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
         return userRepository.findByUsername(username)

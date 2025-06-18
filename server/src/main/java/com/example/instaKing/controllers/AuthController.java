@@ -12,7 +12,6 @@ import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,7 +31,7 @@ public class AuthController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JWTTokenProvider jwtTokenProvider;
-    private final PersonValidator  personValidator;
+    private final PersonValidator personValidator;
 
     @Autowired
     public AuthController(ResponseErrorValidator responseErrorValidator, UserService userService, AuthenticationManager authenticationManager, JWTTokenProvider jwtTokenProvider, PersonValidator personValidator) {
@@ -44,14 +43,14 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Object> registerUser(@Valid @RequestBody SignUpRequest signUpRequest,BindingResult bindingResult){
-            ResponseEntity<Object> erros = responseErrorValidator.mapValidationService(bindingResult);
-            if (!ObjectUtils.isEmpty(erros)) return erros;
+    public ResponseEntity<Object> registerUser(@Valid @RequestBody SignUpRequest signUpRequest, BindingResult bindingResult) {
+        ResponseEntity<Object> erros = responseErrorValidator.mapValidationService(bindingResult);
+        if (!ObjectUtils.isEmpty(erros)) return erros;
 
-            System.out.println(signUpRequest.toString());
-            personValidator.validate(signUpRequest);
-            userService.createUser(signUpRequest);
-            return ResponseEntity.ok(new MessageResponse("UserService registered successfully"));
+        System.out.println(signUpRequest.toString());
+        personValidator.validate(signUpRequest);
+        userService.createUser(signUpRequest);
+        return ResponseEntity.ok(new MessageResponse("UserService registered successfully"));
     }
 
     @PostMapping("/signin")

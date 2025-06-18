@@ -24,7 +24,7 @@ public class SignUpRequest {
     private String username;
 
     @NotEmpty(message = "Password is required")
-    @Size(min = 8,max = 3000,message = "Password must be greater than 8 and less than 3000 ")
+    @Size(min = 8, max = 3000, message = "Password must be greater than 8 and less than 3000 ")
     private String password;
 
     private String confirmPassword;

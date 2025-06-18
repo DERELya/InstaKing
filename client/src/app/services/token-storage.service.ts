@@ -1,13 +1,14 @@
-import { Injectable } from '@angular/core';
-import {setEnableTemplateSourceLocations} from '@angular/compiler';
+import {Injectable} from '@angular/core';
 
-const TOKEN_KEY='auth-token';
-const USER_KEY='auth-user';
+const TOKEN_KEY = 'auth-token';
+const USER_KEY = 'auth-user';
+
 @Injectable({
   providedIn: 'root'
 })
 export class TokenStorageService {
-  constructor() {}
+  constructor() {
+  }
 
   public saveToken(token: string): void {
     if (typeof window !== 'undefined') {

@@ -21,7 +21,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public CommentService(CommentRepository commentRepository, PostRepository postRepository, UserRepository userRepository) {
@@ -30,10 +30,10 @@ public class CommentService {
         this.userRepository = userRepository;
     }
 
-    public Comment saveComment(Long postId,CommentDTO commentDTO, Principal principal) {
-        User user= getUserByPrincipal(principal);
-        Post post =postRepository.findById(postId)
-                .orElseThrow(()-> new PostNotFoundException("PostService not found"));
+    public Comment saveComment(Long postId, CommentDTO commentDTO, Principal principal) {
+        User user = getUserByPrincipal(principal);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("PostService not found"));
 
         Comment comment = new Comment();
         comment.setPost(post);
@@ -45,14 +45,14 @@ public class CommentService {
     }
 
     public List<Comment> getAllCommentForPost(Long postId) {
-        Post post=postRepository.findById(postId)
-                .orElseThrow(()-> new PostNotFoundException("PostService not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("PostService not found"));
 
         return commentRepository.findAllByPost(post);
     }
 
     public void deleteComment(Long commentId) {
-        Optional<Comment> comment=commentRepository.findById(commentId);
+        Optional<Comment> comment = commentRepository.findById(commentId);
         comment.ifPresent(commentRepository::delete);
     }
 

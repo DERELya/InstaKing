@@ -1,4 +1,3 @@
-
 <mat-toolbar color="primary">
   <span routerLink="/main" style="cursor: pointer;margin-left: 20px;">InstaKing</span>
 
@@ -12,7 +11,7 @@
 
 
   @if (isDataLoaded) {
-    <h3>{{user.firstname}} {{user.lastname}}</h3>
+    <h3>{{ user.firstname }} {{ user.lastname }}</h3>
   }
 
   @if (isLoggedIn) {

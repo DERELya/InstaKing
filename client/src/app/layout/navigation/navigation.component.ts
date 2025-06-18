@@ -24,33 +24,34 @@ import {MatTooltip} from '@angular/material/tooltip';
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
 })
-export class NavigationComponent implements OnInit{
+export class NavigationComponent implements OnInit {
 
-  isLoggedIn =false;
-  isDataLoaded=false;
+  isLoggedIn = false;
+  isDataLoaded = false;
   user!: User;
 
   constructor(
     private tokenService: TokenStorageService,
-    private userService : UserService,
-    private router: Router) {  }
+    private userService: UserService,
+    private router: Router) {
+  }
 
 
-    ngOnInit(): void {
+  ngOnInit(): void {
 
-    this.isLoggedIn =!!this.tokenService.getToken();
-      if (this.isLoggedIn){
-        this.userService.getCurrentUser()
-          .subscribe(data=>{
-            this.user=data;
-            this.isDataLoaded=true;
-          });
-      }
+    this.isLoggedIn = !!this.tokenService.getToken();
+    if (this.isLoggedIn) {
+      this.userService.getCurrentUser()
+        .subscribe(data => {
+          this.user = data;
+          this.isDataLoaded = true;
+        });
     }
+  }
 
-    logout(): void{
+  logout(): void {
     this.tokenService.logOut();
     this.router.navigate(['/login']);
-    }
+  }
 
 }

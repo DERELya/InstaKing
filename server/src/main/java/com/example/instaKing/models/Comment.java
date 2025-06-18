@@ -1,7 +1,6 @@
 package com.example.instaKing.models;
 
 import jakarta.persistence.*;
-import jakarta.persistence.PrePersist;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -27,8 +26,7 @@ public class Comment {
     }
 
     @PrePersist
-    protected void onCreate()
-    {
+    protected void onCreate() {
         this.createdDate = LocalDateTime.now();
     }
 }

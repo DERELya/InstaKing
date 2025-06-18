@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
-import {provideRouter, RouterOutlet} from '@angular/router';
-import {routes} from './app.routes';
+import {Component} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
 import {NavigationComponent} from './layout/navigation/navigation.component';
 
 @Component({
