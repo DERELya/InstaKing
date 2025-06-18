@@ -51,16 +51,13 @@ public class AuthController {
             System.out.println(signUpRequest.toString());
             personValidator.validate(signUpRequest);
             userService.createUser(signUpRequest);
-            return ResponseEntity.ok(new MessageResponse("User registered successfully"));
+            return ResponseEntity.ok(new MessageResponse("UserService registered successfully"));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
-        //ResponseEntity<Object> errors = responseErrorValidator.mapValidationService(bindingResult);
-        //if (!ObjectUtils.isEmpty(errors)) return errors;
-
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(),
+                loginRequest.getEmail(),
                 loginRequest.getPassword()
         ));
 

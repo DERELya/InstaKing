@@ -33,7 +33,7 @@ public class CommentService {
     public Comment saveComment(Long postId,CommentDTO commentDTO, Principal principal) {
         User user= getUserByPrincipal(principal);
         Post post =postRepository.findById(postId)
-                .orElseThrow(()-> new PostNotFoundException("Post not found"));
+                .orElseThrow(()-> new PostNotFoundException("PostService not found"));
 
         Comment comment = new Comment();
         comment.setPost(post);
@@ -46,7 +46,7 @@ public class CommentService {
 
     public List<Comment> getAllCommentForPost(Long postId) {
         Post post=postRepository.findById(postId)
-                .orElseThrow(()-> new PostNotFoundException("Post not found"));
+                .orElseThrow(()-> new PostNotFoundException("PostService not found"));
 
         return commentRepository.findAllByPost(post);
     }

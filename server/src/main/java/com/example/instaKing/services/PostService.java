@@ -48,7 +48,7 @@ public class PostService {
         User user = getUserByPrincipal(principal);
 
         return postRepository.findByIdAndUser(postId, user)
-                .orElseThrow(() -> new PostNotFoundException("Post not found for username" + user.getUsername()));
+                .orElseThrow(() -> new PostNotFoundException("PostService not found for username" + user.getUsername()));
     }
 
     public List<Post> getAllPostsForUser(Principal principal) {
@@ -58,7 +58,7 @@ public class PostService {
 
     public Post likePost(Long postId, String username) {
         Post post = postRepository.findById(postId).
-                orElseThrow(() -> new PostNotFoundException("Post cannot be found"));
+                orElseThrow(() -> new PostNotFoundException("PostService cannot be found"));
         Optional<String> userLiked = post.getLikedUser()
                 .stream()
                 .filter(u -> u.equals(username)).findAny();

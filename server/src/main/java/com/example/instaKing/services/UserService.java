@@ -31,14 +31,14 @@ public class UserService {
     public User createUser(SignUpRequest userIn) {
         User user = new User();
         user.setEmail(userIn.getEmail());
-        user.setName(userIn.getName());
+        user.setFirstname(userIn.getFirstname());
         user.setLastname(userIn.getLastname());
         user.setUsername(userIn.getUsername());
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.getRoles().add(ERole.ROLE_USER);
 
         try{
-            log.info("User created", user.getUsername());
+            log.info("UserService created", user.getUsername());
             return userRepository.save(user);
         }catch (Exception e){
             log.error("error during registration" + e.getMessage());
@@ -49,7 +49,7 @@ public class UserService {
     public User updateUser(UserDTO userDTO, Principal principal) {
 
         User  user =getUserByPrincipal(principal);
-        user.setName(userDTO.getFirstName());
+        user.setFirstname(userDTO.getFirstName());
         user.setLastname(userDTO.getLastName());
         user.setBio(userDTO.getBio());
 

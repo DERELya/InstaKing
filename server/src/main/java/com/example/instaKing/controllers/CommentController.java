@@ -62,6 +62,6 @@ public class CommentController {
     @PostMapping("/{commentId}/delete")
     public ResponseEntity<MessageResponse> deleteComment(@PathVariable("commentId") String commentId) {
         commentService.deleteComment(Long.parseLong(commentId));
-        return new ResponseEntity<>(new MessageResponse("Post was deleted"), HttpStatus.OK);
+        return new ResponseEntity<>(new MessageResponse("PostService was deleted"), HttpStatus.OK);
     }
 }

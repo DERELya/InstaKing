@@ -113,7 +113,7 @@ public class ImageService {
 
     public Resource getImageToPost(Long postId) throws IOException {
         ImageModel imageModel = imageRepository.findByPostId(postId)
-                .orElseThrow(() -> new ImageNotFoundException("Cannot find image for Post"));
+                .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
 
         Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());
         Resource resource = new UrlResource(filePath.toUri()); // Загружаем файл с диска

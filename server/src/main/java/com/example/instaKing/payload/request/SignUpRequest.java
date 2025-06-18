@@ -11,11 +11,11 @@ import lombok.Data;
 @PasswordMatches
 public class SignUpRequest {
     @Email(message = "It should have format email")
-    @NotBlank(message = "User email is required")
+    @NotBlank(message = "UserService email is required")
     private String email;
 
     @NotEmpty(message = "Please enter your name")
-    private String name;
+    private String firstname;
 
     @NotEmpty(message = "Please enter your lastname")
     private String lastname;
