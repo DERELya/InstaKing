@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {Post} from '../../models/Post';
 import {User} from '../../models/User';
 import {PostService} from '../../services/post.service';
@@ -17,11 +17,18 @@ import {
 } from '@angular/material/card';
 import {MatIcon} from '@angular/material/icon';
 import {MatFormField, MatHint, MatInput, MatLabel} from '@angular/material/input';
-import {NgClass} from '@angular/common';
+import {CommonModule, NgClass, NgOptimizedImage} from '@angular/common';
 import {MatButton} from '@angular/material/button';
+import {catchError, forkJoin, of, tap, throwError} from 'rxjs';
+
+
+interface UiPost extends Post {
+  isLiked: boolean;          // ← добавили
+}
 
 @Component({
-  selector: 'app-index.component',
+  selector: 'app-index',
+  standalone:true,
   imports: [
     MatCardContent,
     MatCardSubtitle,
@@ -36,14 +43,16 @@ import {MatButton} from '@angular/material/button';
     NgClass,
     MatHint,
     MatInput,
-    MatButton
+    MatButton,
+    CommonModule
   ],
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './index.component.html',
-  styleUrl: './index.component.css'
+  styleUrls: ['./index.component.css']
 })
 export class IndexComponent implements OnInit{
 
-  posts!: Post[];
+  posts!: UiPost[];
   user!: User;
   isPostsLoaded =false ;
   isUserDataLoaded = false;
@@ -54,46 +63,58 @@ export class IndexComponent implements OnInit{
     private userService: UserService,
     private commentService: CommentService,
     private notificationService: NotificationService,
-    private imageService: ImageUploadService
+    private imageService: ImageUploadService,
+    private cd: ChangeDetectorRef
   ) {  }
 
 
-    ngOnInit(): void {
-    this.postService.getAllPosts()
-      .subscribe(data=>{
-        try {
-          console.log('[POSTS]', data);
-          this.posts = data;
-          this.getImagesToPosts(this.posts);
-          this.getCommentsToPost(this.posts);
-          this.isPostsLoaded = true;
-          console.log(this.isPostsLoaded)
-          console.log(this.isUserDataLoaded)
-          console.log(this.posts.length)
-          console.log(this.posts[1].image)
-        } catch (e) {
-          console.error('Ошибка при загрузке постов:', e);
-        }
-      });
+  ngOnInit(): void {
 
-    this.userService.getCurrentUser()
-      .subscribe(data=>{
-        this.user=data;
-        this.isUserDataLoaded=true;
-      })
-    }
+    forkJoin({
+      posts: this.postService.getAllPosts(),
+      user : this.userService.getCurrentUser().pipe(
+        catchError(() => of(null))        // если не залогинен
+      )
+    }).subscribe(({ posts, user }) => {
+
+      /* 1) пересчитываем флаг isLiked */
+      this.posts = posts.map((p: { usersLiked: any; }) => ({
+        ...p,
+        isLiked: (p.usersLiked ?? []).includes(user?.username ?? '')
+      }));
+
+      /* 2) сохраняем пользователя */
+      this.user = user as User;
+
+      /* 3) подгружаем изображения и комментарии, если нужно */
+      this.getImagesToPosts(this.posts);
+      this.getCommentsToPost(this.posts);
+      this.isPostsLoaded=true;
+      this.isUserDataLoaded=!!user;
+      /* 4) триггерим OnPush, чтобы иконки окрасились сразу */
+      this.cd.markForCheck();
+    });
+  }
+
+
 
   getImagesToPosts(posts: Post[]): void {
     posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.imageService.getImageToPost(p.id)
-          .subscribe(blob => {
-            const imageUrl = URL.createObjectURL(blob);
-            p.image = imageUrl;
-          });
-      }
+      this.imageService.getImageToPost(p.id!).subscribe({
+        next: blob => {
+          console.log('Blob size', blob.size);        // ← должно быть > 0
+          p.image = URL.createObjectURL(blob);
+          this.cd.markForCheck();
+        },
+        error: err => {
+          console.warn('Image load failed', err);
+          /* fallback */
+          p.image = 'assets/placeholder.jpg';
+        }
+      });
     });
   }
+
 
 
   getCommentsToPost(posts: Post[]): void{
@@ -103,36 +124,47 @@ export class IndexComponent implements OnInit{
         this.commentService.getCommentsToPost(p.id)
           .subscribe(data=>{
             p.comments=data;
+            this.cd.markForCheck();
           })
       }
     });
     }
 
 
-    likePost(postId:number,postIndex:number):void{
-    const post=this.posts[postIndex];
-    console.log(post);
+  private patchPost(index: number, patch: Partial<UiPost>): void {
+    const updated = { ...this.posts[index], ...patch };
+    this.posts = [
+      ...this.posts.slice(0, index),
+      updated,
+      ...this.posts.slice(index + 1)
+    ];
+    this.cd.markForCheck();
+  }
 
-    if(!post.usersLiked?.includes(this.user.username)){
-      this.postService.likePost(postId,this.user.username)
-        .subscribe(()=>{
-          if (post.usersLiked){
-            post.usersLiked.push(this.user.username);
-            this.notificationService.showSnackBar('Liked!');}
-        });
-     }else {
-      this.postService.likePost(postId,this.user.username)
-        .subscribe(()=>{
-          if (post.usersLiked) {
-             const index = post.usersLiked.indexOf(this.user.username, 0);
-            if (index>-1){
-              post.usersLiked?.splice(index,1);}
-          }
-        });
-     }
-    }
+  likePost(postId: number, i: number): void {
+    const post  = this.posts[i];
+    const liked = post.isLiked;
 
-    postComment(message: string,postId:  number,postIndex:number):void{
+    /* оптимистичное обновление UI */
+    this.patchPost(i, {
+      isLiked   : !liked,
+      usersLiked: liked
+        ? post.usersLiked!.filter(u => u !== this.user.username)
+        : [...(post.usersLiked ?? []), this.user.username]
+    });
+
+    this.postService.likePost(postId, this.user.username).pipe(
+      catchError(err => {
+        /* откат при ошибке */
+        this.patchPost(i, { isLiked: liked });
+        return throwError(() => err);
+      })
+    ).subscribe();
+  }
+
+
+
+  postComment(message: string,postId:  number,postIndex:number):void{
       const post=this.posts[postIndex];
 
       console.log(post);

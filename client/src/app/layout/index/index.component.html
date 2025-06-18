@@ -1,52 +1,66 @@
-@if (isPostsLoaded && isUserDataLoaded) {
-  <div class="index-page">
-    @for(post of posts; let i = $index; track post.id){
-      <mat-card class="post-card">
-        <mat-card-header style="text-align: left">
-          <div mat-card-avatar class="example-header-image"></div>
-          <mat-card-title>{{ post.title }}</mat-card-title>
-          <mat-card-subtitle>{{ post.location }}</mat-card-subtitle>
-        </mat-card-header>
 
-        <img mat-card-image [src]="post.image" alt="post image">
+@if (isPostsLoaded) {
 
-        <mat-card-subtitle align="start">Posted by {{ post.username }}</mat-card-subtitle>
 
-        <mat-card-content>
-          <p>{{ post.caption }}</p>
-        </mat-card-content>
+  @for (post of posts; track post.id; let i = $index) {
 
+    <mat-card class="post-card">
+
+      <mat-card-header>
+        <div mat-card-avatar class="example-header-image"></div>
+        <mat-card-title>   {{ post.title    }} </mat-card-title>
+        <mat-card-subtitle>{{ post.location }} </mat-card-subtitle>
+      </mat-card-header>
+
+      <img mat-card-image
+           *ngIf="post.image"
+           src="{{ post.image }}"
+           width="400" height="400"
+           alt="post image"/>
+
+      <mat-card-subtitle align="start">
+        Posted by {{ post.username }}
+      </mat-card-subtitle>
+
+      <mat-card-content>
+        <p>{{ post.caption }}</p>
+      </mat-card-content>
+
+      @if (isUserDataLoaded) {
         <mat-card-actions align="start">
-          @if (isUserDataLoaded) {
-            <button
-              mat-button
-              (click)="likePost(post.id!, i)"
-              [ngClass]="(post.usersLiked ?? []).includes(user.username ?? '') ? 'is-liked' : 'not-liked'"
-            >
-              <mat-icon>favorite</mat-icon> Like
-            </button>
-          }
+          <button mat-button
+                  (click)="likePost(post.id!, i)"
+                  [ngClass]="post.isLiked ? 'is-liked' : 'not-liked'">
+            <mat-icon>favorite</mat-icon>
+            Like
+          </button>
         </mat-card-actions>
+      }
 
-        @if (post.comments?.length) {
-          <div style="text-align: left">
-            @for ( comment of post.comments; track comment.id) {
-              <p><span style="font-weight: 500">{{ comment.username }}</span>: {{ comment.message }}</p>
-            }
-          </div>
-        }
+      @if (post.comments?.length) {
+        <div style="text-align:left">
+          @for (comment of post.comments; track comment.id) {
+            <p>
+              <span style="font-weight:500">{{ comment.username }}</span>:
+              {{ comment.message }}
+            </p>
+          }
+        </div>
+      }
 
-        <mat-form-field class="w-100">
-          <mat-label>Leave a comment...</mat-label>
-          <input
-            (keyup.enter)="postComment(message.value, post.id!, i)"
-            matInput
-            #message
-            maxlength="128"
-          />
-          <mat-hint align="end">{{ message.value?.length || 0 }} / 128</mat-hint>
-        </mat-form-field>
-      </mat-card>
-    }
-  </div>
+      <mat-form-field class="w-100">
+        <mat-label>Leave a comment...</mat-label>
+        <input matInput
+               #message
+               maxlength="128"
+               (keyup.enter)="postComment(message.value, post.id!, i)" />
+        <mat-hint align="end">
+          {{ message.value.length || 0 }} / 128
+        </mat-hint>
+      </mat-form-field>
+
+    </mat-card>
+
+  }
+
 }
