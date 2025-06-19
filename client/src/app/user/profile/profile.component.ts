@@ -30,7 +30,7 @@ export class ProfileComponent implements OnInit {
   isUserDataLoaded = false;
   selectedFile!: File;
   userProfileImage?: string;
-  previewImageURL: any;
+  previewUrl?: string;
 
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
@@ -64,14 +64,17 @@ export class ProfileComponent implements OnInit {
   }
 
 
-  onFileSelected(event: any): void {
-    this.selectedFile = event.target.file[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(this.selectedFile);
-    reader.onload = () => {
-      this.previewImageURL = reader.result;
-    };
+  onFileSelected(evt: Event): void {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) { return; }
+
+    const file = input.files[0];
+    this.selectedFile = file;
+    /* создаём превью */
+    this.previewUrl = URL.createObjectURL(file);
+    this.cd.markForCheck();
   }
+
 
   openEditDialog(): void {
     const dialogUserEditConfig = new MatDialogConfig();

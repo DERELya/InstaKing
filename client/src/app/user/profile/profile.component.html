@@ -9,10 +9,14 @@
 
     <div style="padding-top: 2rem" class="row">
       <div class="col">
-        <img class="profile-image" src="previewImageURL || userProfileImage || 'https://www.missingdogsuk.co.uk/wp-content/plugins/wp-job-manager-resumes/assets/images/candidate.png'" alt="user image">
+        <!-- где сейчас src: user.avatarUrl -->
+        <img [src]="previewUrl || user.avatarUrl || 'assets/blank-avatar.png'"
+             width="160" height="160" class="profile-image"/>
+
 
         <input type="file"
                style="display: none"
+               accept="image/png, image/jpeg"
                #fileInput
                (change)="onFileSelected($event)">
 
