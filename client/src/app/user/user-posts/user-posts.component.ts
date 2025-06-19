@@ -39,6 +39,7 @@ export class UserPostsComponent implements OnInit{
   posts: UiPost[] = [];
   isUserPostsLoaded = false;
   meUsername!: string;
+  openedPostIndex: number | null = null;
 
   constructor(
     private postService: PostService,
@@ -89,6 +90,14 @@ export class UserPostsComponent implements OnInit{
       },
       error: () => this.notify.showSnackBar('Cannot load feed')
     });
+  }
+
+  openPostDetails(index: number) {
+    this.openedPostIndex = index;
+  }
+
+  closePostDetails() {
+    this.openedPostIndex = null;
   }
 
   /* ❤️ / 💔 */
