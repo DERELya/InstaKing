@@ -1,4 +1,3 @@
-<!-- feed.component.html -->
 <div class="feed" *ngIf="isUserPostsLoaded">
 
   <div class="add-post-btn">
@@ -8,51 +7,37 @@
   <h2>{{ posts.length }} posts</h2>
 
   <mat-card class="post-card" *ngFor="let post of posts; let i = index">
-
-    <!-- Заголовок: аватар + ник + локация -->
     <mat-card-header>
       <div mat-card-avatar class="post-avatar">
-        <img [src]="post.author.avatarUrl || 'assets/blank-avatar.png'" />
+        <img [src]="post.author?.avatarUrl || 'assets/blank-avatar.png'" />
       </div>
-      <mat-card-title>{{ post.author.username }}</mat-card-title>
+      <mat-card-title>{{ post.author?.username }}</mat-card-title>
       <mat-card-subtitle>{{ post.location }}</mat-card-subtitle>
     </mat-card-header>
 
-    <!-- Фото -->
-    <img mat-card-image [src]="post.image" alt="post image" class="post-image" />
+    <img mat-card-image [src]="post.image" class="post-image" alt="post" />
 
     <mat-card-content>
-
-      <!-- Блок лайков -->
       <div class="post-actions">
-        <button mat-icon-button (click)="toggleLike(post, i)">
-          <mat-icon [ngClass]="{ liked: post.isLiked }">favorite</mat-icon>
-        </button>
         <span>{{ post.likes }} likes</span>
       </div>
 
-      <!-- Подпись -->
       <p class="caption">
-        <b>{{ post.author.username }}</b> {{ post.caption }}
+        <b>{{ post.author?.username }}</b> {{ post.caption }}
       </p>
 
-      <!-- Комментарии -->
-      <div class="comment"
-           *ngFor="let comment of post.comments; let c = index">
-        <b>{{ comment.username }}</b> {{ comment.message }}
-        <button mat-icon-button color="accent"
-                (click)="deleteComment(comment.id, i, c)">
+      <div class="comment" *ngFor="let c of post.comments; let ci = index">
+        <b>{{ c.username }}</b> {{ c.message }}
+        <button mat-icon-button color="accent" (click)="deleteComment(c.id!, i, ci)">
           <mat-icon>clear</mat-icon>
         </button>
       </div>
     </mat-card-content>
 
-    <!-- Удаление поста -->
     <mat-card-actions align="end">
       <button mat-button color="warn" (click)="removePost(post, i)">
-        <mat-icon>delete</mat-icon> Remove post
+        <mat-icon>delete</mat-icon> Remove
       </button>
     </mat-card-actions>
-
   </mat-card>
 </div>

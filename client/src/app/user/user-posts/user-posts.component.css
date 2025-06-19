@@ -1,6 +1,15 @@
-.post-card {
-  margin: 0 auto 24px auto;
+.feed {
   max-width: 600px;
+  margin: 0 auto;
+}
+
+.add-post-btn {
+  text-align: right;
+  margin-bottom: 12px;
+}
+
+.post-card {
+  margin-bottom: 32px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
@@ -12,29 +21,37 @@
 }
 
 .post-image {
-  object-fit: cover;
-  max-height: 500px;
   width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 .post-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin: 8px 0;
 }
 
 mat-icon.liked {
   color: #e91e63;
 }
 
-.caption, .comment {
+.caption,
+.comment {
   margin: 4px 0;
+}
+
+.comment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .comment button {
   visibility: hidden;
-  margin-left: 8px;
+  padding: 0;
 }
 
 .comment:hover button {

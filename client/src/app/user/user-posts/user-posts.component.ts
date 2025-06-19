@@ -16,6 +16,9 @@ import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
 import {MatButton} from '@angular/material/button';
 
+interface UiPost extends Post {
+  isLiked: boolean;
+}
 @Component({
   selector: 'app-posts',
   imports: [
@@ -36,7 +39,7 @@ import {MatButton} from '@angular/material/button';
 })
 export class UserPostsComponent {
   isUserPostsLoaded = false;
-  posts!: Post [];
+  posts!: UiPost [];
 
   constructor(private postService: PostService,
               private imageService: ImageUploadService,
