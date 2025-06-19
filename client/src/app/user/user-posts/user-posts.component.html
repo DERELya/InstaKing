@@ -1,43 +1,55 @@
 <div class="feed" *ngIf="isUserPostsLoaded">
 
-  <div class="add-post-btn">
-    <button mat-flat-button color="primary" routerLink="/profile/add">Add Post</button>
-  </div>
+  <mat-card class="ig-post" *ngFor="let post of posts; let i = index">
 
-  <h2>{{ posts.length }} posts</h2>
+    <!-- Фото -->
+    <img class="ig-photo" [src]="post.image" alt="photo" />
 
-  <mat-card class="post-card" *ngFor="let post of posts; let i = index">
-    <mat-card-header>
-      <div mat-card-avatar class="post-avatar">
-        <img [src]="post.author?.avatarUrl || 'assets/blank-avatar.png'" />
+    <!-- Экшен-строка -->
+    <section class="actions">
+      <div class="left">
+        <button mat-icon-button (click)="toggleLike(post, i)">
+          <mat-icon [ngClass]="{ liked: post.isLiked }">favorite</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon>chat_bubble_outline</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon>send</mat-icon>
+        </button>
       </div>
-      <mat-card-title>{{ post.author?.username }}</mat-card-title>
-      <mat-card-subtitle>{{ post.location }}</mat-card-subtitle>
-    </mat-card-header>
+      <button mat-icon-button>
+        <mat-icon>bookmark_border</mat-icon>
+      </button>
+    </section>
 
-    <img mat-card-image [src]="post.image" class="post-image" alt="post" />
+    <!-- Лайки -->
+    <section class="likes">
+      <span>{{ post.likes }} like{{ post.likes === 1 ? '' : 's' }}</span>
+    </section>
 
-    <mat-card-content>
-      <div class="post-actions">
-        <span>{{ post.likes }} likes</span>
-      </div>
+    <!-- Caption -->
+    <section class="caption">
+      <b>{{ post.username }}</b> {{ post.caption }}
+    </section>
 
-      <p class="caption">
-        <b>{{ post.author?.username }}</b> {{ post.caption }}
-      </p>
+    <!-- Комментарии (показываем максимум 2, остальное сворачивается) -->
+    <ng-container *ngIf="post.comments?.length">
+      <button class="view-all" mat-button *ngIf="post.comments!.length > 2"
+              (click)="post.showAllComments = !post.showAllComments">
+        View {{ post.showAllComments ? 'less' : 'all' }} {{ post.comments!.length }} comments
+      </button>
 
-      <div class="comment" *ngFor="let c of post.comments; let ci = index">
+      <div class="comment"
+           *ngFor="let c of (post.showAllComments ? post.comments : post.comments | slice:0:2); let ci = index">
         <b>{{ c.username }}</b> {{ c.message }}
-        <button mat-icon-button color="accent" (click)="deleteComment(c.id!, i, ci)">
+        <button mat-icon-button (click)="deleteComment(c.id!, i, ci)">
           <mat-icon>clear</mat-icon>
         </button>
       </div>
-    </mat-card-content>
+    </ng-container>
 
-    <mat-card-actions align="end">
-      <button mat-button color="warn" (click)="removePost(post, i)">
-        <mat-icon>delete</mat-icon> Remove
-      </button>
-    </mat-card-actions>
+    <!-- Дата -->
+    <time class="timestamp">{{ post.createdAt | date:'mediumDate' }}</time>
   </mat-card>
 </div>

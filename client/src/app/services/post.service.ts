@@ -36,7 +36,7 @@ export class PostService {
   }
 
   toggleLike(postId: number): Observable<boolean> {
-    return this.http.post<boolean>(`${this.api}/${postId}/like`, null);
+    return this.http.post<boolean>(`${this.api}${postId}/like`, null);
   }
 
 }

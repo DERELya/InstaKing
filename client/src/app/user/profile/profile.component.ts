@@ -7,7 +7,7 @@ import {NotificationService} from '../../services/notification.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {UserService} from '../../services/user.service';
 import {EditUserComponent} from '../edit-user/edit-user.component';
-import {RouterOutlet} from '@angular/router';
+import {RouterLink, RouterOutlet} from '@angular/router';
 import {MatDivider} from '@angular/material/divider';
 import {MatButton} from '@angular/material/button';
 
@@ -18,7 +18,8 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatDialogModule,
     RouterOutlet,
     MatDivider,
-    MatButton
+    MatButton,
+    RouterLink
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   standalone: true,
@@ -63,7 +64,9 @@ export class ProfileComponent implements OnInit {
         console.warn('Image load failed', err);
         this.userProfileImage = 'assets/placeholder.jpg';
       }
+
     });
+    this.cd.markForCheck();
   }
 
 
@@ -77,7 +80,6 @@ export class ProfileComponent implements OnInit {
     /* создаём превью */
     this.previewUrl = URL.createObjectURL(file);
     console.log('test:'+this.previewUrl);
-    this.cd.markForCheck();
   }
 
 
@@ -108,7 +110,7 @@ export class ProfileComponent implements OnInit {
         // обновляем URL аватарки
         this.userProfileImage = `${USER_API}/${relativeUrl}`;
 
-        this.cd.markForCheck();
+
         this.notificationService.showSnackBar('Profile image updated successfully');
       },
       error: () => {

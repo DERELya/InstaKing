@@ -39,13 +39,20 @@ public class ImageController {
 
     @GetMapping("/profileImage")
     public ResponseEntity<Resource> getImageForUser(Principal principal) throws IOException {
-        Resource userImage = imageService.getImageToUser(principal);
+        Resource userImage = imageService.getImageToCurrentUser(principal);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG) // Или другой формат
                 .body(userImage);
     }
 
+    @GetMapping("/profileImage/{username}")
+    public ResponseEntity<Resource> getImageForUser(@PathVariable("username") String username) throws IOException {
+        Resource userImage = imageService.getImageToUser(username);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
+                .body(userImage);
+    }
 
     @GetMapping("/{postId}/image")
     public ResponseEntity<Resource> getImageForPost(@PathVariable("postId") Long postId) throws IOException {

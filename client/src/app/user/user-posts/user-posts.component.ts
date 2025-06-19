@@ -1,90 +1,109 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-  MatCardHeader,
-  MatCardSubtitle,
-  MatCardTitle
-} from '@angular/material/card';
-import {MatIcon} from '@angular/material/icon';
-import {Post} from '../../models/Post';
-import {PostService} from '../../services/post.service';
+/* user-posts.component.ts */
+import {ChangeDetectionStrategy, Component, ChangeDetectorRef, OnInit} from '@angular/core';
+import {catchError, forkJoin, map, of, switchMap} from 'rxjs';
+import { PostService } from '../../services/post.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { UserService } from '../../services/user.service';
+import { NotificationService } from '../../services/notification.service'; // см. пункт 2
+import { Post } from '../../models/Post';
 import {CommentService} from '../../services/comment.service';
-import {NotificationService} from '../../services/notification.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {CommonModule} from '@angular/common';
-import {MatButton} from '@angular/material/button';
+import {CommonModule, DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
+import { MatCardModule} from '@angular/material/card';
+import {MatIconModule} from '@angular/material/icon';
+import {MatIconButton} from '@angular/material/button';
 
 interface UiPost extends Post {
   isLiked: boolean;
+  avatarUrl?: string;
+  showAllComments?: boolean;
 }
+
 @Component({
   selector: 'app-posts',
-  imports: [
-    MatCardActions,
-    MatIcon,
-    MatCardSubtitle,
-    MatCardContent,
-    MatCardTitle,
-    MatCardHeader,
-    MatCard,
-    CommonModule,
-    MatButton
-  ],
-  changeDetection: ChangeDetectionStrategy.Default,
-  standalone:true,
   templateUrl: './user-posts.component.html',
-  styleUrls: ['./user-posts.component.css']
+  styleUrls: ['./user-posts.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    DatePipe,
+    MatCardModule,
+    MatIconModule,
+    NgClass,
+    MatIconButton,
+    NgIf,
+    NgForOf,
+    CommonModule
+  ]
 })
-export class UserPostsComponent {
+export class UserPostsComponent implements OnInit{
+  posts: UiPost[] = [];
   isUserPostsLoaded = false;
-  posts!: UiPost [];
+  meUsername!: string;
 
-  constructor(private postService: PostService,
-              private imageService: ImageUploadService,
-              private commentService: CommentService,
-              private notificationService: NotificationService,
-              private cd: ChangeDetectorRef) {
-  }
+  constructor(
+    private postService: PostService,
+    private imageService: ImageUploadService,
+    private userService: UserService,
+    private notify: NotificationService,
+    private commentService: CommentService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.postService.getPostForCurrentUser()
-      .subscribe(data => {
-        this.posts = data;
-        this.getImagesToPosts(this.posts);
-        this.getCommentsToPost(this.posts);
+    /* 1. узнаём текущего пользователя */
+    this.userService.getCurrentUser().pipe(
+      switchMap(me => {
+        this.meUsername = me.username;
+        /* 2. загружаем его же посты */
+        return this.postService.getPostForCurrentUser();
+      }),
+      /* 3. на каждый пост параллельно тянем: фото поста + аватар автора */
+      switchMap((posts: Post[]) =>
+        forkJoin(
+          posts.map(p =>
+            forkJoin({
+              postImg: this.imageService.getImageToPost(p.id!).pipe(
+                map(blob => URL.createObjectURL(blob)),
+                catchError(() => of('assets/placeholder.jpg'))
+              ),
+              avatar: this.imageService.getImageToUser(p.username!).pipe(
+                map(blob => URL.createObjectURL(blob)),
+                catchError(() => of('assets/blank-avatar.png'))  // ✅ строка
+              )
+            }).pipe(
+              map(({ postImg, avatar }) => ({
+                ...p,
+                image: postImg,
+                avatarUrl: avatar,
+                isLiked: (p.usersLiked ?? []).includes(this.meUsername)
+              }))
+            )
+          )
+        )
+      )
+    ).subscribe({
+      next: uiPosts => {
+        this.posts = uiPosts;
         this.isUserPostsLoaded = true;
-      });
-  }
-
-  getImagesToPosts(posts: Post[]): void {
-    posts.forEach(p => {
-      this.imageService.getImageToPost(p.id!).subscribe({
-        next: blob => {
-          p.image = URL.createObjectURL(blob);
-          this.cd.markForCheck();
-        },
-        error: err => {
-          p.image = 'assets/placeholder.jpg';
-        }
-      });
+        this.cd.markForCheck();
+      },
+      error: () => this.notify.showSnackBar('Cannot load feed')
     });
   }
 
-
-  getCommentsToPost(posts: Post[]): void {
-    posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.commentService.getCommentsToPost(p.id)
-          .subscribe(data => {
-            p.comments = data;
-            this.cd.markForCheck();
-          })
+  /* ❤️ / 💔 */
+  toggleLike(post: UiPost, idx: number): void {
+    this.postService.toggleLike(post.id!).subscribe({
+      next: added => {
+        const likes = added ? (post.likes! + 1) : (post.likes! - 1);
+        const isLiked = added;
+        this.posts = this.posts.map((p, i) =>
+          i === idx ? { ...p, likes, isLiked } : p
+        );
+        this.cd.markForCheck();
       }
     });
   }
-
   removePost(post: Post, index: number): void {
     console.log(post);
     const result = confirm('Do you really want to delete this post?');
@@ -92,7 +111,7 @@ export class UserPostsComponent {
       this.postService.deletePost(post.id!)
         .subscribe(() => {
           this.posts.splice(index, 1);
-          this.notificationService.showSnackBar('Post deleted');
+          this.notify.showSnackBar('Post deleted');
         });
     }
   }
@@ -103,9 +122,10 @@ export class UserPostsComponent {
 
     this.commentService.delete(commentId)
       .subscribe(() => {
-        this.notificationService.showSnackBar('Comment removed');
+        this.notify.showSnackBar('Comment removed');
         post.comments!.splice(commentIndex, 1);
       });
   }
 
+  /* удаление поста / комментария — оставляем как было */
 }

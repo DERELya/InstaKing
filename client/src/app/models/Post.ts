@@ -1,4 +1,4 @@
-import {Comment} from './Comment';
+import {PostComment} from './PostComment';
 export interface Post{
   id?:number;
   title: string;
@@ -7,10 +7,7 @@ export interface Post{
   image?: string;
   likes?: number;
   usersLiked?: string[];
-  comments?: Comment [];
-  author?: {
-    username: string;
-    avatarUrl?: string;
-  }
-
+  comments?: PostComment [];
+  username?: string;
+  createdAt?: string;
 }

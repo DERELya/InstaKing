@@ -90,7 +90,7 @@ public class ImageService {
         return imageRepository.save(imageModel);
     }
 
-    public Resource getImageToUser(Principal principal) throws IOException {
+    public Resource getImageToCurrentUser(Principal principal) throws IOException {
         User user = getUserByPrincipal(principal);
         ImageModel imageModel = imageRepository.findByUserId(user.getId()).orElseThrow(() -> new ImageNotFoundException("Image not found"));
 
@@ -105,6 +105,22 @@ public class ImageService {
 
     public Resource getImageToPost(Long postId) throws IOException {
         ImageModel imageModel = imageRepository.findByPostId(postId)
+                .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
+
+        Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());
+        Resource resource = new UrlResource(filePath.toUri()); // Загружаем файл с диска
+
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new FileNotFoundException("Image file not found: " + imageModel.getImagePath());
+        }
+
+        return resource; // Возвращаем файл как ресурс
+    }
+
+    public Resource getImageToUser(String username) throws IOException {
+        User user = userRepository.findByUsername(username).get();
+
+        ImageModel imageModel = imageRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
 
         Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());

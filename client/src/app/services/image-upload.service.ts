@@ -35,5 +35,8 @@ export class ImageUploadService {
     return this.http.get(IMAGE_API + postId + '/image', {responseType: 'blob'});
   }
 
+  getImageToUser(username:string):Observable<Blob>{
+    return this.http.get(IMAGE_API+'profileImage/'+username,{responseType: 'blob'});
+  }
 
 }
