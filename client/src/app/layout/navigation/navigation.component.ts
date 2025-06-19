@@ -8,6 +8,9 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
+import {ImageUploadService} from '../../services/image-upload.service';
+
+const USER_API = 'http://localhost:8080/api/user/';
 
 @Component({
   selector: 'app-navigation',
@@ -29,11 +32,14 @@ export class NavigationComponent implements OnInit {
   isLoggedIn = false;
   isDataLoaded = false;
   user!: User;
+  userProfileImage?: string;
+  previewUrl?: string;
 
   constructor(
     private tokenService: TokenStorageService,
     private userService: UserService,
-    private router: Router) {
+    private router: Router,
+    private imageService: ImageUploadService) {
   }
 
 
@@ -41,11 +47,19 @@ export class NavigationComponent implements OnInit {
 
     this.isLoggedIn = !!this.tokenService.getToken();
     if (this.isLoggedIn) {
-      this.userService.getCurrentUser()
-        .subscribe(data => {
-          this.user = data;
-          this.isDataLoaded = true;
-        });
+      this.userService.getCurrentUser().subscribe(data => {
+        this.user = data;
+        this.isDataLoaded = true;
+      });
+
+      this.imageService.getProfileImage().subscribe({
+        next: (blob) => {
+          this.userProfileImage = URL.createObjectURL(blob);
+        },
+        error: () => {
+          this.userProfileImage = 'assets/placeholder.jpg';
+        }
+      });
     }
   }
 

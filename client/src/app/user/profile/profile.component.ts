@@ -11,6 +11,7 @@ import {RouterOutlet} from '@angular/router';
 import {MatDivider} from '@angular/material/divider';
 import {MatButton} from '@angular/material/button';
 
+const USER_API = 'http://localhost:8080/api/user/';
 @Component({
   selector: 'app-profile',
   imports: [
@@ -42,26 +43,29 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userService.getCurrentUser()
-      .subscribe(data => {
-        this.user = data;
-        this.isUserDataLoaded = true;
-      })
+    this.userService.getCurrentUser().subscribe(data => {
+      // ⚠️ если avatarUrl относительный — преобразуем в абсолютный
+      if (data.avatarUrl && !data.avatarUrl.startsWith('http')) {
+        data.avatarUrl = `${USER_API}/${data.avatarUrl}`;
+      }
+      this.user = data;
+      this.userProfileImage = data.avatarUrl;   // ← это и будет src после F5
+      this.isUserDataLoaded = true;
+    });
 
-    this.imageService.getProfileImage()
-      .subscribe({
-        next: blob => {
-          console.log('Blob size', blob.size);        // ← должно быть > 0
-          this.userProfileImage = URL.createObjectURL(blob);
-          this.cd.markForCheck();
-        },
-        error: err => {
-          console.warn('Image load failed', err);
-          /* fallback */
-          this.userProfileImage = 'assets/placeholder.jpg';
-        }
-      })
+    this.imageService.getProfileImage().subscribe({
+      next: blob => {
+        const preview = URL.createObjectURL(blob);
+        this.userProfileImage = preview;
+        this.cd.markForCheck();
+      },
+      error: err => {
+        console.warn('Image load failed', err);
+        this.userProfileImage = 'assets/placeholder.jpg';
+      }
+    });
   }
+
 
 
   onFileSelected(evt: Event): void {
@@ -72,6 +76,7 @@ export class ProfileComponent implements OnInit {
     this.selectedFile = file;
     /* создаём превью */
     this.previewUrl = URL.createObjectURL(file);
+    console.log('test:'+this.previewUrl);
     this.cd.markForCheck();
   }
 
@@ -87,11 +92,29 @@ export class ProfileComponent implements OnInit {
 
 
   onUpload(): void {
-    if (this.selectedFile != null) {
-    }
-    this.imageService.uploadImageToUser(this.selectedFile)
-      .subscribe(data => {
-        this.notificationService.showSnackBar('Profile image updated successfully')
-      })
+    if (!this.selectedFile) return;
+
+    this.imageService.uploadImageToUser(this.selectedFile).subscribe({
+      next: (relativeUrl: string) => {
+        // очищаем старый Blob, если был
+        if (this.previewUrl) {
+          URL.revokeObjectURL(this.previewUrl);
+        }
+
+        // обнуляем preview + файл
+        this.previewUrl = undefined;
+        this.selectedFile = undefined!;
+
+        // обновляем URL аватарки
+        this.userProfileImage = `${USER_API}/${relativeUrl}`;
+
+        this.cd.markForCheck();
+        this.notificationService.showSnackBar('Profile image updated successfully');
+      },
+      error: () => {
+        this.notificationService.showSnackBar('Upload failed');
+      }
+    });
   }
+
 }

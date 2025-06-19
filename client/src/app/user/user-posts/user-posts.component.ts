@@ -48,7 +48,6 @@ export class UserPostsComponent {
   ngOnInit(): void {
     this.postService.getPostForCurrentUser()
       .subscribe(data => {
-        console.log(data);
         this.posts = data;
         this.getImagesToPosts(this.posts);
         this.getCommentsToPost(this.posts);
@@ -60,13 +59,10 @@ export class UserPostsComponent {
     posts.forEach(p => {
       this.imageService.getImageToPost(p.id!).subscribe({
         next: blob => {
-          console.log('Blob size', blob.size);        // ← должно быть > 0
           p.image = URL.createObjectURL(blob);
           this.cd.markForCheck();
         },
         error: err => {
-          console.warn('Image load failed', err);
-          /* fallback */
           p.image = 'assets/placeholder.jpg';
         }
       });
@@ -75,7 +71,6 @@ export class UserPostsComponent {
 
 
   getCommentsToPost(posts: Post[]): void {
-
     posts.forEach(p => {
       if (p.id !== undefined) {
         this.commentService.getCommentsToPost(p.id)

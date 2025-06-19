@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NotificationService} from '../../services/notification.service';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -19,6 +19,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     MatButtonModule,
     MatDialogModule
   ],
+  changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './edit-user.component.html',
   styleUrls: ['./edit-user.component.css']
 })

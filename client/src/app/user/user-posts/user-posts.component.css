@@ -1,5 +1,42 @@
 .post-card {
-  display: block;
-  margin: 1rem auto;
-  width: 80%;
+  margin: 0 auto 24px auto;
+  max-width: 600px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.post-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-image {
+  object-fit: cover;
+  max-height: 500px;
+  width: 100%;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+mat-icon.liked {
+  color: #e91e63;
+}
+
+.caption, .comment {
+  margin: 4px 0;
+}
+
+.comment button {
+  visibility: hidden;
+  margin-left: 8px;
+}
+
+.comment:hover button {
+  visibility: visible;
 }

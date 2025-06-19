@@ -10,8 +10,8 @@
     <div style="padding-top: 2rem" class="row">
       <div class="col">
         <!-- где сейчас src: user.avatarUrl -->
-        <img [src]="previewUrl || user.avatarUrl || 'assets/blank-avatar.png'"
-             width="160" height="160" class="profile-image"/>
+        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+        width="160" height="160" class="profile-image"/>
 
 
         <input type="file"
@@ -41,5 +41,4 @@
     </div>
 
   </div>
-
 }

@@ -6,3 +6,33 @@
   display: block;
   margin: 0 auto;
 }
+
+mat-menu img.profile-image {
+  border-radius: 8px;
+  margin: 8px auto;
+  display: block;
+  max-width: 160px;
+  height: auto;
+}
+
+.avatar-button {
+  width: 48px;
+  height: 48px;
+  padding: 4px;
+}
+.avatar-button .avatar-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: box-shadow 0.3s ease;
+}
+
+.avatar-button:hover .avatar-icon {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+
+
+
+
