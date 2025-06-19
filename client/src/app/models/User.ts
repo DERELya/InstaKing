@@ -5,4 +5,5 @@ export interface User{
   firstname: string;
   lastname: string;
   bio: string;
+  avatarUrl?: string;
 }

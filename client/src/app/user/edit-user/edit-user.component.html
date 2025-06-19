@@ -1,30 +1,27 @@
-<div>
-  <h2>Edit User Profile</h2>
-  <form [formGroup]="profileEditForm">
-    <mat-form-field class="w-100" appearance="outline">
+<h2 mat-dialog-title>Edit profile</h2>
+
+<form [formGroup]="profileEditForm" (ngSubmit)="submit()">
+  <mat-dialog-content>
+
+    <mat-form-field appearance="outline" class="w-100">
       <mat-label>First name</mat-label>
-      <input matInput
-             formControlName="firstName">
-    </mat-form-field>
-    <mat-form-field class="w-100" appearance="outline">
-      <mat-label>Last name</mat-label>
-      <input matInput
-             formControlName="lastName">
-    </mat-form-field>
-    <mat-form-field class="w-100" appearance="outline">
-      <mat-label>Biography</mat-label>
-      <input matInput
-             formControlName="bio">
+      <input matInput formControlName="firstname" />
     </mat-form-field>
 
-    <div class="row">
-      <button (click)="closeDialog()" class="w-50"
-              mat-button mat-dialog-close disableRipple>
-        Cancel
-      </button>
-      <button color="primary" class="w-50" [disabled]="profileEditForm.invalid" (click)="submit()" mat-button disableRipple>
-        Update
-      </button>
-    </div>
-  </form>
-</div>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Last name</mat-label>
+      <input matInput formControlName="lastname" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Bio</mat-label>
+      <textarea matInput formControlName="bio" rows="3"></textarea>
+    </mat-form-field>
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="closeDialog()">Cancel</button>
+    <button mat-button color="primary" type="submit">Save</button>
+  </mat-dialog-actions>
+</form>
