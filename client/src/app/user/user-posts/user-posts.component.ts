@@ -1,16 +1,18 @@
 /* user-posts.component.ts */
-import {ChangeDetectionStrategy, Component, ChangeDetectorRef, OnInit} from '@angular/core';
-import {catchError, forkJoin, map, of, switchMap} from 'rxjs';
-import { PostService } from '../../services/post.service';
-import { ImageUploadService } from '../../services/image-upload.service';
-import { UserService } from '../../services/user.service';
-import { NotificationService } from '../../services/notification.service'; // см. пункт 2
-import { Post } from '../../models/Post';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {catchError, forkJoin, map, of, switchMap, throwError} from 'rxjs';
+import {PostService} from '../../services/post.service';
+import {ImageUploadService} from '../../services/image-upload.service';
+import {UserService} from '../../services/user.service';
+import {NotificationService} from '../../services/notification.service'; // см. пункт 2
+import {Post} from '../../models/Post';
 import {CommentService} from '../../services/comment.service';
 import {CommonModule, DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
-import { MatCardModule} from '@angular/material/card';
+import {MatCardModule} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
-import {MatIconButton} from '@angular/material/button';
+import {MatButtonModule, MatIconButton} from '@angular/material/button';
+import {MatInputModule, MatLabel} from '@angular/material/input';
+import {MatFormFieldModule} from '@angular/material/form-field';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -32,14 +34,21 @@ interface UiPost extends Post {
     MatIconButton,
     NgIf,
     NgForOf,
-    CommonModule
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatLabel,
+    MatButtonModule
   ]
 })
-export class UserPostsComponent implements OnInit{
+export class UserPostsComponent implements OnInit {
   posts: UiPost[] = [];
   isUserPostsLoaded = false;
   meUsername!: string;
   openedPostIndex: number | null = null;
+  userProfileImage?: string;
+  previewUrl?: string;
+  userImages: { [key: string]: string } = {};
 
   constructor(
     private postService: PostService,
@@ -48,10 +57,12 @@ export class UserPostsComponent implements OnInit{
     private notify: NotificationService,
     private commentService: CommentService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     /* 1. узнаём текущего пользователя */
+
     this.userService.getCurrentUser().pipe(
       switchMap(me => {
         this.meUsername = me.username;
@@ -72,8 +83,9 @@ export class UserPostsComponent implements OnInit{
                 catchError(() => of('assets/blank-avatar.png'))  // ✅ строка
               )
             }).pipe(
-              map(({ postImg, avatar }) => ({
+              map(({postImg, avatar}) => ({
                 ...p,
+                usersLiked: p.usersLiked ?? [],
                 image: postImg,
                 avatarUrl: avatar,
                 isLiked: (p.usersLiked ?? []).includes(this.meUsername)
@@ -86,10 +98,13 @@ export class UserPostsComponent implements OnInit{
       next: uiPosts => {
         this.posts = uiPosts;
         this.isUserPostsLoaded = true;
+        this.getCommentsToPost(this.posts);
+        console.log(this.posts);
         this.cd.markForCheck();
       },
       error: () => this.notify.showSnackBar('Cannot load feed')
     });
+
   }
 
   openPostDetails(index: number) {
@@ -100,19 +115,26 @@ export class UserPostsComponent implements OnInit{
     this.openedPostIndex = null;
   }
 
-  /* ❤️ / 💔 */
-  toggleLike(post: UiPost, idx: number): void {
-    this.postService.toggleLike(post.id!).subscribe({
-      next: added => {
-        const likes = added ? (post.likes! + 1) : (post.likes! - 1);
-        const isLiked = added;
-        this.posts = this.posts.map((p, i) =>
-          i === idx ? { ...p, likes, isLiked } : p
-        );
-        this.cd.markForCheck();
+  getCommentsToPost(posts: Post[]): void {
+    posts.forEach(p => {
+      if (p.id !== undefined) {
+        this.commentService.getCommentsToPost(p.id)
+          .subscribe(data => {
+            p.comments = data;
+            this.cd.markForCheck();
+          })
       }
     });
   }
+
+  MAX_VISIBLE_COMMENTS = 10;
+
+  toggleShowAllComments(index: number): void {
+    const post = this.posts[index];
+    post.showAllComments = !post.showAllComments;
+    this.cd.markForCheck();
+  }
+
   removePost(post: Post, index: number): void {
     console.log(post);
     const result = confirm('Do you really want to delete this post?');
@@ -123,6 +145,49 @@ export class UserPostsComponent implements OnInit{
           this.notify.showSnackBar('Post deleted');
         });
     }
+  }
+
+  likePost(postId: number, i: number): void {
+    const post = this.posts[i];
+    const liked = post.isLiked;
+
+    /* оптимистичное обновление UI */
+    this.patchPost(i, {
+      isLiked: !liked,
+      usersLiked: liked
+        ? post.usersLiked!.filter(u => u !== this.meUsername)
+        : [...(post.usersLiked ?? []), this.meUsername]
+    });
+
+    this.postService.likePost(postId, this.meUsername).pipe(
+      catchError(err => {
+        /* откат при ошибке */
+        this.patchPost(i, {isLiked: liked});
+        return throwError(() => err);
+      })
+    ).subscribe();
+  }
+
+  private patchPost(index: number, patch: Partial<UiPost>): void {
+    const updated = {...this.posts[index], ...patch};
+    this.posts = [
+      ...this.posts.slice(0, index),
+      updated,
+      ...this.posts.slice(index + 1)
+    ];
+    this.cd.markForCheck();
+  }
+  postComment(event: Event, message: string, postId: number, postIndex: number): void {
+    event.preventDefault();
+    const post = this.posts[postIndex];
+    console.log(post);
+    this.commentService.addToCommentToPost(postId, message)
+      .subscribe(data => {
+        post.comments?.push(data);
+        this.cd.markForCheck();
+        (event.target as HTMLFormElement).reset();
+      })
+
   }
 
 
@@ -136,5 +201,30 @@ export class UserPostsComponent implements OnInit{
       });
   }
 
-  /* удаление поста / комментария — оставляем как было */
+  getUserImage(username: string): string {
+    // Если уже загрузили, возвращаем сразу
+    if (this.userImages[username]) {
+      return this.userImages[username];
+    }
+    // Загружаем новый и сохраняем
+    this.imageService.getImageToUser(username)
+      .subscribe({
+        next: blob => {
+          const preview = URL.createObjectURL(blob);
+          this.userImages[username] = preview;
+          this.cd.markForCheck();
+        },
+        error: err => {
+          console.warn('Image load failed', err);
+          this.userImages[username] = 'assets/placeholder.jpg';
+          this.cd.markForCheck();
+        }
+      });
+    // Пока грузится — можно возвращать плейсхолдер
+    return 'assets/placeholder.jpg';
+  }
+
+  onAvatarError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';
+  }
 }
