@@ -11,19 +11,21 @@ import {
   MatCardActions,
   MatCardContent,
   MatCardHeader,
-  MatCardImage,
+  MatCardImage, MatCardModule,
   MatCardSubtitle,
   MatCardTitle
 } from '@angular/material/card';
-import {MatIcon} from '@angular/material/icon';
-import {MatFormField, MatHint, MatInput, MatLabel} from '@angular/material/input';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatFormField, MatHint, MatInput, MatInputModule, MatLabel} from '@angular/material/input';
 import {CommonModule, NgClass} from '@angular/common';
-import {MatButton} from '@angular/material/button';
+import {MatButton, MatButtonModule, MatIconButton} from '@angular/material/button';
 import {catchError, forkJoin, of, throwError} from 'rxjs';
-
+import {MatFormFieldModule} from '@angular/material/form-field';
 
 interface UiPost extends Post {
-  isLiked: boolean;          // ← добавили
+  isLiked: boolean;
+  avatarUrl?: string;
+  showAllComments?: boolean;
 }
 
 @Component({
@@ -31,20 +33,16 @@ interface UiPost extends Post {
   standalone: true,
   imports: [
     MatCardContent,
-    MatCardSubtitle,
-    MatCardTitle,
-    MatCardHeader,
-    MatCardActions,
-    MatIcon,
+    MatIconModule,
     MatCardImage,
-    MatCard,
-    MatFormField,
+    MatCardModule,
+    MatFormFieldModule,
     MatLabel,
     NgClass,
-    MatHint,
-    MatInput,
-    MatButton,
-    CommonModule
+    MatInputModule,
+    MatButtonModule,
+    CommonModule,
+    MatIconButton
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './index.component.html',
@@ -56,6 +54,8 @@ export class IndexComponent implements OnInit {
   user!: User;
   isPostsLoaded = false;
   isUserDataLoaded = false;
+  userImages: { [key: string]: string } = {};
+  MAX_VISIBLE_COMMENTS = 1;
 
 
   constructor(
@@ -81,7 +81,9 @@ export class IndexComponent implements OnInit {
       /* 1) пересчитываем флаг isLiked */
       this.posts = posts.map((p: { usersLiked: any; }) => ({
         ...p,
-        isLiked: (p.usersLiked ?? []).includes(user?.username ?? '')
+        usersLiked: p.usersLiked ?? [],
+        isLiked: (p.usersLiked ?? []).includes(user?.username ?? ''),
+        showAllComments: false
       }));
 
       /* 2) сохраняем пользователя */
@@ -92,18 +94,20 @@ export class IndexComponent implements OnInit {
       this.getCommentsToPost(this.posts);
       this.isPostsLoaded = true;
       this.isUserDataLoaded = !!user;
+
       /* 4) триггерим OnPush, чтобы иконки окрасились сразу */
       this.cd.markForCheck();
     });
   }
 
 
-  getImagesToPosts(posts: Post[]): void {
+  getImagesToPosts(posts: UiPost[]): void {
     posts.forEach(p => {
       this.imageService.getImageToPost(p.id!).subscribe({
         next: blob => {
           console.log('Blob size', blob.size);        // ← должно быть > 0
           p.image = URL.createObjectURL(blob);
+          showAllComments: typeof p.showAllComments === 'boolean' ? p.showAllComments : false
           this.cd.markForCheck();
         },
         error: err => {
@@ -127,6 +131,15 @@ export class IndexComponent implements OnInit {
           })
       }
     });
+  }
+
+
+  toggleShowAllComments(index: number): void {
+    const post = this.posts[index];
+    if (!post) return;
+    if (typeof post.showAllComments === 'undefined') post.showAllComments = false;
+    post.showAllComments = !post.showAllComments;
+    this.cd.markForCheck();
   }
 
 
@@ -161,15 +174,39 @@ export class IndexComponent implements OnInit {
     ).subscribe();
   }
 
+  getUserImage(username: string): string {
+    // Если уже загрузили, возвращаем сразу
+    if (this.userImages[username]) {
+      return this.userImages[username];
+    }
+    // Загружаем новый и сохраняем
+    this.imageService.getImageToUser(username)
+      .subscribe({
+        next: blob => {
+          const preview = URL.createObjectURL(blob);
+          this.userImages[username] = preview;
+          this.cd.markForCheck();
+        },
+        error: err => {
+          console.warn('Image load failed', err);
+          this.userImages[username] = 'assets/placeholder.jpg';
+          this.cd.markForCheck();
+        }
+      });
+    // Пока грузится — можно возвращать плейсхолдер
+    return 'assets/placeholder.jpg';
+  }
 
-  postComment(message: string, postId: number, postIndex: number): void {
+  postComment(event: Event, message: string, postId: number, postIndex: number): void {
+    event.preventDefault();
     const post = this.posts[postIndex];
-
     console.log(post);
-
     this.commentService.addToCommentToPost(postId, message)
       .subscribe(data => {
         post.comments?.push(data);
+        this.cd.markForCheck();
+        (event.target as HTMLFormElement).reset();
       })
+
   }
 }
