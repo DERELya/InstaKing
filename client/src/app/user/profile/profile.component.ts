@@ -7,9 +7,11 @@ import {NotificationService} from '../../services/notification.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {UserService} from '../../services/user.service';
 import {EditUserComponent} from '../edit-user/edit-user.component';
-import {RouterLink, RouterOutlet} from '@angular/router';
+import {ActivatedRoute, RouterLink, RouterOutlet} from '@angular/router';
 import {MatDivider} from '@angular/material/divider';
 import {MatButton} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 
 const USER_API = 'http://localhost:8080/api/user/';
 @Component({
@@ -17,9 +19,12 @@ const USER_API = 'http://localhost:8080/api/user/';
   imports: [
     MatDialogModule,
     RouterOutlet,
-    MatDivider,
+    MatIconModule,
+    NgSwitch,
     MatButton,
-    RouterLink
+    NgIf,
+    NgSwitchCase,
+    CommonModule
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   standalone: true,
@@ -33,6 +38,8 @@ export class ProfileComponent implements OnInit {
   selectedFile!: File;
   userProfileImage?: string;
   previewUrl?: string;
+  activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
+  isCurrentUser: boolean = false;
 
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
@@ -40,7 +47,8 @@ export class ProfileComponent implements OnInit {
               private notificationService: NotificationService,
               private imageService: ImageUploadService,
               private userService: UserService,
-              private cd: ChangeDetectorRef) {
+              private cd: ChangeDetectorRef,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
@@ -52,6 +60,9 @@ export class ProfileComponent implements OnInit {
       this.user = data;
       this.userProfileImage = data.avatarUrl;   // ← это и будет src после F5
       this.isUserDataLoaded = true;
+      const profileUsername = this.route.snapshot.paramMap.get('username');
+      this.isCurrentUser = !profileUsername || profileUsername === data.username;
+      console.log(this.isCurrentUser);
     });
 
     this.imageService.getProfileImage().subscribe({
@@ -90,6 +101,12 @@ export class ProfileComponent implements OnInit {
       user: this.user
     }
     this.dialog.open(EditUserComponent, dialogUserEditConfig);
+  }
+
+
+
+  selectTab(tab: 'posts' | 'saved' | 'tagged') {
+    this.activeTab = tab;
   }
 
 

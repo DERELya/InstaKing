@@ -223,6 +223,9 @@ export class UserPostsComponent implements OnInit {
     // Пока грузится — можно возвращать плейсхолдер
     return 'assets/placeholder.jpg';
   }
+  trackById(index: number, item: { id?: any }): any {
+    return item && item.id !== undefined && item.id !== null ? item.id : index;
+  }
 
   onAvatarError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';

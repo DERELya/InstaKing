@@ -1,17 +1,155 @@
-.user-profile {
-  display: block;
+.profile-container {
+  max-width: 1080px;
   margin: 0 auto;
-  width: 60%;
-  text-align: center;
-  padding-top: 3rem;
+  padding: 32px 16px 0 16px;
+  box-sizing: border-box;
 }
 
-.profile-image {
+.profile-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 48px;
+}
+
+.profile-avatar-block {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar {
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  width: 150px;
-  height: 150px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 2rem;
+  object-fit: cover;
+  border: 4px solid #eaeaea;
+  background: #fff;
+}
+
+.profile-info-block {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.profile-username {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.edit-btn, .follow-btn {
+  font-size: 15px;
+  padding: 4px 18px;
+  border-radius: 8px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 32px;
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+
+.profile-bio {
+  margin-top: 8px;
+}
+
+.profile-fullname {
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 3px;
+}
+
+.profile-description {
+  font-size: 15px;
+  color: #444;
+  white-space: pre-line;
+}
+
+.profile-divider {
+  border-bottom: 1.5px solid #ececec;
+  margin: 16px 0 32px 0;
+}
+
+@media (max-width: 900px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+  }
+  .profile-avatar {
+    width: 88px;
+    height: 88px;
+  }
+  .profile-row {
+    gap: 10px;
+  }
+  .profile-info-block {
+    align-items: center;
+    text-align: center;
+  }
+  .profile-divider {
+    margin: 12px 0 24px 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .profile-container {
+    padding: 8px 0 0 0;
+  }
+}
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 16px;
+  border-bottom: 1.5px solid #ececec;
+  padding-bottom: 2px;
+}
+
+.profile-tab-btn {
+  background: none;
+  border: none;
+  outline: none;
+  color: #555;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 12px 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s, border-bottom 0.18s;
+  position: relative;
+}
+
+.profile-tab-btn mat-icon {
+  font-size: 22px;
+  vertical-align: middle;
+}
+
+.profile-tab-btn.active {
+  color: #111;
+  border-bottom: 2.5px solid #111;
+  font-weight: 600;
+}
+
+.empty-tab-msg {
+  text-align: center;
+  padding: 36px 0;
+  color: #999;
+  font-size: 18px;
 }

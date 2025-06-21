@@ -1,108 +1,98 @@
-@if (isPostsLoaded) {
-  @for (post of posts; track post.id; let i = $index) {
+<div class="container feed-container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
 
-    <mat-card class="post-card">
-      <div class="ig-modal-author">
-        <img *ngIf="post?.username"
-             [src]="getUserImage(post!.username!)"
-             alt="avatar" class="ig-modal-avatar">
-        <span *ngIf="post!.username"><b>{{ post!.username }}</b></span>
-      </div>
+      @if (isPostsLoaded) {
+        @for (post of posts; track post.id; let i = $index) {
+          <mat-card class="post-card mb-4">
+            <div class="d-flex align-items-center mb-2 post-header">
+              <img *ngIf="post?.username"
+                   [src]="getUserImage(post!.username!)"
+                   alt="avatar" class="avatar me-2">
+              <span class="fw-bold">{{ post!.username }}</span>
+            </div>
 
-      <img mat-card-image
-           *ngIf="post.image"
-           src="{{ post.image }}"
-           width="400" height="400"
-           alt="post image"/>
-      <div class="comments-scrollable-block">
-        @if (post?.comments?.length) {
-          <div style="text-align:left">
-            <!-- Кнопка "Показать все" если комментов больше MAX_VISIBLE_COMMENTS -->
+            <img mat-card-image
+                 *ngIf="post.image"
+                 [src]="post.image"
+                 class="feed-image"
+                 alt="post image"/>
 
-            <!-- Список комментариев -->
-            <ng-container *ngIf="post!.showAllComments; else lastComments">
-              @for (comment of post!.comments; track comment.id) {
-                <p>
-                  <img *ngIf="comment.username"
-                       [src]="getUserImage(comment.username!)"
-                       alt="avatar" class="ig-modal-avatar">
-                  <span style="font-weight:500">{{ comment.username }}</span>: {{ comment.message }}
-                </p>
+            <div class="comments-scrollable-block mt-2">
+              @if (post?.comments?.length) {
+                <div>
+                  <ng-container *ngIf="post!.showAllComments; else lastComments">
+                    @for (comment of post!.comments; track comment.id) {
+                      <p class="comment mb-1">
+                        <img *ngIf="comment.username"
+                             [src]="getUserImage(comment.username!)"
+                             alt="avatar" class="avatar-sm me-1">
+                        <span class="fw-medium">{{ comment.username }}</span>: {{ comment.message }}
+                      </p>
+                    }
+                  </ng-container>
+                  <ng-container *ngIf="post!.comments!.length > MAX_VISIBLE_COMMENTS">
+                    <button mat-button type="button"
+                            (click)="toggleShowAllComments(i!)"
+                            class="show-comments-btn">
+                      @if (!post!.showAllComments) {
+                        Показать все комментарии ({{ post!.comments!.length }})
+                      } @else {
+                        Скрыть комментарии
+                      }
+                    </button>
+                  </ng-container>
+                  <ng-template #lastComments>
+                    @for (comment of post!.comments!.slice(-MAX_VISIBLE_COMMENTS); track comment.id) {
+                      <p class="comment mb-1">
+                        <img *ngIf="comment.username"
+                             [src]="getUserImage(comment.username!)"
+                             alt="avatar" class="avatar-sm me-1">
+                        <span class="fw-medium">{{ comment.username }}</span>: {{ comment.message }}
+                      </p>
+                    }
+                  </ng-template>
+                </div>
               }
-            </ng-container>
-            <ng-container *ngIf="post!.comments!.length > MAX_VISIBLE_COMMENTS">
-              <button mat-button type="button"
-                      (click)="toggleShowAllComments(i!)"
-                      style="padding:0 0 8px 0;text-transform:none;color:#888;font-size:13px;">
-                @if (!post!.showAllComments) {
-                  Показать все комментарии ({{ post!.comments!.length }})
-                } @else {
-                  Скрыть комментарии
-                }
-              </button>
-            </ng-container>
-            <ng-template #lastComments>
-              @for (comment of post!.comments!.slice(-MAX_VISIBLE_COMMENTS); track comment.id) {
-                <p>
-                  <img *ngIf="comment.username"
-                       [src]="getUserImage(comment.username!)"
-                       alt="avatar" class="ig-modal-avatar">
-                  <span style="font-weight:500">{{ comment.username }}</span>: {{ comment.message }}
-                </p>
-              }
-            </ng-template>
-          </div>
+            </div>
+
+            <div class="modal-info-block">
+              <section class="actions d-flex align-items-center mb-1">
+                <div class="actions-horizontal d-flex align-items-center">
+                  <button mat-icon-button (click)="likePost(post!.id!, i)">
+                    <mat-icon [ngClass]="{ liked: post!.isLiked }">favorite</mat-icon>
+                  </button>
+                  <button mat-icon-button>
+                    <mat-icon>chat_bubble_outline</mat-icon>
+                  </button>
+                </div>
+                <button mat-icon-button >
+                  <mat-icon>bookmark_border</mat-icon>
+                </button>
+              </section>
+              <section class="likes d-flex align-items-center mb-2" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
+                <img
+                  [src]="getUserImage(post.usersLiked![0])"
+                  alt="avatar" class="avatar-sm me-1">
+                <span class="small text-muted">
+                  {{ post.usersLiked![0] }}
+                  like{{ post.likes === 1 ? '' : 's' }}
+                </span>
+              </section>
+              <form class="add-comment-form d-flex align-items-center" (submit)="postComment($event, commentInput.value, post.id!, i)">
+                <input #commentInput
+                       matInput
+                       class="form-control flex-grow-1"
+                       placeholder="Комментарий..." required>
+                <button mat-icon-button type="submit" class="send-btn ms-2" aria-label="Отправить комментарий">
+                  <mat-icon>send</mat-icon>
+                </button>
+              </form>
+            </div>
+          </mat-card>
         }
-      </div>
-      <mat-card-subtitle align="start">
-        Posted by {{ post.username }}
-      </mat-card-subtitle>
+      }
 
-
-
-
-      <div class="modal-info-block">
-        <section class="actions">
-          <div class="actions-horizontal">
-            <button mat-icon-button (click)="likePost(post!.id!, i)">
-              <mat-icon [ngClass]="{ liked: post!.isLiked }">favorite</mat-icon>
-            </button>
-            <button mat-icon-button>
-              <mat-icon>chat_bubble_outline</mat-icon>
-            </button>
-          </div>
-          <button mat-icon-button>
-            <mat-icon>bookmark_border</mat-icon>
-          </button>
-        </section>
-        <section class="likes" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
-          <img
-            [src]="getUserImage(post.usersLiked![0])"
-            alt="avatar" class="ig-modal-avatar">
-          <span>{{ post.usersLiked![0] }}
-            like{{ post.likes === 1 ? '' : 's' }}</span>
-        </section>
-        <form class="add-comment-form"
-              (submit)="postComment($event, commentInput.value, post.id!,i)">
-          <mat-icon style="color:#bdbdbd;margin-right:6px;">insert_emoticon</mat-icon>
-          <mat-form-field class="comment-field" appearance="outline">
-            <mat-label>Комментарий</mat-label>
-            <input matInput
-                   #commentInput
-                   type="text"
-                   placeholder="Добавьте комментарий..."
-                   maxlength="300"
-                   autocomplete="off"
-                   required/>
-          </mat-form-field>
-          <button mat-icon-button color="primary" type="submit" [disabled]="!commentInput.value"
-                  aria-label="Отправить">
-            <mat-icon>send</mat-icon>
-          </button>
-        </form>
-      </div>
-    </mat-card>
-
-  }
-
-}
+    </div>
+  </div>
+</div>

@@ -1,44 +1,72 @@
-@if (isUserDataLoaded) {
-
-  <div class="user-profile">
-
-    <h1>Profile</h1>
-    <div style="text-align: right">
-      <button mat-flat-button color="primary" routerLink="/profile/add">Add Post</button>
-      <button mat-flat-button color="primary" (click)="openEditDialog()">Edit Info</button>
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="profile-avatar-block">
+      <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'" alt="avatar" class="profile-avatar">
     </div>
-
-
-    <div style="padding-top: 2rem" class="row">
-      <div class="col">
-        <!-- где сейчас src: user.avatarUrl -->
-        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
-        width="160" height="160" class="profile-image"/>
-
-        <input type="file"
-               style="display: none"
-               accept="image/png, image/jpeg"
-               #fileInput
-               (change)="onFileSelected($event)">
-
-        <button mat-button (click)="fileInput.click()">Pick File</button>
-        @if (selectedFile) {
-          <button mat-button  (click)="onUpload()">Upload</button>
-        }
-
+    <div class="profile-info-block">
+      <div class="profile-row">
+        <span class="profile-username">{{ user.username }}</span>
+        <button *ngIf="isCurrentUser" mat-stroked-button class="edit-btn" (click)="openEditDialog()">Редактировать</button>
       </div>
-      <div class="col" style="text-align: left">
-
-        <h2>{{user.username}}</h2>
-
-        <h3 style="font-style: italic">{{user.firstname}} {{user.lastname}}</h3>
-        <p>{{user.bio}}</p>
+      <div class="profile-stats">
+        <span><b>1</b> публикаций</span>
+        <span><b>2</b> подписчиков</span>
+        <span><b>3</b> подписки</span>
       </div>
-
-      <mat-divider style="margin: 2rem 0"></mat-divider>
-
-      <router-outlet></router-outlet>
+      <div class="profile-bio">
+        <div class="profile-fullname">{{ user.firstname }} {{ user.lastname }}</div>
+        <div class="profile-description">{{ user.bio }}</div>
+      </div>
     </div>
-
   </div>
-}
+
+  <div class="profile-divider"></div>
+
+  <!-- Instagram-style tabs -->
+  <div class="profile-tabs">
+    <button
+      class="profile-tab-btn"
+      [class.active]="activeTab === 'posts'"
+      (click)="selectTab('posts')"
+    >
+      <mat-icon>grid_on</mat-icon>
+      <span>Публикации</span>
+    </button>
+    <button
+      class="profile-tab-btn"
+      [class.active]="activeTab === 'saved'"
+      (click)="selectTab('saved')"
+      *ngIf="isCurrentUser"
+    >
+      <mat-icon>bookmark_border</mat-icon>
+      <span>Сохранённое</span>
+    </button>
+    <button
+      class="profile-tab-btn"
+      [class.active]="activeTab === 'tagged'"
+      (click)="selectTab('tagged')"
+    >
+      <mat-icon>person_pin</mat-icon>
+      <span>Отметки</span>
+    </button>
+  </div>
+
+  <div class="profile-tab-content">
+    <ng-container [ngSwitch]="activeTab">
+      <ng-container *ngSwitchCase="'posts'">
+        <router-outlet></router-outlet>
+      </ng-container>
+      <ng-container *ngSwitchCase="'saved'">
+        <div *ngIf="isCurrentUser; else notAllowed" class="empty-tab-msg">
+          Здесь будут ваши сохранённые публикации
+        </div>
+        <ng-template #notAllowed>
+          <div class="empty-tab-msg">Сохранённые посты недоступны</div>
+        </ng-template>
+      </ng-container>
+      <ng-container *ngSwitchCase="'tagged'">
+        <div class="empty-tab-msg">Здесь будут публикации, где вас отметили</div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

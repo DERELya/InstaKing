@@ -87,25 +87,18 @@
           </section>
           <section class="likes" *ngIf="posts[openedPostIndex].usersLiked && posts[openedPostIndex].usersLiked!.length > 0">
             <img
-                 [src]="getUserImage(posts[openedPostIndex].usersLiked![0])"
-                 alt="avatar" class="ig-modal-avatar">
+              [src]="getUserImage(posts[openedPostIndex].usersLiked![0])"
+              alt="avatar" class="ig-modal-avatar">
             <span>{{ posts[openedPostIndex!].usersLiked![0] }}
               like{{ posts[openedPostIndex!].likes === 1 ? '' : 's' }}</span>
           </section>
-          <form class="add-comment-form"
-                (submit)="postComment($event, commentInput.value, posts[openedPostIndex].id!, openedPostIndex)">
-            <mat-form-field class="comment-field" appearance="outline">
-              <mat-label>Комментарий</mat-label>
-              <input matInput
-                     #commentInput
-                     type="text"
-                     placeholder="Добавьте комментарий..."
-                     maxlength="300"
-                     autocomplete="off"
-                     required/>
-            </mat-form-field>
-            <button mat-icon-button color="primary" type="submit" [disabled]="!commentInput.value"
-                    aria-label="Отправить">
+
+          <form class="add-comment-form d-flex align-items-center" (submit)="postComment($event, commentInput.value, posts[openedPostIndex].id!, openedPostIndex)">
+            <input #commentInput
+                   matInput
+                   class="form-control flex-grow-1"
+                   placeholder="Комментарий..." required>
+            <button mat-icon-button type="submit" class="send-btn ms-2" aria-label="Отправить комментарий">
               <mat-icon>send</mat-icon>
             </button>
           </form>
