@@ -70,4 +70,10 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with userid" + userId));
     }
+
+    public User getUserByUsername(String username) {
+        System.out.println(username);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("username not found with userid" + username));
+    }
 }

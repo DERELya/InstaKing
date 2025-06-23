@@ -26,6 +26,9 @@ export class PostService {
   getPostForCurrentUser(): Observable<any> {
     return this.http.get(this.api + 'user/posts');
   }
+  getPostForUser(username :string): Observable<any> {
+    return this.http.get(this.api + 'user/'+username);
+  }
 
   deletePost(id: number): Observable<any> {
     return this.http.post(this.api + id + 'delete', null);

@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +52,7 @@ public class PostService {
                 .orElseThrow(() -> new PostNotFoundException("PostService not found for username" + user.getUsername()));
     }
 
-    public List<Post> getAllPostsForUser(Principal principal) {
+    public List<Post> getAllPostsForCurrentUser(Principal principal) {
         User user = getUserByPrincipal(principal);
         return postRepository.findByUserOrderByCreatedAtDesc(user);
     }
@@ -85,5 +86,10 @@ public class PostService {
         String username = principal.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
+    }
+
+    public List<Post> getAllPostsForUser(String username) {
+        User user=userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
+        return postRepository.findByUserOrderByCreatedAtDesc(user);
     }
 }

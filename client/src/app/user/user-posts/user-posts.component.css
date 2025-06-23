@@ -240,5 +240,34 @@
     padding-right: 8px;
   }
 }
+.profile-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.profile-link:hover {
+  text-decoration: underline;
+}
+.profile-link .ig-modal-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 4px;
+  border: 1px solid #eee;
+  background: #fff;
+  transition: box-shadow 0.2s;
+}
+
+.profile-link:hover .ig-modal-avatar,
+.profile-link:focus .ig-modal-avatar {
+  box-shadow: 0 0 0 2px #1976d233;
+}
+.profile-link,
+.profile-link * {
+  font-weight: normal !important;
+}
 
 

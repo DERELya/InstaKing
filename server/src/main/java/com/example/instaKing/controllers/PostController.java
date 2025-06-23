@@ -59,8 +59,16 @@ public class PostController {
 
 
     @GetMapping("/user/posts")
-    public ResponseEntity<List<PostDTO>> getAllPostsForUser(Principal principal) {
-        List<PostDTO> postsDTO = postService.getAllPostsForUser(principal)
+    public ResponseEntity<List<PostDTO>> getAllPostsForCurrentUser(Principal principal) {
+        List<PostDTO> postsDTO = postService.getAllPostsForCurrentUser(principal)
+                .stream()
+                .map(postFacade::postToPostDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(postsDTO, HttpStatus.OK);
+    }
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<PostDTO>> getAllPostsForUser(@PathVariable("username") String username) {
+        List<PostDTO> postsDTO = postService.getAllPostsForUser(username)
                 .stream()
                 .map(postFacade::postToPostDTO)
                 .collect(Collectors.toList());

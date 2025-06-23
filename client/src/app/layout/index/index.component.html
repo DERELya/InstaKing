@@ -9,7 +9,7 @@
               <img *ngIf="post?.username"
                    [src]="getUserImage(post!.username!)"
                    alt="avatar" class="avatar me-2">
-              <span class="fw-bold">{{ post!.username }}</span>
+              <span class="fw-bold" [routerLink]="['/profile/', post!.username]">{{ post!.username }}</span>
             </div>
 
             <img mat-card-image
@@ -17,45 +17,6 @@
                  [src]="post.image"
                  class="feed-image"
                  alt="post image"/>
-
-            <div class="comments-scrollable-block mt-2">
-              @if (post?.comments?.length) {
-                <div>
-                  <ng-container *ngIf="post!.showAllComments; else lastComments">
-                    @for (comment of post!.comments; track comment.id) {
-                      <p class="comment mb-1">
-                        <img *ngIf="comment.username"
-                             [src]="getUserImage(comment.username!)"
-                             alt="avatar" class="avatar-sm me-1">
-                        <span class="fw-medium">{{ comment.username }}</span>: {{ comment.message }}
-                      </p>
-                    }
-                  </ng-container>
-                  <ng-container *ngIf="post!.comments!.length > MAX_VISIBLE_COMMENTS">
-                    <button mat-button type="button"
-                            (click)="toggleShowAllComments(i!)"
-                            class="show-comments-btn">
-                      @if (!post!.showAllComments) {
-                        Показать все комментарии ({{ post!.comments!.length }})
-                      } @else {
-                        Скрыть комментарии
-                      }
-                    </button>
-                  </ng-container>
-                  <ng-template #lastComments>
-                    @for (comment of post!.comments!.slice(-MAX_VISIBLE_COMMENTS); track comment.id) {
-                      <p class="comment mb-1">
-                        <img *ngIf="comment.username"
-                             [src]="getUserImage(comment.username!)"
-                             alt="avatar" class="avatar-sm me-1">
-                        <span class="fw-medium">{{ comment.username }}</span>: {{ comment.message }}
-                      </p>
-                    }
-                  </ng-template>
-                </div>
-              }
-            </div>
-
             <div class="modal-info-block">
               <section class="actions d-flex align-items-center mb-1">
                 <div class="actions-horizontal d-flex align-items-center">
@@ -79,16 +40,60 @@
                   like{{ post.likes === 1 ? '' : 's' }}
                 </span>
               </section>
-              <form class="add-comment-form d-flex align-items-center" (submit)="postComment($event, commentInput.value, post.id!, i)">
-                <input #commentInput
-                       matInput
-                       class="form-control flex-grow-1"
-                       placeholder="Комментарий..." required>
-                <button mat-icon-button type="submit" class="send-btn ms-2" aria-label="Отправить комментарий">
-                  <mat-icon>send</mat-icon>
-                </button>
-              </form>
+
             </div>
+
+            <div class="comments-scrollable-block mt-2">
+              @if (post?.comments?.length) {
+                <div>
+                  <ng-container *ngIf="post!.showAllComments; else lastComments">
+                    @for (comment of post!.comments; track comment.id) {
+                      <p class="comment mb-1">
+                        <a [routerLink]="['/profile', comment.username]" class="profile-link">
+                          <img *ngIf="comment.username"
+                               [src]="getUserImage(comment.username!)"
+                               alt="avatar" class="ig-modal-avatar">
+                          <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
+                        </a>
+                      </p>
+                    }
+                  </ng-container>
+                  <ng-container *ngIf="post!.comments!.length > MAX_VISIBLE_COMMENTS">
+                    <button mat-button type="button"
+                            (click)="toggleShowAllComments(i!)"
+                            class="show-comments-btn">
+                      @if (!post!.showAllComments) {
+                        Показать все комментарии ({{ post!.comments!.length }})
+                      } @else {
+                        Скрыть комментарии
+                      }
+                    </button>
+                  </ng-container>
+                  <ng-template #lastComments>
+                    @for (comment of post!.comments!.slice(-MAX_VISIBLE_COMMENTS); track comment.id) {
+                      <p class="comment mb-1">
+                        <a [routerLink]="['/profile', comment.username]" class="profile-link">
+                          <img *ngIf="comment.username"
+                               [src]="getUserImage(comment.username!)"
+                               alt="avatar" class="ig-modal-avatar">
+                          <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
+                        </a>
+                      </p>
+                    }
+                  </ng-template>
+                </div>
+              }
+            </div>
+
+            <form class="add-comment-form d-flex align-items-center" (submit)="postComment($event, commentInput.value, post.id!, i)">
+              <input #commentInput
+                     matInput
+                     class="form-control flex-grow-1"
+                     placeholder="Комментарий..." required>
+              <button mat-icon-button type="submit" class="send-btn ms-2" aria-label="Отправить комментарий">
+                <mat-icon>send</mat-icon>
+              </button>
+            </form>
           </mat-card>
         }
       }

@@ -6,21 +6,14 @@ import {UserService} from '../../services/user.service';
 import {CommentService} from '../../services/comment.service';
 import {NotificationService} from '../../services/notification.service';
 import {ImageUploadService} from '../../services/image-upload.service';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-  MatCardHeader,
-  MatCardImage, MatCardModule,
-  MatCardSubtitle,
-  MatCardTitle
-} from '@angular/material/card';
-import {MatIcon, MatIconModule} from '@angular/material/icon';
-import {MatFormField, MatHint, MatInput, MatInputModule, MatLabel} from '@angular/material/input';
+import {MatCardImage, MatCardModule} from '@angular/material/card';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
 import {CommonModule, NgClass} from '@angular/common';
-import {MatButton, MatButtonModule, MatIconButton} from '@angular/material/button';
+import {MatButtonModule, MatIconButton} from '@angular/material/button';
 import {catchError, forkJoin, of, throwError} from 'rxjs';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {RouterLink} from '@angular/router';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -32,17 +25,16 @@ interface UiPost extends Post {
   selector: 'app-index',
   standalone: true,
   imports: [
-    MatCardContent,
     MatIconModule,
     MatCardImage,
     MatCardModule,
     MatFormFieldModule,
-    MatLabel,
     NgClass,
     MatInputModule,
     MatButtonModule,
     CommonModule,
-    MatIconButton
+    MatIconButton,
+    RouterLink
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './index.component.html',
@@ -207,6 +199,5 @@ export class IndexComponent implements OnInit {
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
       })
-
   }
 }

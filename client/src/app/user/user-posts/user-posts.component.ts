@@ -1,6 +1,6 @@
 /* user-posts.component.ts */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {catchError, forkJoin, map, of, switchMap, throwError} from 'rxjs';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {catchError, forkJoin, map, of, switchMap, throwError,takeUntil,Subject} from 'rxjs';
 import {PostService} from '../../services/post.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {UserService} from '../../services/user.service';
@@ -11,8 +11,9 @@ import {CommonModule, DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
 import {MatCardModule} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {MatInputModule, MatLabel} from '@angular/material/input';
+import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {ActivatedRoute, ParamMap, RouterLink} from '@angular/router';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -37,11 +38,11 @@ interface UiPost extends Post {
     CommonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatLabel,
-    MatButtonModule
+    MatButtonModule,
+    RouterLink
   ]
 })
-export class UserPostsComponent implements OnInit {
+export class UserPostsComponent implements OnInit,OnDestroy{
   posts: UiPost[] = [];
   isUserPostsLoaded = false;
   meUsername!: string;
@@ -49,6 +50,7 @@ export class UserPostsComponent implements OnInit {
   userProfileImage?: string;
   previewUrl?: string;
   userImages: { [key: string]: string } = {};
+  private destroy$ = new Subject<void>();
 
   constructor(
     private postService: PostService,
@@ -56,57 +58,68 @@ export class UserPostsComponent implements OnInit {
     private userService: UserService,
     private notify: NotificationService,
     private commentService: CommentService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
   }
 
   ngOnInit(): void {
-    /* 1. узнаём текущего пользователя */
-
-    this.userService.getCurrentUser().pipe(
-      switchMap(me => {
-        this.meUsername = me.username;
-        /* 2. загружаем его же посты */
-        return this.postService.getPostForCurrentUser();
+    this.route.paramMap.pipe(
+      takeUntil(this.destroy$),
+      switchMap((params: ParamMap) => {
+        const profileUsername = params.get('username');
+        if (!profileUsername) return of([]);
+        // 1. Узнаём имя текущего пользователя
+        return this.userService.getUserByUsername(profileUsername).pipe(
+          switchMap(me => {
+            this.meUsername = me.username;
+            // 2. Загружаем его посты
+            return this.postService.getPostForUser(profileUsername!);
+          })
+        );
       }),
-      /* 3. на каждый пост параллельно тянем: фото поста + аватар автора */
+      // 3. На каждый пост параллельно тянем: фото поста + аватар автора
       switchMap((posts: Post[]) =>
-        forkJoin(
-          posts.map(p =>
-            forkJoin({
-              postImg: this.imageService.getImageToPost(p.id!).pipe(
-                map(blob => URL.createObjectURL(blob)),
-                catchError(() => of('assets/placeholder.jpg'))
-              ),
-              avatar: this.imageService.getImageToUser(p.username!).pipe(
-                map(blob => URL.createObjectURL(blob)),
-                catchError(() => of('assets/blank-avatar.png'))  // ✅ строка
+        posts.length === 0 ? of([]) :
+          forkJoin(
+            posts.map(p =>
+              forkJoin({
+                postImg: this.imageService.getImageToPost(p.id!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/placeholder.jpg'))
+                ),
+                avatar: this.imageService.getImageToUser(p.username!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/blank-avatar.png'))
+                )
+              }).pipe(
+                map(({ postImg, avatar }) => ({
+                  ...p,
+                  usersLiked: p.usersLiked ?? [],
+                  image: postImg,
+                  avatarUrl: avatar,
+                  isLiked: (p.usersLiked ?? []).includes(this.meUsername)
+                }))
               )
-            }).pipe(
-              map(({postImg, avatar}) => ({
-                ...p,
-                usersLiked: p.usersLiked ?? [],
-                image: postImg,
-                avatarUrl: avatar,
-                isLiked: (p.usersLiked ?? []).includes(this.meUsername)
-              }))
             )
           )
-        )
       )
     ).subscribe({
       next: uiPosts => {
         this.posts = uiPosts;
         this.isUserPostsLoaded = true;
         this.getCommentsToPost(this.posts);
-        console.log(this.posts);
         this.cd.markForCheck();
       },
       error: () => this.notify.showSnackBar('Cannot load feed')
     });
-
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // Не забудьте очистить созданные через URL.createObjectURL объекты при необходимости
+  }
   openPostDetails(index: number) {
     this.openedPostIndex = index;
   }
@@ -187,9 +200,7 @@ export class UserPostsComponent implements OnInit {
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
       })
-
   }
-
 
   deleteComment(commentId: number, postIndex: number, commentIndex: number): void {
     const post = this.posts[postIndex];

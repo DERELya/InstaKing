@@ -56,5 +56,11 @@ public class UserController {
         UserDTO userUpdated = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
+    @GetMapping("/getUser/{username}")
+    public ResponseEntity<UserDTO> getUserProfileByUsername(@PathVariable("username") String username) {
+        User user = userService.getUserByUsername(username);
+        UserDTO userDTO = userFacade.userToUserDTO(user);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
 
 }

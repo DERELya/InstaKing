@@ -27,7 +27,7 @@
     </div>
     <div class="profile-info-block">
       <div class="profile-row">
-        <span class="profile-username">{{ user.username }}</span>
+        <span class="profile-username">{{ user?.username }}</span>
         <button *ngIf="isCurrentUser" mat-stroked-button class="edit-btn" (click)="openEditDialog()">Редактировать</button>
       </div>
       <div class="profile-stats">
@@ -36,7 +36,7 @@
         <span><b>3</b> подписки</span>
       </div>
       <div class="profile-bio">
-        <div class="profile-fullname">{{ user.firstname }} {{ user.lastname }}</div>
+        <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>
         <div class="profile-description">{{ user.bio }}</div>
       </div>
     </div>

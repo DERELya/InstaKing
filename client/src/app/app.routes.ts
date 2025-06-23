@@ -12,10 +12,16 @@ export const routes: Routes = [
   {path: 'register', component: RegisterComponent},
   {path: 'main', component: IndexComponent, canActivate: [AuthGuard]},
   {
-    path: 'profile', component: ProfileComponent, canActivate: [AuthGuard],
+    path: 'profile',
+    canActivate: [AuthGuard],
     children: [
-      {path: '', component: UserPostsComponent, canActivate: [AuthGuard]},
-      {path: 'add', component: AddPostComponent, canActivate: [AuthGuard]}
+      { path: '', component: ProfileComponent, children: [
+          { path: '', component: UserPostsComponent }
+        ]},
+      { path: 'add', component: AddPostComponent },
+      { path: ':username', component: ProfileComponent, children: [
+          { path: '', component: UserPostsComponent }
+        ]}
     ]
   },
   {path: '', redirectTo: 'main', pathMatch: 'full'}

@@ -24,11 +24,11 @@
              alt="photo"/>
       </div>
       <div class="info-block">
-        <div class="ig-modal-author">
-          <img *ngIf="posts[openedPostIndex!]?.username"
-               [src]="getUserImage(posts[openedPostIndex!]?.username!)"
-               alt="avatar" class="ig-modal-avatar">
-          <span *ngIf="posts[openedPostIndex!]?.username"><b>{{ posts[openedPostIndex!].username }}</b></span>
+        <div class="ig-modal-author" >
+          <a [routerLink]="['/profile', posts[openedPostIndex!].username]" class="profile-link">
+            <img [src]="getUserImage(posts[openedPostIndex!].username!)" alt="avatar" class="ig-modal-avatar">
+            <span class="fw-bold">{{ posts[openedPostIndex!].username }}</span>
+          </a>
         </div>
         <!-- ... -->
         <div class="comments-scrollable-block">
@@ -40,10 +40,13 @@
               <ng-container *ngIf="posts[openedPostIndex!].showAllComments; else lastComments">
                 @for (comment of posts[openedPostIndex!].comments; track comment.id) {
                   <p>
-                    <img *ngIf="comment.username"
-                         [src]="getUserImage(comment.username!)"
-                         alt="avatar" class="ig-modal-avatar">
-                    <span style="font-weight:500">{{ comment.username }}</span>: {{ comment.message }}
+                    <a [routerLink]="['/profile', comment.username]" class="profile-link"
+                       (click)="closePostDetails()">
+                      <img *ngIf="comment.username"
+                           [src]="getUserImage(comment.username!)"
+                           alt="avatar" class="ig-modal-avatar">
+                      <span class="fw-bold">{{ comment.username }}</span>
+                    </a>
                   </p>
                 }
               </ng-container>
@@ -61,10 +64,13 @@
               <ng-template #lastComments>
                 @for (comment of posts[openedPostIndex!].comments!.slice(-MAX_VISIBLE_COMMENTS); track comment.id) {
                   <p>
-                    <img *ngIf="comment.username"
-                         [src]="getUserImage(comment.username!)"
-                         alt="avatar" class="ig-modal-avatar">
-                    <span style="font-weight:500">{{ comment.username }}</span>: {{ comment.message }}
+                    <a [routerLink]="['/profile', comment.username]" class="profile-link"
+                       (click)="closePostDetails()">
+                      <img *ngIf="comment.username"
+                           [src]="getUserImage(comment.username!)"
+                           alt="avatar" class="ig-modal-avatar">
+                      <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
+                    </a>
                   </p>
                 }
               </ng-template>

@@ -34,4 +34,8 @@ export class UserService {
   getCurrentUserObservable(): Observable<User | null> {
     return this.currentUserSubject.asObservable();
   }
+  getUserByUsername(username: string | null): Observable<User> {
+    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
+    return this.http.get<User>(USER_API+'getUser/'+username);
+  }
 }

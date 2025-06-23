@@ -7,13 +7,14 @@ import {NotificationService} from '../../services/notification.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {UserService} from '../../services/user.service';
 import {EditUserComponent} from '../edit-user/edit-user.component';
-import {ActivatedRoute, RouterLink, RouterOutlet} from '@angular/router';
-import {MatDivider} from '@angular/material/divider';
+import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {MatButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
+import {of, Subject, switchMap, takeUntil} from 'rxjs';
 
 const USER_API = 'http://localhost:8080/api/user/';
+
 @Component({
   selector: 'app-profile',
   imports: [
@@ -40,6 +41,7 @@ export class ProfileComponent implements OnInit {
   previewUrl?: string;
   activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
   isCurrentUser: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
@@ -52,45 +54,72 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userService.getCurrentUser().subscribe(data => {
-      // ⚠️ если avatarUrl относительный — преобразуем в абсолютный
-      if (data.avatarUrl && !data.avatarUrl.startsWith('http')) {
-        data.avatarUrl = `${USER_API}/${data.avatarUrl}`;
-      }
-      this.user = data;
-      this.userProfileImage = data.avatarUrl;   // ← это и будет src после F5
-      this.isUserDataLoaded = true;
-      const profileUsername = this.route.snapshot.paramMap.get('username');
-      this.isCurrentUser = !profileUsername || profileUsername === data.username;
-      console.log(this.isCurrentUser);
-    });
+    this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(params => {
+          const profileUsername = params.get('username');
+          if (!profileUsername) return of(null);
+          return this.userService.getUserByUsername(profileUsername);
+        }),
+        switchMap(user => {
+          if (!user) {
+            this.setDefaultState();
+            return of(null);
+          }
+          this.user = user;
+          this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
+          this.isUserDataLoaded = true;
+          // грузим фотку только после того, как получили user
+          return this.imageService.getImageToUser(user.username);
+        })
+      )
+      .subscribe({
+        next: blob => {
+          if (blob) {
+            if (this.userProfileImage) {
+              URL.revokeObjectURL(this.userProfileImage);
+            }
+            this.userProfileImage = URL.createObjectURL(blob);
+          } else {
+            this.userProfileImage = 'assets/placeholder.jpg';
+          }
+          this.cd.markForCheck();
+        },
+        error: err => {
+          console.warn('Image load failed', err);
+          this.userProfileImage = 'assets/placeholder.jpg';
+          this.cd.markForCheck();
+        }
+      });
+  }
 
-    this.imageService.getProfileImage().subscribe({
-      next: blob => {
-        const preview = URL.createObjectURL(blob);
-        this.userProfileImage = preview;
-        this.cd.markForCheck();
-      },
-      error: err => {
-        console.warn('Image load failed', err);
-        this.userProfileImage = 'assets/placeholder.jpg';
-      }
-
-    });
+  setDefaultState() {
+    this.user = undefined!;
+    this.userProfileImage = 'assets/placeholder.jpg';
+    this.isUserDataLoaded = true;
+    this.isCurrentUser = false;
     this.cd.markForCheck();
   }
 
-
-
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.userProfileImage) {
+      URL.revokeObjectURL(this.userProfileImage);
+    }
+  }
   onFileSelected(evt: Event): void {
     const input = evt.target as HTMLInputElement;
-    if (!input.files?.length) { return; }
+    if (!input.files?.length) {
+      return;
+    }
 
     const file = input.files[0];
     this.selectedFile = file;
     /* создаём превью */
     this.previewUrl = URL.createObjectURL(file);
-    console.log('test:'+this.previewUrl);
+    console.log('test:' + this.previewUrl);
   }
 
 
@@ -113,7 +142,6 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
-
 
 
   selectTab(tab: 'posts' | 'saved' | 'tagged') {

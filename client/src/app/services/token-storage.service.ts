@@ -44,5 +44,19 @@ export class TokenStorageService {
       window.location.reload();
     }
   }
+
+  public getUsernameFromToken(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(decodeURIComponent(token).split('.')[1]));
+      console.log(payload);
+      // Попробуй поля в таком порядке — зависит от того, что кладёт твой backend:
+      return payload.username || payload.sub || null;
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
