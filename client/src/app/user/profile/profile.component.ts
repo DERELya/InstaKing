@@ -100,7 +100,18 @@ export class ProfileComponent implements OnInit {
     dialogUserEditConfig.data = {
       user: this.user
     }
-    this.dialog.open(EditUserComponent, dialogUserEditConfig);
+    const dialogRef = this.dialog.open(EditUserComponent, dialogUserEditConfig);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Повторно загружаем пользователя после редактирования
+        this.userService.getCurrentUser().subscribe(updatedUser => {
+          this.user = updatedUser;
+          this.userService.setCurrentUser(updatedUser);
+          this.cd.markForCheck();
+        });
+      }
+    });
   }
 
 
@@ -119,21 +130,18 @@ export class ProfileComponent implements OnInit {
         if (this.previewUrl) {
           URL.revokeObjectURL(this.previewUrl);
         }
-
         // обнуляем preview + файл
-        this.previewUrl = undefined;
-        this.selectedFile = undefined!;
-
+        this.selectedFile = undefined!; // <--- СБРОС!
         // обновляем URL аватарки
         this.userProfileImage = `${USER_API}/${relativeUrl}`;
-
-
         this.notificationService.showSnackBar('Profile image updated successfully');
+        this.cd.markForCheck(); // чтобы Angular обновил шаблон
       },
       error: () => {
         this.notificationService.showSnackBar('Upload failed');
       }
     });
   }
+
 
 }

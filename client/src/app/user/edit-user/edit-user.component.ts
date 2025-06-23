@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NotificationService} from '../../services/notification.service';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -17,7 +17,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatDialogModule
+    MatDialogModule,
+
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './edit-user.component.html',
@@ -31,7 +32,8 @@ export class EditUserComponent implements OnInit {
               private fb: FormBuilder,
               private notificationService: NotificationService,
               @Inject(MAT_DIALOG_DATA) public data: { user: User },
-              private userService: UserService
+              private userService: UserService,
+              private cd: ChangeDetectorRef
   ) {
   }
 
@@ -56,7 +58,9 @@ export class EditUserComponent implements OnInit {
     this.userService.updateUser(dto).subscribe({
       next: () => {
         this.notificationService.showSnackBar('User updated');
-        this.dialogRef.close(dto);          // вернём новые данные
+        this.cd.markForCheck();
+        this.dialogRef.close(dto);
+        // вернём новые данные
       },
       error: () => this.notificationService.showSnackBar('Update failed')
     });
@@ -64,6 +68,7 @@ export class EditUserComponent implements OnInit {
 
   private formToUser(): User {
     const {firstname, lastname, bio} = this.profileEditForm.value;
+    this.cd.markForCheck();
     return {...this.data.user, firstname, lastname, bio};
   }
 

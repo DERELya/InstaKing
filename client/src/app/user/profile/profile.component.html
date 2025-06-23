@@ -1,7 +1,29 @@
 <div class="profile-container">
   <div class="profile-header">
     <div class="profile-avatar-block">
-      <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'" alt="avatar" class="profile-avatar">
+      <label class="profile-avatar-upload-label" [class.disabled]="!isCurrentUser">
+        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'" alt="avatar" class="profile-avatar">
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          [disabled]="!isCurrentUser"
+          hidden
+        />
+        <div *ngIf="isCurrentUser" class="avatar-overlay">
+          <span class="avatar-overlay-text">Изменить фото</span>
+        </div>
+      </label>
+      <button
+        *ngIf="isCurrentUser && selectedFile"
+        mat-flat-button
+        color="primary"
+        type="button"
+        class="avatar-upload-btn"
+        (click)="onUpload()"
+      >
+        Сохранить фото
+      </button>
     </div>
     <div class="profile-info-block">
       <div class="profile-row">
