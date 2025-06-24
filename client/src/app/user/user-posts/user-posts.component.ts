@@ -68,7 +68,17 @@ export class UserPostsComponent implements OnInit,OnDestroy{
   }
 
   ngOnInit(): void {
-    this.loadProfilePost();
+    this.route.paramMap.subscribe(params => {
+      const username = params.get('username');
+      if (username) {
+        this.postService.loadProfilePosts(username);
+      }
+    });
+
+    this.postService.posts$.subscribe(posts => {
+      this.posts = posts; // тут уже есть image, comments и т.д.
+      this.cd.markForCheck();
+    });
   }
 
   loadProfilePost(){
@@ -136,17 +146,6 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     this.openedPostIndex = null;
   }
 
-  getCommentsToPost(posts: Post[]): void {
-    posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.commentService.getCommentsToPost(p.id)
-          .subscribe(data => {
-            p.comments = data;
-            this.cd.markForCheck();
-          })
-      }
-    });
-  }
 
 
 
@@ -286,6 +285,17 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     this.loadProfilePost();
     this.closePostDetails();
   }
+  getCommentsToPost(posts: Post[]): void {
+    posts.forEach(p => {
+      if (p.id !== undefined) {
+        this.commentService.getCommentsToPost(p.id)
+          .subscribe(data => {
+            p.comments = data;
+          })
+      }
+    });
+  }
+
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }

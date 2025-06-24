@@ -63,33 +63,7 @@ export class IndexComponent implements OnInit {
 
   ngOnInit(): void {
 
-    forkJoin({
-      posts: this.postService.getAllPosts(),
-      user: this.userService.getCurrentUser().pipe(
-        catchError(() => of(null))        // если не залогинен
-      )
-    }).subscribe(({posts, user}) => {
 
-      /* 1) пересчитываем флаг isLiked */
-      this.posts = posts.map((p: { usersLiked: any; }) => ({
-        ...p,
-        usersLiked: p.usersLiked ?? [],
-        isLiked: (p.usersLiked ?? []).includes(user?.username ?? ''),
-        showAllComments: false
-      }));
-
-      /* 2) сохраняем пользователя */
-      this.user = user as User;
-
-      /* 3) подгружаем изображения и комментарии, если нужно */
-      this.getImagesToPosts(this.posts);
-      this.getCommentsToPost(this.posts);
-      this.isPostsLoaded = true;
-      this.isUserDataLoaded = !!user;
-
-      /* 4) триггерим OnPush, чтобы иконки окрасились сразу */
-      this.cd.markForCheck();
-    });
   }
 
 
