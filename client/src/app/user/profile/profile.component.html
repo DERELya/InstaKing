@@ -31,7 +31,7 @@
         <button *ngIf="isCurrentUser" mat-stroked-button class="edit-btn" (click)="openEditDialog()">Редактировать</button>
       </div>
       <div class="profile-stats">
-        <span><b>1</b> публикаций</span>
+        <span><b>{{postsCount}}</b> публикаций</span>
         <span><b>2</b> подписчиков</span>
         <span><b>3</b> подписки</span>
       </div>
@@ -39,7 +39,17 @@
         <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>
         <div class="profile-description">{{ user.bio }}</div>
       </div>
+
     </div>
+
+    <!-- Кнопка добавления нового поста, как в Instagram (плавающая, круглая, с иконкой "плюс") -->
+
+  </div>
+  <div class="add-post-custom-btn" (click)="openCreatePostDialog()">
+    <div class="circle">
+      <span class="plus-sign">+</span>
+    </div>
+    <div class="add-label">Добавить</div>
   </div>
 
   <div class="profile-divider"></div>

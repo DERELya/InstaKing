@@ -12,6 +12,7 @@ import {MatButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {of, Subject, switchMap, takeUntil} from 'rxjs';
+import {AddPostComponent} from '../add-post/add-post.component';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -42,6 +43,7 @@ export class ProfileComponent implements OnInit {
   activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
   isCurrentUser: boolean = false;
   private destroy$ = new Subject<void>();
+  postsCount?: number | null;
 
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
@@ -50,7 +52,8 @@ export class ProfileComponent implements OnInit {
               private imageService: ImageUploadService,
               private userService: UserService,
               private cd: ChangeDetectorRef,
-              private route: ActivatedRoute) {
+              private route: ActivatedRoute,
+              private cdRef: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -60,6 +63,9 @@ export class ProfileComponent implements OnInit {
         switchMap(params => {
           const profileUsername = params.get('username');
           if (!profileUsername) return of(null);
+          this.postService.getPostForUser(profileUsername).subscribe(list => {
+            this.postsCount = Array.isArray(list) ? list.length : 0;
+          });
           return this.userService.getUserByUsername(profileUsername);
         }),
         switchMap(user => {
@@ -85,6 +91,7 @@ export class ProfileComponent implements OnInit {
             this.userProfileImage = 'assets/placeholder.jpg';
           }
           this.cd.markForCheck();
+
         },
         error: err => {
           console.warn('Image load failed', err);
@@ -92,6 +99,7 @@ export class ProfileComponent implements OnInit {
           this.cd.markForCheck();
         }
       });
+    this.cdRef.detectChanges();
   }
 
   setDefaultState() {
@@ -109,6 +117,7 @@ export class ProfileComponent implements OnInit {
       URL.revokeObjectURL(this.userProfileImage);
     }
   }
+
   onFileSelected(evt: Event): void {
     const input = evt.target as HTMLInputElement;
     if (!input.files?.length) {
@@ -168,6 +177,14 @@ export class ProfileComponent implements OnInit {
       error: () => {
         this.notificationService.showSnackBar('Upload failed');
       }
+    });
+  }
+
+  openCreatePostDialog() {
+    this.dialog.open(AddPostComponent, {
+      width: '500px',
+      maxWidth: '95vw',
+      panelClass: 'custom-create-post-modal'
     });
   }
 

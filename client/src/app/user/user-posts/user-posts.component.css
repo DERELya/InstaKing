@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
 .feed {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -268,6 +271,115 @@
 .profile-link,
 .profile-link * {
   font-weight: normal !important;
+}
+.ig-modal-author-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  width: 100%;
+  min-width: 0;
+  background: none;
+}
+
+.ig-modal-author-info {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ig-modal-avatar {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 10px;
+  background: #fff;
+  border: none;
+}
+
+.username {
+  color: #222;
+  font-weight: 500; /* НЕ жирный, можно поставить 400 для совсем обычного */
+  font-size: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.ig-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  position: relative;
+}
+
+.dots-btn,
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  transition: background 0.18s;
+}
+
+.dots-btn:hover,
+.close-btn:hover {
+  background: #ededed;
+}
+
+.dots-menu {
+  position: absolute;
+  top: 38px;
+  right: 38px;
+  min-width: 210px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(60,60,60,0.18);
+  padding: 7px 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  animation: menu-pop 0.18s cubic-bezier(0.35, 0, 0.25, 1);
+}
+
+@keyframes menu-pop {
+  from { transform: translateY(-12px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.dots-menu-item {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 13px 20px 13px 18px;
+  font-size: 17px;
+  font-weight: 400;
+  color: #222;
+  cursor: pointer;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dots-menu-item:hover {
+  background: #f6f6f6;
+  color: #1976d2;
+}
+
+.dots-menu-item.delete {
+  color: #e53935;
+}
+.dots-menu-item.delete:hover {
+  background: #ffeaea;
+  color: #b71c1c;
 }
 
 

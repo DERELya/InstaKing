@@ -1,41 +1,30 @@
-<div>
-  <div style="text-align: right">
-    <button mat-flat-button color="primary" routerLink="/profile">My Posts</button>
+<div class="create-post-container">
+  <div class="create-post-header">
+    <button mat-flat-button color="primary" (click)="clickOnMyPosts()"  type="button">My Posts</button>
   </div>
-
-  <h2>Create Post</h2>
+  <div class="create-post-title">Создать пост</div>
   <form [formGroup]="postForm">
-
-    <img class="post-image" [src]="previewImgURL || 'https://www.missingdogsuk.co.uk/wp-content/plugins/wp-job-manager-resumes/assets/images/candidate.png'" alt="user image">
-
-    <input type="file"
-           style="display: none"
-           #fileInput
-           (change)="onFileSelected($event)">
-
-    <button mat-button (click)="fileInput.click()">Pick File</button>
-
+    <div class="create-post-image-block">
+      <img class="post-image" [src]="previewImgURL || 'https://www.missingdogsuk.co.uk/wp-content/plugins/wp-job-manager-resumes/assets/images/candidate.png'" alt="user image">
+      <button mat-button type="button" class="pick-file-btn" (click)="fileInput.click()">Выбрать файл</button>
+      <input type="file" style="display: none" #fileInput (change)="onFileSelected($event)">
+    </div>
     <mat-form-field class="w-100" appearance="outline">
-      <mat-label>Title</mat-label>
-      <input matInput
-             formControlName="title">
+      <mat-label>Заголовок</mat-label>
+      <input matInput formControlName="title" autocomplete="off">
     </mat-form-field>
     <mat-form-field class="w-100" appearance="outline">
-      <mat-label>Caption</mat-label>
-      <input matInput
-             formControlName="caption">
+      <mat-label>Описание</mat-label>
+      <input matInput formControlName="caption" autocomplete="off">
     </mat-form-field>
     <mat-form-field class="w-100" appearance="outline">
-      <mat-label>Location</mat-label>
-      <input matInput
-             formControlName="location">
+      <mat-label>Местоположение</mat-label>
+      <input matInput formControlName="location" autocomplete="off">
     </mat-form-field>
-
-    <div style="text-align: right">
-      <button mat-flat-button color="primary" [disabled]="postForm.invalid" (click)="submit()">
-        Create Post
+    <div class="create-post-actions">
+      <button mat-flat-button color="primary" (click)="submit()">
+        Создать пост
       </button>
     </div>
-
   </form>
 </div>

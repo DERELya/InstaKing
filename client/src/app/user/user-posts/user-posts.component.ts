@@ -1,5 +1,5 @@
 /* user-posts.component.ts */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
 import {catchError, forkJoin, map, of, switchMap, throwError,takeUntil,Subject} from 'rxjs';
 import {PostService} from '../../services/post.service';
 import {ImageUploadService} from '../../services/image-upload.service';
@@ -13,7 +13,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule, MatIconButton} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {ActivatedRoute, ParamMap, RouterLink} from '@angular/router';
+import {ActivatedRoute, ParamMap, Router, RouterLink} from '@angular/router';
+import {MatDialogRef} from '@angular/material/dialog';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -51,6 +52,8 @@ export class UserPostsComponent implements OnInit,OnDestroy{
   previewUrl?: string;
   userImages: { [key: string]: string } = {};
   private destroy$ = new Subject<void>();
+  menuOpen = false;
+  MAX_VISIBLE_COMMENTS = 10;
 
   constructor(
     private postService: PostService,
@@ -59,11 +62,16 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     private notify: NotificationService,
     private commentService: CommentService,
     private cd: ChangeDetectorRef,
-    private route: ActivatedRoute
-  ) {
+    private route: ActivatedRoute,
+    private dialogRef: MatDialogRef<UserPostsComponent>,
+    private router: Router) {
   }
 
   ngOnInit(): void {
+    this.loadProfilePost();
+  }
+
+  loadProfilePost(){
     this.route.paramMap.pipe(
       takeUntil(this.destroy$),
       switchMap((params: ParamMap) => {
@@ -114,7 +122,6 @@ export class UserPostsComponent implements OnInit,OnDestroy{
       error: () => this.notify.showSnackBar('Cannot load feed')
     });
   }
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -125,6 +132,7 @@ export class UserPostsComponent implements OnInit,OnDestroy{
   }
 
   closePostDetails() {
+    console.log('gg');
     this.openedPostIndex = null;
   }
 
@@ -140,7 +148,7 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     });
   }
 
-  MAX_VISIBLE_COMMENTS = 10;
+
 
   toggleShowAllComments(index: number): void {
     const post = this.posts[index];
@@ -240,5 +248,45 @@ export class UserPostsComponent implements OnInit,OnDestroy{
 
   onAvatarError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.menu-wrapper')) {
+      this.menuOpen = false;
+    }
+  }
+
+  onMenuAction(action: string) {
+    this.menuOpen = false;
+    // Дальше — твоя логика:
+    if (action === 'delete') {
+      this.deleteCurrentPost();
+    } else if (action === 'update') {
+      // ...
+    }
+  }
+  deleteCurrentPost() {
+    const indexToDelete = this.openedPostIndex;
+    if (indexToDelete === null || indexToDelete === undefined) return;
+    const postId = this.posts[indexToDelete].id;
+    if (!postId) return;
+
+    if (!confirm('Вы действительно хотите удалить этот пост?')) return;
+    this.postService.deletePost(postId).subscribe({
+      next: () => {
+        this.posts.splice(indexToDelete, 1);
+        this.notify.showSnackBar('Пост удалён');
+      },
+      error: err => {
+        this.notify.showSnackBar('Ошибка при удалении поста');
+      }
+    });
+    this.loadProfilePost();
+    this.closePostDetails();
+  }
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
   }
 }

@@ -4,9 +4,14 @@ import {Post} from '../../models/Post';
 import {PostService} from '../../services/post.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {NotificationService} from '../../services/notification.service';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {MatButton} from '@angular/material/button';
-import {MatFormField, MatLabel} from '@angular/material/input';
+import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
+import {Subject, switchMap, takeUntil} from 'rxjs';
+import {TokenStorageService} from '../../services/token-storage.service';
+import {MatDialogRef} from '@angular/material/dialog';
+import {ProfileComponent} from '../profile/profile.component';
+import {UserPostsComponent} from '../user-posts/user-posts.component';
 
 @Component({
   selector: 'app-add-post',
@@ -15,7 +20,9 @@ import {MatFormField, MatLabel} from '@angular/material/input';
     MatButton,
     MatFormField,
     MatLabel,
-    MatFormField
+    MatFormField,
+    MatInput,
+    RouterLink
   ],
   templateUrl: './add-post.component.html',
   styleUrl: './add-post.component.css'
@@ -26,15 +33,28 @@ export class AddPostComponent implements OnInit {
   isPostCreated = false;
   createdPost!: Post;
   previewImgURL: any;
+  private destroy$ = new Subject<void>();
+  username: string | null | undefined = null;
 
   constructor(private postService: PostService,
               private imageUploadService: ImageUploadService,
               private notificationService: NotificationService,
               private router: Router,
-              private fb: FormBuilder) {
+              private fb: FormBuilder,
+              private route: ActivatedRoute,
+              private tokenService : TokenStorageService,
+              private dialogRef: MatDialogRef<AddPostComponent>,
+              private userPostComponent: UserPostsComponent
+              ) {
   }
 
   ngOnInit(): void {
+    this.username = this.route.snapshot.paramMap.get('username') || '';
+    if (!this.username) {
+      // Попробуй получить из токена или сервисов, если пользователь авторизован
+      this.username = this.tokenService.getUsernameFromToken();
+    }
+    console.log(this.username);
     this.postForm = this.createPostForm();
   }
 
@@ -61,19 +81,30 @@ export class AddPostComponent implements OnInit {
           .subscribe(() => {
             this.notificationService.showSnackBar('Post created successfully');
             this.isPostCreated = true;
-            this.router.navigate(['/profile']);
+            this.userPostComponent.loadProfilePost();
+            this.dialogRef.close();
+            this.router.navigate(['/profile',this.username]);
           });
       }
     });
   }
 
-  onFileSelected(event: any): void {
-    this.selectedFile = event.target.files[0];
+  onFileSelected(evt: Event): void {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) {
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(this.selectedFile);
-    reader.onload = (e) => {
-      this.previewImgURL = reader.result;
-    };
+    const file = input.files[0];
+    this.selectedFile = file;
+    /* создаём превью */
+    this.previewImgURL = URL.createObjectURL(file);
+    console.log('test:' + this.previewImgURL);
   }
+
+  clickOnMyPosts() {
+    this.dialogRef.close();
+    this.router.navigate(['/profile/', this.username]);
+  }
+
 }

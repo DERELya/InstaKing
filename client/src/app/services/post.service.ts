@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Post} from '../models/Post';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 
 
@@ -14,6 +14,8 @@ export class PostService {
   private readonly api = `${environment.apiHost}post/`;
   constructor(private http: HttpClient) {
   }
+  private postsSubject = new BehaviorSubject<Post[]>([]);
+  posts$ = this.postsSubject.asObservable();
 
   createPost(post: Post): Observable<any> {
     return this.http.post(this.api + 'create', post);
@@ -31,7 +33,7 @@ export class PostService {
   }
 
   deletePost(id: number): Observable<any> {
-    return this.http.post(this.api + id + 'delete', null);
+    return this.http.post(this.api + id + '/delete', null);
   }
 
   likePost(id: number, username: string): Observable<any> {
