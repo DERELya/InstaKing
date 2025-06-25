@@ -15,6 +15,8 @@ import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {LikesPostComponent} from '../likes-post/likes-post.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -61,7 +63,8 @@ export class UserPostsComponent implements OnInit, OnDestroy {
     private commentService: CommentService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -234,5 +237,18 @@ export class UserPostsComponent implements OnInit, OnDestroy {
       }
     });
     this.closePostDetails();
+  }
+
+  openLikesDialog(): void {
+    const dialogUserLikesConfig = new MatDialogConfig();
+    dialogUserLikesConfig.width = '350px';
+    dialogUserLikesConfig.data = this.posts[this.openedPostIndex!].usersLiked; {
+    }
+    const dialogRef = this.dialog.open(LikesPostComponent, dialogUserLikesConfig);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+      }
+    });
   }
 }

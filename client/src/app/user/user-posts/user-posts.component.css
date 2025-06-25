@@ -382,4 +382,42 @@
   color: #b71c1c;
 }
 
+.likes-avatars {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.like-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  margin-right: 0;
+  transition: box-shadow .2s;
+}
+
+.likes-label {
+  margin-left: 8px;
+  font-size: 16px;
+  vertical-align: middle;
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif; /* популярные современные шрифты */
+  font-weight: 350; /* чуть жирнее обычного */
+  letter-spacing: 0.01em; /* немного пространства между буквами */
+  color: #222; /* приятный тёмный */
+}
+
+.like-username {
+  color: #000000;
+  text-decoration: none;
+  font-weight: 700;
+  transition: color .2s;
+}
+.like-username:hover {
+  color: #49edd4;
+  text-decoration: underline;
+}
+
 

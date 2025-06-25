@@ -1,0 +1,60 @@
+.likes-dialog {
+  background: #222;
+  color: #fff;
+  border-radius: 16px;
+  min-width: 320px;
+  max-width: 400px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.likes-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.likes-dialog-list {
+  max-height: 320px; /* или другое удобное значение */
+  overflow-y: auto;
+  padding: 0 16px 16px 16px;
+}
+
+.like-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+
+.like-user-row:last-child {
+  border-bottom: none;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  font-weight: 500;
+}
+
+.fullname {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.follow-btn {
+  min-width: 90px;
+}

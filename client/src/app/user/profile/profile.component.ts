@@ -153,6 +153,7 @@ export class ProfileComponent implements OnInit {
   }
 
 
+
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
     this.activeTab = tab;
   }
