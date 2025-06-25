@@ -1,33 +1,34 @@
 <mat-toolbar color="primary">
+  <!-- Кнопка перехода на главную всегда видна -->
   <span routerLink="/main" style="cursor: pointer;margin-left: 20px;">InstaKing</span>
 
-  <span class="spacer"></span>
+  <!-- Всё остальное скрывается на /profile -->
+  <ng-container *ngIf="!router.url.startsWith('/profile')">
+    <span class="spacer"></span>
 
-  @if (!isLoggedIn) {
-    <button matTooltip="Login" routerLink="/login" mat-icon-button class="example-icon favorite-icon">
-      <mat-icon>login</mat-icon>
-    </button>
-  }
+    @if (!isLoggedIn) {
+      <button matTooltip="Login" routerLink="/login" mat-icon-button class="example-icon favorite-icon">
+        <mat-icon>login</mat-icon>
+      </button>
+    }
 
+    @if (isDataLoaded) {
+      <h3>{{ user?.username }}</h3>
+    }
 
-  @if (isDataLoaded) {
-    <h3>{{ user?.username }}</h3>
-  }
+    @if (isLoggedIn) {
+      <button [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
+        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+             alt="avatar"
+             width="40"
+             height="40"
+             class="avatar-icon">
+      </button>
+    }
 
-  @if (isLoggedIn) {
-    <button [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
-      <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
-           alt="avatar"
-           width="40"
-           height="40"
-           class="avatar-icon">
-    </button>
-  }
-
-  <mat-menu id="menu-item" #menu="matMenu">
-    <button mat-menu-item [routerLink]="['/profile/', user?.username]">Profile</button>
-    <button (click)="logout()" mat-menu-item>
-      Logout
-    </button>
-  </mat-menu>
+    <mat-menu #menu="matMenu" class="my-custom-menu">
+      <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">Profile</button>
+      <button mat-menu-item class="my-custom-menu-item" (click)="logout()">Logout</button>
+    </mat-menu>
+  </ng-container>
 </mat-toolbar>

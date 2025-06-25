@@ -1,205 +1,67 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+/* --- Основной контейнер профиля --- */
 .profile-container {
-  max-width: 1080px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 32px 16px 0 16px;
+  padding: 12px 0 0 0;
   box-sizing: border-box;
+  background: #181818;
+  color: #fff;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
+/* --- Шапка профиля, теперь компактнее --- */
 .profile-header {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 48px;
+  align-items: center;
+  margin: 20px;
+  gap: 24px;
 }
 
+/* --- Блок аватара --- */
 .profile-avatar-block {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.profile-avatar {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid #eaeaea;
-  background: #fff;
-}
-
-.profile-info-block {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-row {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 16px;
-}
-
-.profile-username {
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.edit-btn, .follow-btn {
-  font-size: 15px;
-  padding: 4px 18px;
-  border-radius: 8px;
-}
-
-.profile-stats {
-  display: flex;
-  gap: 32px;
-  font-size: 17px;
-  margin-bottom: 12px;
-}
-
-.profile-bio {
-  margin-top: 8px;
-}
-
-.profile-fullname {
-  font-weight: 500;
-  font-size: 16px;
-  margin-bottom: 3px;
-}
-
-.profile-description {
-  font-size: 15px;
-  color: #444;
-  white-space: pre-line;
-}
-
-.profile-divider {
-  border-bottom: 1.5px solid #ececec;
-  margin: 16px 0 32px 0;
-}
-
-@media (max-width: 900px) {
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    gap: 26px;
-  }
-
-  .profile-avatar {
-    width: 88px;
-    height: 88px;
-  }
-
-  .profile-row {
-    gap: 10px;
-  }
-
-  .profile-info-block {
-    align-items: center;
-    text-align: center;
-  }
-
-  .profile-divider {
-    margin: 12px 0 24px 0;
-  }
-}
-
-@media (max-width: 500px) {
-  .profile-container {
-    padding: 8px 0 0 0;
-  }
-}
-
-.profile-tabs {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  margin-bottom: 16px;
-  border-bottom: 1.5px solid #ececec;
-  padding-bottom: 2px;
-}
-
-.profile-tab-btn {
-  background: none;
-  border: none;
-  outline: none;
-  color: #555;
-  font-size: 15px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px 12px 14px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.18s, border-bottom 0.18s;
-  position: relative;
-}
-
-.profile-tab-btn mat-icon {
-  font-size: 22px;
-  vertical-align: middle;
-}
-
-.profile-tab-btn.active {
-  color: #111;
-  border-bottom: 2.5px solid #111;
-  font-weight: 600;
-}
-
-.empty-tab-msg {
-  text-align: center;
-  padding: 36px 0;
-  color: #999;
-  font-size: 18px;
-}
-
-.profile-avatar-block {
-  position: relative;
-  display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  justify-content: center;
 }
 
 .profile-avatar-upload-label {
   position: relative;
   display: block;
   cursor: pointer;
-  width: 140px;
-  height: 140px;
+  width: 96px;
+  height: 96px;
 }
 
 .profile-avatar-upload-label.disabled {
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .profile-avatar {
-  width: 140px;
-  height: 140px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #eaeaea;
-  background: #fff;
+  border: 3px solid #232323;
+  background: #232323;
   transition: filter 0.2s;
   display: block;
+  box-shadow: 0 2px 12px 0 #0006;
 }
 
+/* --- Оверлей на аватаре --- */
 .avatar-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
   border-radius: 50%;
-  background: rgba(40, 40, 40, 0.60);
+  background: rgba(40, 40, 40, 0.67);
   opacity: 0;
   display: flex;
   align-items: center;
@@ -207,81 +69,265 @@
   transition: opacity 0.21s;
   pointer-events: none;
 }
-
 .profile-avatar-upload-label:hover .avatar-overlay,
 .profile-avatar-upload-label:focus .avatar-overlay {
   opacity: 1;
   pointer-events: all;
 }
-
 .avatar-overlay-text {
   color: #fff;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 500;
   text-shadow: 0 2px 8px #000a;
   user-select: none;
 }
-
 .avatar-upload-btn {
-  margin-top: 12px;
+  margin-top: 10px;
   width: 100%;
-  max-width: 140px;
+  max-width: 96px;
+  background: #232323 !important;
+  color: #49edd4 !important;
+  border-radius: 8px;
+  border: 1.5px solid #49edd4;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background 0.15s, color 0.15s;
+}
+.avatar-upload-btn:hover {
+  background: #49edd4 !important;
+  color: #232323 !important;
 }
 
-@media (max-width: 900px) {
-  .profile-avatar-upload-label,
-  .profile-avatar {
-    width: 88px;
-    height: 88px;
-  }
-
-  .avatar-upload-btn {
-    max-width: 88px;
-  }
-}
-.add-post-custom-btn {
-  display: compact;
+/* --- Блок информации --- */
+.profile-info-block {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
+  justify-content: center;
+}
+
+.profile-row {
+  display: flex;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.profile-username {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px #0003;
+}
+
+.edit-btn, .follow-btn {
+  font-size: 14px;
+  padding: 2px 13px;
+  border-radius: 8px;
+  background: #232323;
+  color: #49edd4;
+  border: 1.2px solid #49edd4;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  min-height: 32px;
+}
+.edit-btn:hover, .follow-btn:hover {
+  background: #49edd4;
+  color: #232323;
+}
+
+/* --- Статистика --- */
+.profile-stats {
+  display: flex;
+  gap: 22px;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #e0e0e0;
+}
+.profile-stats span b {
+  color: #fff;
+}
+
+/* --- Био --- */
+.profile-bio {
+  margin-top: 5px;
+}
+.profile-fullname {
+  font-weight: 500;
+  font-size: 15px;
+  margin-bottom: 2px;
+  color: #e7e7e7;
+  letter-spacing: 0.01em;
+}
+.profile-description {
+  font-size: 14px;
+  color: #b2b2b2;
+  white-space: pre-line;
+}
+
+/* --- Разделитель --- */
+.profile-divider {
+  border-bottom: 1.2px solid #292929;
+  margin: 12px 0 18px 0;
+}
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 10px;
+  border-bottom: 1.2px solid #292929;
+  padding-bottom: 0;
+  background: none;
+}
+
+.profile-tab-btn {
+  background: none;
+  border: none;
+  outline: none;
+  color: #c3c3c3;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;    /* это важно! */
+  gap: 7px;
+  padding: 7px 10px 10px 10px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s, border-bottom 0.18s;
+  position: relative;
+  min-height: 28px;
+  line-height: 1.2;       /* добавь для лучшего выравнивания текста */
+}
+
+.profile-tab-btn mat-icon,
+.profile-tab-btn .mat-icon { /* на всякий случай оба варианта */
+  font-size: 18px !important;
+  line-height: 1;
+  vertical-align: middle;
+  display: flex;          /* flex вместо inline или block */
+  align-items: center;    /* выравнивание по центру */
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-tab-btn.active {
+  color: #49edd4;
+  border-bottom: 2px solid #49edd4;
+  font-weight: 600;
+}
+
+/* --- Кнопка "Добавить пост" --- */
+.add-post-custom-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   cursor: pointer;
   user-select: none;
   position: static;
-  margin-left: 0;
+  margin-left: 30px;
+  margin-top: 8px;
 }
-
 .add-post-custom-btn .circle {
-  width: 80px;
-  height: 80px;
-  background: #ffffff;
+  width: 56px;
+  height: 56px;
+  background: #232323;
   border-radius: 50%;
-  border: 3px solid #222;
+  border: 2px solid #49edd4;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
-  box-shadow: 0 0 0 2px #4a4848;
+  margin-bottom: 2px;
+  box-shadow: 0 0 0 2px #222;
   transition: background 0.18s, box-shadow 0.18s;
 }
-
 .add-post-custom-btn:hover .circle,
 .add-post-custom-btn:focus .circle {
-  background: #222;
-  box-shadow: 0 0 0 4px #333;
+  background: #49edd4;
+  box-shadow: 0 0 0 4px #1e1e1e;
 }
-
 .plus-sign {
-  color: #aaa;
-  font-size: 48px;
+  color: #49edd4;
+  font-size: 32px;
   line-height: 1;
   font-weight: 400;
   font-family: 'Arial', sans-serif;
+  transition: color 0.15s;
 }
-
+.add-post-custom-btn:hover .plus-sign,
+.add-post-custom-btn:focus .plus-sign {
+  color: #232323;
+}
 .add-label {
   color: #fff;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: bold;
   text-align: left;
   margin-top: 0;
   text-shadow: 0 1px 2px #000;
+}
+
+.empty-tab-msg {
+  text-align: center;
+  padding: 28px 0;
+  color: #555;
+  font-size: 16px;
+}
+
+/* --- Медиазапросы для мобильных/планшетов --- */
+@media (max-width: 900px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .profile-avatar-upload-label,
+  .profile-avatar {
+    width: 64px;
+    height: 64px;
+  }
+  .avatar-upload-btn {
+    max-width: 64px;
+  }
+  .profile-row {
+    gap: 7px;
+  }
+  .profile-info-block {
+    align-items: center;
+    text-align: center;
+  }
+  .profile-divider {
+    margin: 8px 0 14px 0;
+  }
+  .add-label {
+    font-size: 13px;
+  }
+}
+@media (max-width: 500px) {
+  .profile-container {
+    padding: 6px 0 0 0;
+  }
+  .profile-avatar-upload-label,
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+  }
+  .avatar-upload-btn {
+    max-width: 44px;
+    font-size: 12px;
+  }
+  .profile-username {
+    font-size: 18px;
+  }
+  .profile-row {
+    gap: 5px;
+  }
+  .profile-tabs {
+    gap: 16px;
+    font-size: 13px;
+  }
 }

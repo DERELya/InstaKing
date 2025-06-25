@@ -45,7 +45,7 @@
     <!-- Кнопка добавления нового поста, как в Instagram (плавающая, круглая, с иконкой "плюс") -->
 
   </div>
-  <div class="add-post-custom-btn" (click)="openCreatePostDialog()">
+  <div *ngIf="isCurrentUser" class="add-post-custom-btn" (click)="openCreatePostDialog()">
     <div class="circle">
       <span class="plus-sign">+</span>
     </div>

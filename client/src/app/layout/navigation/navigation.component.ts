@@ -9,6 +9,7 @@ import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ImageUploadService} from '../../services/image-upload.service';
+import {CommonModule} from '@angular/common';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -23,6 +24,7 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatMenuItem,
     MatIconButton,
     MatMenuTrigger,
+    CommonModule
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
@@ -38,7 +40,7 @@ export class NavigationComponent implements OnInit {
   constructor(
     private tokenService: TokenStorageService,
     private userService: UserService,
-    private router: Router,
+    protected router: Router,
     private imageService: ImageUploadService) {
   }
 

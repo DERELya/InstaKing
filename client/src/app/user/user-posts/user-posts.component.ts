@@ -74,6 +74,7 @@ export class UserPostsComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const username = params.get('username');
         if (username) {
+          this.posts = [];
           this.postService.loadProfilePosts(username);
           this.meUsername = username;
           this.cd.markForCheck();
