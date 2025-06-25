@@ -13,7 +13,6 @@ export class TokenStorageService {
   public saveToken(token: string): void {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('auth-token', encodeURIComponent(token));
-      console.log(token);
     }
   }
 
@@ -51,7 +50,6 @@ export class TokenStorageService {
 
     try {
       const payload = JSON.parse(atob(decodeURIComponent(token).split('.')[1]));
-      console.log(payload);
       // Попробуй поля в таком порядке — зависит от того, что кладёт твой backend:
       return payload.username || payload.sub || null;
     } catch (e) {

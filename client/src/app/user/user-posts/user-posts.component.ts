@@ -1,20 +1,20 @@
-/* user-posts.component.ts */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {catchError, forkJoin, map, of, switchMap, throwError,takeUntil,Subject} from 'rxjs';
-import {PostService} from '../../services/post.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {UserService} from '../../services/user.service';
-import {NotificationService} from '../../services/notification.service'; // см. пункт 2
-import {Post} from '../../models/Post';
-import {CommentService} from '../../services/comment.service';
-import {CommonModule, DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
-import {MatCardModule} from '@angular/material/card';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {ActivatedRoute, ParamMap, Router, RouterLink} from '@angular/router';
-import {MatDialogRef} from '@angular/material/dialog';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { PostService } from '../../services/post.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { UserService } from '../../services/user.service';
+import { NotificationService } from '../../services/notification.service';
+import { CommentService } from '../../services/comment.service';
+import { Post } from '../../models/Post';
+
+import { CommonModule, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { RouterLink } from '@angular/router';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -43,17 +43,15 @@ interface UiPost extends Post {
     RouterLink
   ]
 })
-export class UserPostsComponent implements OnInit,OnDestroy{
+export class UserPostsComponent implements OnInit, OnDestroy {
   posts: UiPost[] = [];
   isUserPostsLoaded = false;
   meUsername!: string;
   openedPostIndex: number | null = null;
-  userProfileImage?: string;
-  previewUrl?: string;
   userImages: { [key: string]: string } = {};
-  private destroy$ = new Subject<void>();
   menuOpen = false;
   MAX_VISIBLE_COMMENTS = 10;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private postService: PostService,
@@ -63,91 +61,44 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     private commentService: CommentService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private dialogRef: MatDialogRef<UserPostsComponent>,
-    private router: Router) {
-  }
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const username = params.get('username');
-      if (username) {
-        this.postService.loadProfilePosts(username);
-      }
-    });
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const username = params.get('username');
+        if (username) {
+          this.postService.loadProfilePosts(username);
+          this.meUsername = username;
+        }
+      });
 
-    this.postService.posts$.subscribe(posts => {
-      this.posts = posts; // тут уже есть image, comments и т.д.
-      this.cd.markForCheck();
-    });
-  }
-
-  loadProfilePost(){
-    this.route.paramMap.pipe(
-      takeUntil(this.destroy$),
-      switchMap((params: ParamMap) => {
-        const profileUsername = params.get('username');
-        if (!profileUsername) return of([]);
-        // 1. Узнаём имя текущего пользователя
-        return this.userService.getUserByUsername(profileUsername).pipe(
-          switchMap(me => {
-            this.meUsername = me.username;
-            // 2. Загружаем его посты
-            return this.postService.getPostForUser(profileUsername!);
-          })
-        );
-      }),
-      // 3. На каждый пост параллельно тянем: фото поста + аватар автора
-      switchMap((posts: Post[]) =>
-        posts.length === 0 ? of([]) :
-          forkJoin(
-            posts.map(p =>
-              forkJoin({
-                postImg: this.imageService.getImageToPost(p.id!).pipe(
-                  map(blob => URL.createObjectURL(blob)),
-                  catchError(() => of('assets/placeholder.jpg'))
-                ),
-                avatar: this.imageService.getImageToUser(p.username!).pipe(
-                  map(blob => URL.createObjectURL(blob)),
-                  catchError(() => of('assets/blank-avatar.png'))
-                )
-              }).pipe(
-                map(({ postImg, avatar }) => ({
-                  ...p,
-                  usersLiked: p.usersLiked ?? [],
-                  image: postImg,
-                  avatarUrl: avatar,
-                  isLiked: (p.usersLiked ?? []).includes(this.meUsername)
-                }))
-              )
-            )
-          )
-      )
-    ).subscribe({
-      next: uiPosts => {
-        this.posts = uiPosts;
+    this.postService.posts$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(posts => {
+        this.posts = posts;
         this.isUserPostsLoaded = true;
-        this.getCommentsToPost(this.posts);
+        console.log('like');
+        console.log(posts[0].usersLiked!);
         this.cd.markForCheck();
-      },
-      error: () => this.notify.showSnackBar('Cannot load feed')
-    });
+      });
   }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // Не забудьте очистить созданные через URL.createObjectURL объекты при необходимости
+    // Можно добавить освобождение ресурсов createObjectURL, если нужно
   }
+
   openPostDetails(index: number) {
     this.openedPostIndex = index;
   }
 
   closePostDetails() {
-    console.log('gg');
     this.openedPostIndex = null;
   }
-
-
-
 
   toggleShowAllComments(index: number): void {
     const post = this.posts[index];
@@ -156,13 +107,12 @@ export class UserPostsComponent implements OnInit,OnDestroy{
   }
 
   removePost(post: Post, index: number): void {
-    console.log(post);
-    const result = confirm('Do you really want to delete this post?');
-    if (result) {
+    if (confirm('Do you really want to delete this post?')) {
       this.postService.deletePost(post.id!)
         .subscribe(() => {
           this.posts.splice(index, 1);
           this.notify.showSnackBar('Post deleted');
+          this.cd.markForCheck();
         });
     }
   }
@@ -171,7 +121,7 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     const post = this.posts[i];
     const liked = post.isLiked;
 
-    /* оптимистичное обновление UI */
+    // Оптимистичное обновление UI
     this.patchPost(i, {
       isLiked: !liked,
       usersLiked: liked
@@ -179,17 +129,16 @@ export class UserPostsComponent implements OnInit,OnDestroy{
         : [...(post.usersLiked ?? []), this.meUsername]
     });
 
-    this.postService.likePost(postId, this.meUsername).pipe(
-      catchError(err => {
-        /* откат при ошибке */
-        this.patchPost(i, {isLiked: liked});
-        return throwError(() => err);
-      })
-    ).subscribe();
+    this.postService.likePost(postId, this.meUsername).subscribe({
+      error: err => {
+        // Откат при ошибке
+        this.patchPost(i, { isLiked: liked });
+      }
+    });
   }
 
   private patchPost(index: number, patch: Partial<UiPost>): void {
-    const updated = {...this.posts[index], ...patch};
+    const updated = { ...this.posts[index], ...patch };
     this.posts = [
       ...this.posts.slice(0, index),
       updated,
@@ -197,34 +146,32 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     ];
     this.cd.markForCheck();
   }
+
   postComment(event: Event, message: string, postId: number, postIndex: number): void {
     event.preventDefault();
     const post = this.posts[postIndex];
-    console.log(post);
     this.commentService.addToCommentToPost(postId, message)
       .subscribe(data => {
         post.comments?.push(data);
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
-      })
+      });
   }
 
   deleteComment(commentId: number, postIndex: number, commentIndex: number): void {
     const post = this.posts[postIndex];
-
     this.commentService.delete(commentId)
       .subscribe(() => {
         this.notify.showSnackBar('Comment removed');
         post.comments!.splice(commentIndex, 1);
+        this.cd.markForCheck();
       });
   }
 
   getUserImage(username: string): string {
-    // Если уже загрузили, возвращаем сразу
     if (this.userImages[username]) {
       return this.userImages[username];
     }
-    // Загружаем новый и сохраняем
     this.imageService.getImageToUser(username)
       .subscribe({
         next: blob => {
@@ -232,15 +179,14 @@ export class UserPostsComponent implements OnInit,OnDestroy{
           this.userImages[username] = preview;
           this.cd.markForCheck();
         },
-        error: err => {
-          console.warn('Image load failed', err);
+        error: () => {
           this.userImages[username] = 'assets/placeholder.jpg';
           this.cd.markForCheck();
         }
       });
-    // Пока грузится — можно возвращать плейсхолдер
     return 'assets/placeholder.jpg';
   }
+
   trackById(index: number, item: { id?: any }): any {
     return item && item.id !== undefined && item.id !== null ? item.id : index;
   }
@@ -257,15 +203,19 @@ export class UserPostsComponent implements OnInit,OnDestroy{
     }
   }
 
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
   onMenuAction(action: string) {
     this.menuOpen = false;
-    // Дальше — твоя логика:
     if (action === 'delete') {
       this.deleteCurrentPost();
     } else if (action === 'update') {
-      // ...
+      // Добавь свою логику обновления поста
     }
   }
+
   deleteCurrentPost() {
     const indexToDelete = this.openedPostIndex;
     if (indexToDelete === null || indexToDelete === undefined) return;
@@ -277,26 +227,12 @@ export class UserPostsComponent implements OnInit,OnDestroy{
       next: () => {
         this.posts.splice(indexToDelete, 1);
         this.notify.showSnackBar('Пост удалён');
+        this.cd.markForCheck();
       },
-      error: err => {
+      error: () => {
         this.notify.showSnackBar('Ошибка при удалении поста');
       }
     });
-    this.loadProfilePost();
     this.closePostDetails();
-  }
-  getCommentsToPost(posts: Post[]): void {
-    posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.commentService.getCommentsToPost(p.id)
-          .subscribe(data => {
-            p.comments = data;
-          })
-      }
-    });
-  }
-
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
   }
 }

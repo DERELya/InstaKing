@@ -21,8 +21,7 @@ import {UserPostsComponent} from '../user-posts/user-posts.component';
     MatFormField,
     MatLabel,
     MatFormField,
-    MatInput,
-    RouterLink
+    MatInput
   ],
   templateUrl: './add-post.component.html',
   styleUrl: './add-post.component.css'
@@ -43,8 +42,7 @@ export class AddPostComponent implements OnInit {
               private fb: FormBuilder,
               private route: ActivatedRoute,
               private tokenService : TokenStorageService,
-              private dialogRef: MatDialogRef<AddPostComponent>,
-              private userPostComponent: UserPostsComponent
+              private dialogRef: MatDialogRef<AddPostComponent>
               ) {
   }
 
@@ -81,7 +79,6 @@ export class AddPostComponent implements OnInit {
           .subscribe(() => {
             this.notificationService.showSnackBar('Post created successfully');
             this.isPostCreated = true;
-            this.userPostComponent.loadProfilePost();
             this.dialogRef.close();
             this.router.navigate(['/profile',this.username]);
           });

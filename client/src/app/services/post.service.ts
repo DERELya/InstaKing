@@ -66,6 +66,7 @@ export class PostService {
 
   /** Удалить пост */
   deletePost(id: number): Observable<any> {
+
     return this.http.post(this.api + id + '/delete', null);
   }
 
