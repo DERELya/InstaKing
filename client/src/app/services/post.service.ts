@@ -1,12 +1,11 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Post } from '../models/Post';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Post} from '../models/Post';
 import {BehaviorSubject, catchError, forkJoin, map, Observable, of, switchMap} from 'rxjs';
-import { environment } from '../../environments/environment';
+import {environment} from '../../environments/environment';
 import {UserService} from './user.service';
 import {ImageUploadService} from './image-upload.service';
 import {CommentService} from './comment.service';
-import {PostComment} from '../models/PostComment';
 
 
 interface UiPost extends Post {
@@ -26,7 +25,8 @@ export class PostService {
   constructor(private http: HttpClient,
               private userService: UserService,
               private imageService: ImageUploadService,
-              private commentService: CommentService) {}
+              private commentService: CommentService) {
+  }
 
   /** Создать пост */
   createPost(post: Post): Observable<any> {
@@ -35,11 +35,47 @@ export class PostService {
 
   /** Загрузить все посты (например, для ленты) и обновить поток */
   loadAllPosts(): void {
-    this.http.get<UiPost[]>(this.api + 'all').subscribe(posts => {
-      this.postsSubject.next(posts);
+    this.http.get<Post[]>(this.api + 'all').pipe(
+      switchMap(posts =>
+        posts.length === 0
+          ? of([])
+          : forkJoin(
+            posts.map(post =>
+              forkJoin({
+                postImg: this.imageService.getImageToPost(post.id!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/placeholder.jpg'))
+                ),
+                avatar: this.imageService.getImageToUser(post.username!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/blank-avatar.png'))
+                ),
+                comments: this.commentService.getCommentsToPost(post.id!).pipe(
+                  catchError(() => of([]))
+                )
+              }).pipe(
+                map(({postImg, avatar, comments}) => ({
+                  ...post,
+                  image: postImg,
+                  avatarUrl: avatar,
+                  comments: comments,
+                  usersLiked: post.usersLiked ?? [],
+                  isLiked: false // тут не знаем, кто залогинен, если надо - добавь проверку по своему юзеру
+                } as UiPost))
+              )
+            )
+          )
+      )
+    ).subscribe({
+      next: uiPosts => {
+        this.postsSubject.next(uiPosts);
+      },
+      error: () => {
+        // обработка ошибок
+      }
     });
-
   }
+
 
   /** Загрузить посты текущего пользователя и обновить поток */
   loadCurrentUserPosts(): void {
@@ -104,7 +140,7 @@ export class PostService {
                       catchError(() => of([]))
                     )
                   }).pipe(
-                    map(({ postImg, avatar, comments }) => ({
+                    map(({postImg, avatar, comments}) => ({
                       ...post,
                       image: postImg,
                       avatarUrl: avatar,
@@ -127,6 +163,7 @@ export class PostService {
       }
     });
   }
+
   getCommentsToPost(posts: Post[]): void {
     posts.forEach(p => {
       if (p.id !== undefined) {

@@ -11,7 +11,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {CommonModule, NgClass} from '@angular/common';
 import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {catchError, forkJoin, of, throwError} from 'rxjs';
+import {catchError, forkJoin, of, Subject, takeUntil, throwError} from 'rxjs';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {RouterLink} from '@angular/router';
 
@@ -48,7 +48,7 @@ export class IndexComponent implements OnInit {
   isUserDataLoaded = false;
   userImages: { [key: string]: string } = {};
   MAX_VISIBLE_COMMENTS = 1;
-
+  private destroy$ = new Subject<void>();
 
   constructor(
     private postService: PostService,
@@ -63,7 +63,17 @@ export class IndexComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.posts=this.postService.loadAllPosts();
+    this.posts = [];
+    this.postService.loadAllPosts();
+    this.cd.markForCheck();
+    this.postService.posts$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(posts => {
+        this.posts = posts;
+        this.cd.markForCheck();
+        console.log(this.posts);
+      });
+
   }
 
 

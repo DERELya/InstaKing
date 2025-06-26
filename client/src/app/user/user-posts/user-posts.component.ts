@@ -86,8 +86,6 @@ export class UserPostsComponent implements OnInit, OnDestroy {
       .subscribe(posts => {
         this.posts = posts;
         this.isUserPostsLoaded = true;
-        console.log('like');
-        console.log(posts[0].usersLiked!);
         this.cd.markForCheck();
       });
   }
