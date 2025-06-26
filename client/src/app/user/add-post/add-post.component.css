@@ -1,5 +1,5 @@
 .create-post-container {
-  background: #232323;
+  background: var(--color-bg);
   border-radius: 18px;
   box-shadow: 0 6px 32px 0 #000a;
   padding: 38px 32px 32px 32px;
@@ -21,7 +21,7 @@
 .create-post-title {
   width: 100%;
   text-align: left;
-  color: #49edd4;
+  color: var(--color-primary);
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 10px;
@@ -49,12 +49,12 @@ form[formGroup] {
   object-fit: cover;
   border-radius: 16px;
   background: #191a1b;
-  border: 2px solid #49edd4;
+  border: 2px solid var(--color-primary);
 }
 
 .pick-file-btn {
-  color: #49edd4 !important;
-  border: 1.5px solid #49edd4 !important;
+  color: var(--color-primary) !important;
+  border: 1.5px solid var(--color-primary) !important;
   background: transparent !important;
   font-weight: 600;
   border-radius: 8px;
@@ -65,9 +65,9 @@ form[formGroup] {
 }
 
 .pick-file-btn:hover {
-  background: #49edd4 !important;
+  background: var(--color-primary) !important;
   color: #191a1b !important;
-  border-color: #49edd4 !important;
+  border-color: var(--color-primary) !important;
 }
 
 .w-100 {
@@ -86,8 +86,8 @@ mat-form-field {
 }
 
 button[mat-flat-button] {
-  background: #49edd4 !important;
-  color: #232323 !important;
+  background: var(--color-primary) !important;
+  color: var(--color-bg) !important;
   font-weight: 700;
   border-radius: 8px;
   box-shadow: 0 2px 12px #2226;
@@ -98,7 +98,7 @@ button[mat-flat-button] {
 button[mat-flat-button]:hover:enabled {
   background: #24dac2 !important;
   color: #1a1a1a !important;
-  box-shadow: 0 4px 18px #49edd455;
+  box-shadow: 0 4px 18px var(--color-primary)55;
 }
 
 button[mat-flat-button]:disabled {
@@ -110,7 +110,7 @@ button[mat-flat-button]:disabled {
 }
 .mat-mdc-input-element {
   background: rgba(33, 154, 214, 0) !important;
-  color: #f5f5f7 !important;
+  color: var(--color-text) !important;
 }
 
 @media (max-width: 600px) {

@@ -12,7 +12,7 @@
 .ig-post {
   width: 100%;
   max-width: 350px;
-  background: #232323;
+  background: var(--color-bg);
   color: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.13);
@@ -62,7 +62,7 @@
   top: 16px;
   right: 16px;
   z-index: 10;
-  background: #232323;
+  background: var(--color-bg);
   color: #fff;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -108,7 +108,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  background: #232323;
+  background: var(--color-bg);
   position: relative;
   min-height: 0;
   color: #fff;
@@ -191,7 +191,7 @@
   top: 38px;
   right: 38px;
   min-width: 210px;
-  background: #232323;
+  background: var(--color-bg);
   color: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(60,60,60,0.18);
@@ -226,7 +226,7 @@
 }
 .dots-menu-item:hover {
   background: #292929;
-  color: #49edd4;
+  color: var(--color-primary);
 }
 .dots-menu-item.delete {
   color: #e53935;
@@ -263,7 +263,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px 18px 0 18px;
-  background: #232323;
+  background: var(--color-bg);
   box-sizing: border-box;
 }
 
@@ -304,7 +304,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid #232323;
+  border: 2px solid var(--color-bg);
   object-fit: cover;
   box-shadow: 0 1px 4px rgba(0,0,0,0.11);
   margin-right: 0;
@@ -346,14 +346,14 @@
 }
 .add-comment-form .send-btn {
   min-width: 40px;
-  color: #49edd4;
+  color: var(--color-primary);
 }
 .add-comment-form input:focus {
-  border-color: #49edd4;
+  border-color: var(--color-primary);
 }
 .add-comment-form .send-btn {
   min-width: 40px;
-  color: #49edd4;
+  color: var(--color-primary);
 }
 
 /* Profile links and avatars in comments */
@@ -374,12 +374,12 @@
   object-fit: cover;
   margin-right: 4px;
   border: 1px solid #292929;
-  background: #232323;
+  background: var(--color-bg);
   transition: box-shadow 0.2s;
 }
 .profile-link:hover .ig-modal-avatar,
 .profile-link:focus .ig-modal-avatar {
-  box-shadow: 0 0 0 2px #49edd433;
+  box-shadow: 0 0 0 2px var(--color-primary)33;
 }
 .profile-link,
 .profile-link * {

@@ -2,6 +2,10 @@
   <!-- Кнопка перехода на главную всегда видна -->
   <span routerLink="/main" >InstaKing</span>
 
+  <button (click)="toggleTheme()">
+    <span *ngIf="isDarkTheme(); else light">🌙</span>
+    <ng-template #light>☀️</ng-template>
+  </button>
   <!-- Всё остальное скрывается на /profile -->
   <ng-container *ngIf="!router.url.startsWith('/profile')">
     <span class="spacer"></span>

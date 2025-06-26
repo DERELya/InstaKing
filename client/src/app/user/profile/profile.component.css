@@ -48,8 +48,8 @@
   height: 96px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #232323;
-  background: #232323;
+  border: 3px solid var(--color-bg);
+  background: var(--color-bg);
   transition: filter 0.2s;
   display: block;
   box-shadow: 0 2px 12px 0 #0006;
@@ -85,17 +85,17 @@
   margin-top: 10px;
   width: 100%;
   max-width: 96px;
-  background: #232323 !important;
-  color: #49edd4 !important;
+  background: var(--color-bg) !important;
+  color: var(--color-primary) !important;
   border-radius: 8px;
-  border: 1.5px solid #49edd4;
+  border: 1.5px solid var(--color-primary);
   font-weight: 500;
   font-size: 14px;
   transition: background 0.15s, color 0.15s;
 }
 .avatar-upload-btn:hover {
-  background: #49edd4 !important;
-  color: #232323 !important;
+  background: var(--color-primary) !important;
+  color: var(--color-bg) !important;
 }
 
 /* --- Блок информации --- */
@@ -126,16 +126,16 @@
   font-size: 14px;
   padding: 2px 13px;
   border-radius: 8px;
-  background: #232323;
-  color: #49edd4; !important;
-  border: 1.2px solid #49edd4;
+  background: var(--color-bg);
+  color: var(--color-primary); !important;
+  border: 1.2px solid var(--color-primary);
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
   min-height: 32px;
 }
 .edit-btn:hover, .follow-btn:hover {
-  background: #49edd4;
-  color: #232323;
+  background: var(--color-primary);
+  color: var(--color-bg);
 }
 
 /* --- Статистика --- */
@@ -215,8 +215,8 @@
 }
 
 .profile-tab-btn.active {
-  color: #49edd4;
-  border-bottom: 2px solid #49edd4;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
   font-weight: 600;
 }
 
@@ -234,9 +234,9 @@
 .circle {
   width: 56px;
   height: 56px;
-  background: #232323;
+  background: var(--color-bg);
   border-radius: 50%;
-  border: 2px solid #49edd4;
+  border: 2px solid var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -248,12 +248,12 @@
 
 .circle:hover,
 .circle:focus {
-  background: #49edd4;
+  background: var(--color-primary);
   box-shadow: 0 0 0 4px #1e1e1e;
 }
 
 .plus-sign {
-  color: #49edd4;
+  color: var(--color-primary);
   font-size: 32px;
   line-height: 1;
   font-weight: 400;
@@ -263,7 +263,7 @@
 
 .circle:hover .plus-sign,
 .circle:focus .plus-sign {
-  color: #232323;
+  color: var(--color-bg);
 }
 
 .add-label {

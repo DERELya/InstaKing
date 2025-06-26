@@ -416,7 +416,7 @@
   transition: color .2s;
 }
 .like-username:hover {
-  color: #49edd4;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 

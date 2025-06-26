@@ -1,11 +1,11 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
-import {provideRouter, withDebugTracing} from '@angular/router';
+import {ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection} from '@angular/core';
+import {provideRouter} from '@angular/router';
 
-import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import {AuthInterceptor, authInterceptorProviders} from './helper/auth-interceptor';
+import {routes} from './app.routes';
+import {provideClientHydration, withEventReplay} from '@angular/platform-browser';
+import {authInterceptorProviders} from './helper/auth-interceptor';
 import {authErrorInterceptorProvider} from './helper/error-interceptor';
-import {HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi} from '@angular/common/http';
+import {provideHttpClient, withFetch, withInterceptorsFromDi} from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +15,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
     ...authInterceptorProviders,
     ...authErrorInterceptorProvider,
-  provideRouter(routes)
+    provideRouter(routes)
   ]
 };

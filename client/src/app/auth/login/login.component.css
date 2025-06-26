@@ -1,6 +1,6 @@
 .login-page {
   min-height: 100vh;
-  background: #181a1b;
+  background: var(--color-bg-dark);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,7 +9,7 @@
 }
 
 .login-page h2 {
-  color: #49edd4;
+  color: var(--color-primary);
   font-weight: 700;
   margin-bottom: 28px;
   letter-spacing: 0.02em;
@@ -17,7 +17,7 @@
 }
 
 .login-page form {
-  background: #232323;
+  background: var(--color-bg);
   border-radius: 16px;
   box-shadow: 0 6px 32px 0 #000a;
   padding: 36px 32px 28px 32px;
@@ -49,7 +49,7 @@ mat-form-field {
 }
 /* Пример кастомных стилей для кнопки Login */
 .login-btn {
-  background: #49edd4 !important;
+  background: var(--color-primary) !important;
   color: #191919 !important;
   border-radius: 12px;
   font-weight: bold;
@@ -75,8 +75,8 @@ button[mat-flat-button] {
   letter-spacing: 0.01em;
   border-radius: 8px;
   height: 44px;
-  background: #49edd4 !important;
-  color: #232323 !important;
+  background: var(--color-primary) !important;
+  color: var(--color-bg) !important;
   box-shadow: 0 2px 12px #2226;
   transition: background 0.18s, color 0.18s, box-shadow 0.13s;
   margin: 0 auto;
@@ -84,7 +84,7 @@ button[mat-flat-button] {
 button[mat-flat-button]:hover:enabled {
   background: #24dac2 !important;
   color: #1a1a1a !important;
-  box-shadow: 0 4px 18px #49edd455;
+  box-shadow: 0 4px 18px var(--color-primary)55;
 }
 
 button[mat-flat-button]:disabled {
@@ -105,9 +105,9 @@ button.register-btn {
   font-weight: 600;
   padding: 12px 0;
   border-radius: 8px;
-  color: #49edd4;
+  color: var(--color-primary);
   background: transparent;
-  border: 1.5px solid #49edd4;
+  border: 1.5px solid var(--color-primary);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   text-decoration: none;
   margin-top: 0;
@@ -115,21 +115,21 @@ button.register-btn {
 }
 .login-page a:hover,
 button.register-btn:hover {
-  background: #49edd4;
-  color: #232323;
-  border-color: #49edd4;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  border-color: var(--color-primary);
   text-decoration: none;
 }
 /* Тёмный фон input в mat-form-field */
 mat-form-field.mat-form-field-appearance-outline .mat-input-element {
   background: #1c1d1f !important;
-  color: #f5f5f7 !important;
+  color: var(--color-text) !important;
 }
 
 /* Убрать фон при фокусе */
 mat-form-field.mat-form-field-appearance-outline .mat-input-element:focus {
   background: #1c1d1f !important;
-  color: #f5f5f7 !important;
+  color: var(--color-text) !important;
 }
 
 /* Убрать выделение текста (цвет) — для всех input */
@@ -142,25 +142,25 @@ input::-moz-selection {
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
   box-shadow: 0 0 0 1000px #1c1d1f inset !important;
-  -webkit-text-fill-color: #f5f5f7 !important;
+  -webkit-text-fill-color: var(--color-text) !important;
 }
 /* Outline цвета для Angular Material MDC outline fields */
 .mat-mdc-form-field .mat-mdc-text-field-wrapper {
-  --mdc-outlined-text-field-outline-color: #444 !important;
-  --mdc-outlined-text-field-hover-outline-color: #49edd4 !important;
-  --mdc-outlined-text-field-focus-outline-color: #49edd4 !important;
+  --mdc-outlined-text-field-outline-color: var(--color-border) !important;
+  --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
 }
 
 /* Цвет label */
 .mat-mdc-form-field.mat-focused .mat-mdc-floating-label,
 .mat-mdc-form-field:hover .mat-mdc-floating-label {
-  color: #49edd4 !important;
+  color: var(--color-primary) !important;
 }
 
 /* Цвет текста и фон input */
 .mat-mdc-input-element {
   background: rgba(33, 154, 214, 0) !important;
-  color: #f5f5f7 !important;
+  color: var(--color-text) !important;
 }
 
 /* Можно ещё убрать синий outline браузера */

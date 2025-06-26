@@ -10,6 +10,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
+import {ThemeService} from '../../services/theme.service';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -42,7 +43,8 @@ export class NavigationComponent implements OnInit {
     private userService: UserService,
     protected router: Router,
     private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef) {
+    private cd: ChangeDetectorRef,
+    public themeService: ThemeService) {
   }
 
 
@@ -67,6 +69,14 @@ export class NavigationComponent implements OnInit {
       });
       this.cd.markForCheck();
     }
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  isDarkTheme(): boolean {
+    return this.themeService.isDarkTheme();
   }
 
   logout(): void {
