@@ -28,7 +28,7 @@
     <div class="profile-info-block">
       <div class="profile-row">
         <span class="profile-username">{{ user?.username }}</span>
-        <button *ngIf="isCurrentUser" mat-stroked-button class="edit-btn" (click)="openEditDialog()">Редактировать</button>
+        <button *ngIf="isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Редактировать</button>
       </div>
       <div class="profile-stats">
         <span><b>{{postsCount}}</b> публикаций</span>

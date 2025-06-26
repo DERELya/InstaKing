@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {TokenStorageService} from '../../services/token-storage.service';
@@ -34,30 +34,36 @@ export class LoginComponent implements OnInit{
     private authService: AuthService,
     private tokenStorage: TokenStorageService,
     private notificationService: NotificationService,
-    private router : Router,
-    private fb: FormBuilder
+    private router: Router,
+    private fb: FormBuilder,
   ) {
-    if (this.tokenStorage.getUser()){
+    if (this.tokenStorage.getUser()) {
       this.router.navigate(['main'])
     }
   }
 
-  ngOnInit(): void{
-    this.loginForm=this.createLoginForm();
+  ngOnInit(): void {
+    this.loginForm = this.createLoginForm();
   }
 
-  createLoginForm():FormGroup{
+
+  onInputChange() {
+    this.loginForm.updateValueAndValidity();
+  }
+
+
+  createLoginForm(): FormGroup {
     return this.fb.group({
-        email: ['',Validators.compose([Validators.required]),Validators.email],
-        password: ['',Validators.compose([Validators.required])],
+      email: ['', Validators.compose([Validators.required, Validators.email])],
+      password: ['', Validators.required],
     })
   }
 
-  submit(): void{
+  submit(): void {
     this.authService.login({
       email: this.loginForm.value.email,
       password: this.loginForm.value.password
-    }).subscribe(data=>{
+    }).subscribe(data => {
       console.log(data);
       this.tokenStorage.saveToken(data.token);
       this.tokenStorage.saveUser(data);
@@ -66,10 +72,16 @@ export class LoginComponent implements OnInit{
       this.router.navigate(['/']);
       window.location.reload();
 
-    },error => {
+    }, error => {
       console.log(error);
       this.notificationService.showSnackBar(error.message)
     })
 
   }
+
+  removeSelection(event: FocusEvent) {
+    const input = event.target as HTMLInputElement;
+    setTimeout(() => input.setSelectionRange(input.value.length, input.value.length), 0);
+  }
+
 }

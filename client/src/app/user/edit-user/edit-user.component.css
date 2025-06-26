@@ -1,0 +1,134 @@
+/* Контейнеры Angular Material Dialog делают фон диалога прозрачным */
+:host ::ng-deep .mat-mdc-dialog-container,
+:host ::ng-deep .mat-dialog-container {
+  background: #232323 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+:host ::ng-deep .mat-mdc-dialog-title,
+:host ::ng-deep .mat-dialog-title,
+:host ::ng-deep .mat-mdc-dialog-title ~ .mat-mdc-dialog-content,
+:host ::ng-deep .mat-dialog-title ~ .mat-dialog-content {
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* Основной фон и оформление формы */
+form {
+  background: #232323;
+  min-width: 320px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+h2[mat-dialog-title] {
+  color: #49edd4;
+  background: #232323;
+  font-weight: 700;
+  text-align: left;
+  margin-top: 0;
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+}
+
+/* Поля формы */
+mat-form-field.w-100 {
+  width: 100%;
+}
+
+/* Стили input и textarea для темной темы */
+.mat-mdc-input-element,
+.mat-input-element,
+textarea.mat-input-element,
+textarea.mat-mdc-input-element {
+  background: #181a1b !important;
+  color: #f5f5f7 !important;
+}
+
+/* Цвет label */
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label,
+.mat-mdc-form-field:hover .mat-mdc-floating-label {
+  color: #49edd4 !important;
+}
+
+/* Outline для MDC */
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  --mdc-outlined-text-field-outline-color: #444 !important;
+  --mdc-outlined-text-field-hover-outline-color: #49edd4 !important;
+  --mdc-outlined-text-field-focus-outline-color: #49edd4 !important;
+}
+
+/* Убрать автозаполнение фон */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:-webkit-autofill:hover,
+.mat-mdc-input-element:-webkit-autofill,
+.mat-mdc-input-element:-webkit-autofill:focus,
+.mat-mdc-input-element:-webkit-autofill:active,
+.mat-mdc-input-element:-webkit-autofill:hover {
+  box-shadow: 0 0 0 1000px #181a1b inset !important;
+  -webkit-text-fill-color: #f5f5f7 !important;
+  caret-color: #49edd4 !important;
+  border-radius: 0 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Кнопки */
+mat-dialog-actions[align="end"] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Стили кнопок */
+button[mat-button] {
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 8px;
+  padding: 8px 26px;
+  letter-spacing: 0.01em;
+  background: transparent;
+  border: 1.5px solid #49edd4;
+  color: #49edd4;
+  transition: background 0.16s, color 0.16s, border-color 0.16s;
+}
+
+button[mat-button][color="primary"] {
+  background: #49edd4;
+  color: #232323;
+  border: 1.5px solid #49edd4;
+}
+
+button[mat-button][color="primary"]:hover {
+  background: #24dac2;
+  color: #232323;
+  border: 1.5px solid #24dac2;
+}
+
+button[mat-button]:hover:not([color="primary"]) {
+  background: #232323;
+  color: #49edd4;
+  border: 1.5px solid #49edd4;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+  form {
+    padding: 20px 6px 14px 6px;
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+  }
+  h2[mat-dialog-title] {
+    font-size: 1.15rem;
+  }
+  button[mat-button] {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}

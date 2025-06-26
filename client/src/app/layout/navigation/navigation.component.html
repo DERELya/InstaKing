@@ -1,6 +1,6 @@
 <mat-toolbar color="primary">
   <!-- Кнопка перехода на главную всегда видна -->
-  <span routerLink="/main" style="cursor: pointer;margin-left: 20px;">InstaKing</span>
+  <span routerLink="/main" >InstaKing</span>
 
   <!-- Всё остальное скрывается на /profile -->
   <ng-container *ngIf="!router.url.startsWith('/profile')">
@@ -15,6 +15,7 @@
     @if (isDataLoaded) {
       <h3>{{ user?.username }}</h3>
     }
+
 
     @if (isLoggedIn) {
       <button [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">

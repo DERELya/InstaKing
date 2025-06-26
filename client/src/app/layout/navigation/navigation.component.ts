@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {UserService} from '../../services/user.service';
@@ -41,7 +41,8 @@ export class NavigationComponent implements OnInit {
     private tokenService: TokenStorageService,
     private userService: UserService,
     protected router: Router,
-    private imageService: ImageUploadService) {
+    private imageService: ImageUploadService,
+    private cd: ChangeDetectorRef) {
   }
 
 
@@ -57,11 +58,14 @@ export class NavigationComponent implements OnInit {
       this.imageService.getProfileImage().subscribe({
         next: (blob) => {
           this.userProfileImage = URL.createObjectURL(blob);
+          this.isDataLoaded=true;
+          this.cd.markForCheck();
         },
         error: () => {
           this.userProfileImage = 'assets/placeholder.jpg';
         }
       });
+      this.cd.markForCheck();
     }
   }
 
