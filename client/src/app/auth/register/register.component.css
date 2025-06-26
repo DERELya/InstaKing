@@ -124,13 +124,12 @@ input::-moz-selection {
 /* Убрать цвет фона при автозаполнении (Chrome, Edge) */
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
-  box-shadow: 0 0 0 1000px #1c1d1f inset !important;
   -webkit-text-fill-color: var(--color-text) !important;
 }
 
 /* Outline цвета для Angular Material MDC outline fields */
 .mat-mdc-form-field .mat-mdc-text-field-wrapper {
-  --mdc-outlined-text-field-outline-color: var(--color-border) !important;
+  --mdc-outlined-text-field-outline-color: #fff !important;
   --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;
   --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
 }
@@ -143,13 +142,8 @@ input:-webkit-autofill:focus {
 
 /* Цвет текста и фон input */
 .mat-mdc-input-element {
-  background: rgba(33, 154, 214, 0) !important;
+  background: var(--color-bg) !important;
   color: var(--color-text) !important;
-}
-::ng-deep input:-webkit-autofill,
-::ng-deep .mat-mdc-input-element:-webkit-autofill {
-  box-shadow: 0 0 0 1000px var(--color-bg-dark) inset !important;
-  -webkit-text-fill-color: var(--color-text) !important;
 }
 
 

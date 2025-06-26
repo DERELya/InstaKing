@@ -1,7 +1,7 @@
 .create-post-container {
   background: var(--color-bg);
   border-radius: 18px;
-  box-shadow: 0 6px 32px 0 #000a;
+  box-shadow: var(--box-shadow);
   padding: 38px 32px 32px 32px;
   width: 100%;
   margin:  auto;
@@ -47,8 +47,8 @@ form[formGroup] {
   width: 82px;
   height: 82px;
   object-fit: cover;
-  border-radius: 16px;
-  background: #191a1b;
+  border-radius: var(--border-radius);
+  background: var(--color-bg);
   border: 2px solid var(--color-primary);
 }
 
@@ -96,7 +96,7 @@ button[mat-flat-button] {
 }
 
 button[mat-flat-button]:hover:enabled {
-  background: #24dac2 !important;
+  background: var(--color-primary) !important;
   color: #1a1a1a !important;
   box-shadow: 0 4px 18px var(--color-primary)55;
 }
@@ -109,7 +109,7 @@ button[mat-flat-button]:disabled {
   box-shadow: none;
 }
 .mat-mdc-input-element {
-  background: rgba(33, 154, 214, 0) !important;
+  background: var(--color-bg) !important;
   color: var(--color-text) !important;
 }
 

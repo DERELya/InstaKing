@@ -6,7 +6,7 @@
   margin: 0 auto;
   padding: 12px 0 0 0;
   box-sizing: border-box;
-  background: #181818;
+  background: var(--color-bg);
   color: #fff;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
@@ -61,7 +61,7 @@
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100%; height: 100%;
   border-radius: 50%;
-  background: rgba(40, 40, 40, 0.67);
+  background: var(--color-bg);
   opacity: 0;
   display: flex;
   align-items: center;
@@ -75,7 +75,7 @@
   pointer-events: all;
 }
 .avatar-overlay-text {
-  color: #fff;
+  color: var(--color-text);
   font-size: 12px;
   font-weight: 500;
   text-shadow: 0 2px 8px #000a;
@@ -117,7 +117,7 @@
 .profile-username {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
   letter-spacing: 0.02em;
   text-shadow: 0 2px 8px #0003;
 }
@@ -144,10 +144,10 @@
   gap: 22px;
   font-size: 15px;
   margin-bottom: 6px;
-  color: #e0e0e0;
+  color: var(--color-text);
 }
 .profile-stats span b {
-  color: #fff;
+  color: var(--color-text);
 }
 
 /* --- Био --- */
@@ -158,18 +158,18 @@
   font-weight: 500;
   font-size: 15px;
   margin-bottom: 2px;
-  color: #e7e7e7;
+  color: var(--color-text);
   letter-spacing: 0.01em;
 }
 .profile-description {
   font-size: 14px;
-  color: #b2b2b2;
+  color: var(--color-text);
   white-space: pre-line;
 }
 
 /* --- Разделитель --- */
 .profile-divider {
-  border-bottom: 1.2px solid #292929;
+  border-bottom: 1.2px solid var(--color-border);
   margin: 12px 0 18px 0;
 }
 .profile-tabs {
@@ -178,16 +178,16 @@
   align-items: center;
   gap: 32px;
   margin-bottom: 10px;
-  border-bottom: 1.2px solid #292929;
+  border-bottom: 1.2px solid var(--color-border);
   padding-bottom: 0;
-  background: none;
+  background: var(--color-bg);
 }
 
 .profile-tab-btn {
-  background: none;
+  background: var(--color-bg);
   border: none;
   outline: none;
-  color: #c3c3c3;
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
   display: flex;

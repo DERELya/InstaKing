@@ -63,7 +63,7 @@ export class IndexComponent implements OnInit {
 
   ngOnInit(): void {
 
-
+    this.posts=this.postService.loadAllPosts();
   }
 
 

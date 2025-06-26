@@ -38,6 +38,7 @@ export class PostService {
     this.http.get<UiPost[]>(this.api + 'all').subscribe(posts => {
       this.postsSubject.next(posts);
     });
+
   }
 
   /** Загрузить посты текущего пользователя и обновить поток */

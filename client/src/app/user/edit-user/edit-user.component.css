@@ -40,12 +40,12 @@ mat-form-field.w-100 {
 }
 
 /* Стили input и textarea для темной темы */
-.mat-mdc-input-element,
-.mat-input-element,
-textarea.mat-input-element,
-textarea.mat-mdc-input-element {
-  background: var(--color-bg-dark) !important;
-  color: var(--color-text) !important;
+
+
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  --mdc-outlined-text-field-outline-color: #fff !important;
+  --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
 }
 
 /* Цвет label */
@@ -54,27 +54,15 @@ textarea.mat-mdc-input-element {
   color: var(--color-primary) !important;
 }
 
-/* Outline для MDC */
-.mat-mdc-form-field .mat-mdc-text-field-wrapper {
-  --mdc-outlined-text-field-outline-color: var(--color-border) !important;
-  --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;
-  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
+/* Цвет текста и фон input */
+.mat-mdc-input-element {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
-
-/* Убрать автозаполнение фон */
-input:-webkit-autofill,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active,
-input:-webkit-autofill:hover,
-.mat-mdc-input-element:-webkit-autofill,
-.mat-mdc-input-element:-webkit-autofill:focus,
-.mat-mdc-input-element:-webkit-autofill:active,
-.mat-mdc-input-element:-webkit-autofill:hover {
-  box-shadow: 0 0 0 1000px var(--color-bg-dark) inset !important;
+::ng-deep input:-webkit-autofill,
+::ng-deep .mat-mdc-input-element:-webkit-autofill {
+  box-shadow: 0 0 0 1000px var(--color-text) inset !important;
   -webkit-text-fill-color: var(--color-text) !important;
-  caret-color: var(--color-primary) !important;
-  border-radius: 0 !important;
-  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Кнопки */

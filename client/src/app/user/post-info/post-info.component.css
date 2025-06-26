@@ -13,7 +13,7 @@
   width: 100%;
   max-width: 350px;
   background: var(--color-bg);
-  color: #fff;
+  color: var(--color-text);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.13);
   overflow: hidden;
@@ -26,7 +26,7 @@
   width: 100%;
   aspect-ratio: 1/1;
   object-fit: cover;
-  background: #181818;
+  background: var(--color-bg);
   cursor: pointer;
   display: block;
 }
@@ -36,7 +36,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0,0,0,0.82);
+  background: var(--color-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,7 +45,7 @@
 .fullscreen-content {
   display: flex;
   flex-direction: row;
-  background: #181818;
+  background: var(--color-bg);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.32);
   max-width: 900px;
@@ -63,7 +63,7 @@
   right: 16px;
   z-index: 10;
   background: var(--color-bg);
-  color: #fff;
+  color: var(--color-text);
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   width: 40px;
@@ -76,14 +76,14 @@
   transition: background 0.18s;
 }
 .close-modal-btn:hover {
-  background: #313131;
+  background: var(--color-bg);
 }
 
 .modal-img-block {
   flex: 1 1 55%;
   min-width: 0;
   min-height: 0;
-  background: #101010;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,7 +95,7 @@
   max-height: 88vh;
   object-fit: contain;
   border-radius: 0;
-  background: #101010;
+  background: var(--color-bg);
   display: block;
 }
 
@@ -123,7 +123,7 @@
   font-size: 16px;
   font-weight: 600;
   padding: 18px 18px 10px 18px;
-  border-bottom: 1px solid #242424;
+  border-bottom: 1px solid var(--color-border);
   box-sizing: border-box;
   background: none;
 }
@@ -131,7 +131,7 @@
 .ig-modal-author-bar {
   justify-content: space-between;
   padding: 10px 16px 8px 16px;
-  border-bottom: 1px solid #262626;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .ig-modal-author-info {
@@ -146,14 +146,14 @@
   height: 36px;
   object-fit: cover;
   border-radius: 50%;
-  background: #191919;
+  background: var(--color-bg);
   margin-right: 10px;
   border: none;
   box-shadow: 0 1px 4px rgba(0,0,0,0.13);
 }
 
 .username {
-  color: #fff;
+  color: var(--color-text);
   font-weight: 500;
   font-size: 18px;
   white-space: nowrap;
@@ -171,19 +171,21 @@
 
 .dots-btn,
 .close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 40px;   /* или сколько нужно */
+  height: 40px;
+  background: none;
+  border: none;
   border-radius: 50%;
-  transition: background 0.18s;
-  color: #fff;
+  padding: 0;
+  color: var(--color-text); /* для темы */
 }
+
 .dots-btn:hover,
 .close-btn:hover {
-  background: #2c2c2c;
+  background: var(--color-bg);
 }
 
 .dots-menu {
@@ -192,20 +194,26 @@
   right: 38px;
   min-width: 210px;
   background: var(--color-bg);
-  color: #fff;
-  border-radius: 16px;
+  color: var(--color-text);
+  border-radius: var(--border-radius);
   box-shadow: 0 8px 32px rgba(60,60,60,0.18);
   padding: 7px 0;
   z-index: 200;
   display: flex;
   flex-direction: column;
   animation: menu-pop 0.18s cubic-bezier(0.35, 0, 0.25, 1);
-  border: 1px solid #292929;
+  border: 1px solid var(--color-border);
 }
 
 @keyframes menu-pop {
   from { transform: translateY(-12px) scale(0.98); opacity: 0; }
   to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.dots-btn svg,
+.close-btn svg {
+  display: block;                /* убирает baseline выравнивание */
+  width: 24px;                   /* или свой размер */
+  height: 24px;
 }
 
 .dots-menu-item {
@@ -216,7 +224,7 @@
   padding: 13px 20px 13px 18px;
   font-size: 17px;
   font-weight: 400;
-  color: #fff;
+  color: var(--color-text);
   cursor: pointer;
   border-radius: 0;
   display: flex;
@@ -225,9 +233,10 @@
   transition: background 0.15s, color 0.15s;
 }
 .dots-menu-item:hover {
-  background: #292929;
+  background: var(--color-bg-dark);
   color: var(--color-primary);
 }
+
 .dots-menu-item.delete {
   color: #e53935;
 }
@@ -249,7 +258,7 @@
   font-size: 15px;
   word-break: break-word;
   box-sizing: border-box;
-  color: #f7f7f7;
+  color: var(--color-bg);
 }
 
 .comments-scrollable-block img.ig-modal-avatar {
@@ -286,7 +295,7 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .likes img.ig-modal-avatar {
@@ -309,7 +318,7 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.11);
   margin-right: 0;
   transition: box-shadow .2s;
-  background: #191919;
+  background: var(--color-bg);
 }
 
 .likes-label {
@@ -319,7 +328,7 @@
   font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
   font-weight: 350;
   letter-spacing: 0.01em;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .like-username {
@@ -359,7 +368,7 @@
 /* Profile links and avatars in comments */
 .profile-link {
   text-decoration: none;
-  color: inherit;
+  color: var(--color-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -373,7 +382,7 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 4px;
-  border: 1px solid #292929;
+  border: 1px solid var(--color-border);
   background: var(--color-bg);
   transition: box-shadow 0.2s;
 }
