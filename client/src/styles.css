@@ -1,6 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label, .mat-form-field-appearance-outline.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper .mat-form-field-label {
@@ -12,11 +11,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   border-top-color: currentColor !important;
 }
 body, html {
+  min-height: 100vh;
   background: var(--color-bg) !important; /* Совпадает с профилем */
-  color: var(--color-text);
+  color: var(--color-bg);
 }
 .my-custom-menu-item.mat-mdc-menu-item {
-  background: transparent !important;
+  background: var(--color-bg) !important;
   color: #e0e0e0 !important;
   font-size: 15px !important;
   font-weight: 500 !important;

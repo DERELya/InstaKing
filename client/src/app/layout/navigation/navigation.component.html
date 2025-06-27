@@ -10,11 +10,6 @@
   <ng-container *ngIf="!router.url.startsWith('/profile')">
     <span class="spacer"></span>
 
-    @if (!isLoggedIn) {
-      <button matTooltip="Login" routerLink="/login" mat-icon-button class="example-icon favorite-icon">
-        <mat-icon>login</mat-icon>
-      </button>
-    }
 
     @if (isDataLoaded) {
       <h3>{{ user?.username }}</h3>

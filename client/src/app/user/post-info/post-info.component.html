@@ -123,11 +123,10 @@
       {{ data.post.usersLiked![0] }}
     </a>
             </b>
-    <ng-container *ngIf="data.post.usersLiked!.length > 1">
-      и ещё
-      <b>
-                 <a class="like-username" (click)="openLikesDialog()"> {{ data.post.usersLiked!.length - 1 }} </a>
-       </b>
+    <ng-container *ngIf="data.post.usersLiked!.length > 1">и ещё
+        <b>
+        <a class="like-username" (click)="openLikesDialog()"> {{ data.post.usersLiked!.length - 1 }} </a>
+         </b>
     </ng-container>
   </span>
         </section>

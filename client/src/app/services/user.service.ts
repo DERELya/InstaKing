@@ -38,4 +38,14 @@ export class UserService {
     // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
     return this.http.get<User>(USER_API+'getUser/'+username);
   }
+
+  getFollowers(username: string | null): Observable<User[]> {
+    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
+    return this.http.get<User[]>(USER_API+username+'/followers');
+  }
+  getFollowing(username: string | null): Observable<User[]> {
+    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
+    return this.http.get<User[]>(USER_API+username+'/following');
+  }
+
 }

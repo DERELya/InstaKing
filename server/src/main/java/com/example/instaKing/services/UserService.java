@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -72,8 +73,30 @@ public class UserService {
     }
 
     public User getUserByUsername(String username) {
-        System.out.println(username);
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with userid" + username));
     }
+
+    public List<User> getFollowersUser(String username) {
+        return userRepository.findAllByFollowers_Username(username);
+    }
+
+    public List<User> getFollowingUsers(String username) {
+        return userRepository.findAllByFollowing_Username(username);
+    }
+
+    public void followUser(Principal principal, String followingUsername) {
+        User follower =getUserByPrincipal(principal);
+        User following = userRepository.findByUsername(followingUsername).orElseThrow();
+        follower.getFollowing().add(following);
+        userRepository.save(follower);
+    }
+
+    public void unfollowUser(Principal principal, String followingUsername) {
+        User follower = getUserByPrincipal(principal);
+        User following = userRepository.findByUsername(followingUsername).orElseThrow();
+        follower.getFollowing().remove(following);
+        userRepository.save(follower);
+    }
+
 }

@@ -1,0 +1,22 @@
+<div class="likes-dialog">
+  <div class="likes-dialog-header">
+    <span>Отметки "Нравится"</span>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="likes-dialog-list">
+    <ng-container *ngFor="let user of users">
+      <div class="like-user-row">
+        <img class="avatar" [src]="user.avatarUrl" alt="avatar" />
+        <div class="user-info">
+          <div [routerLink]="['/profile', user.username]" (click)="close()" class="username">{{ user.username }}</div>
+          <div class="fullname" *ngIf="user.firstname">{{ user.firstname }} {{user.lastname}}</div>
+        </div>
+        <button mat-stroked-button color="primary" class="follow-btn">
+          Подписаться
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -29,11 +29,12 @@
       <div class="profile-row">
         <span class="profile-username">{{ user?.username }}</span>
         <button *ngIf="isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Редактировать</button>
+        <button *ngIf="!isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Подписаться</button>
       </div>
       <div class="profile-stats">
-        <span><b>{{postsCount}}</b> публикаций</span>
-        <span><b>2</b> подписчиков</span>
-        <span><b>3</b> подписки</span>
+        <span><b>{{ postsCount }}</b> {{ pluralize(postsCount, 'публикация', 'публикации', 'публикаций') }}</span>
+        <span (click)="openFollowersDialog()"><b>{{ followersCount }}</b> {{ pluralize(followersCount, 'подписчик', 'подписчика', 'подписчиков') }}</span>
+        <span (click)="openFollowingDialog()"><b>{{ followingCount }}</b> {{ pluralize(followingCount, 'подписка', 'подписки', 'подписок') }}</span>
       </div>
       <div class="profile-bio">
         <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>

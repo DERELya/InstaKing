@@ -43,6 +43,18 @@ public class User implements UserDetails {
     @Column(updatable = false)
     private LocalDateTime createdDate;
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_following",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    private Set<User> following = new HashSet<>();
+
+    // Пользователи, которые подписаны на меня
+    @ManyToMany(mappedBy = "following")
+    private Set<User> followers = new HashSet<>();
+
     @Transient
     private Collection<? extends GrantedAuthority> authorities;
 

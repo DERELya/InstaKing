@@ -1,5 +1,6 @@
 package com.example.instaKing.controllers;
 
+import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.User;
@@ -14,6 +15,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/user")
@@ -56,11 +59,42 @@ public class UserController {
         UserDTO userUpdated = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
+
     @GetMapping("/getUser/{username}")
     public ResponseEntity<UserDTO> getUserProfileByUsername(@PathVariable("username") String username) {
         User user = userService.getUserByUsername(username);
         UserDTO userDTO = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
+    @PostMapping("/follow/{followingUsername}")
+    public ResponseEntity<?> follow(Principal principal, @PathVariable String followingUsername) {
+        userService.followUser(principal, followingUsername);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/unfollow/{unfollowingUsername}")
+    public ResponseEntity<?> unfollow(Principal principal, @PathVariable String unfollowingUsername) {
+        userService.unfollowUser(principal, unfollowingUsername);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("{username}/followers")
+    public ResponseEntity<Object> followersUser(@PathVariable("username") String username) {
+
+        List<UserDTO> followersDTO = userService.getFollowersUser(username)
+                .stream()
+                .map(userFacade::userToUserDTO).collect(Collectors.toList());
+        return new ResponseEntity<>(followersDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("{username}/following")
+    public ResponseEntity<Object> followingUser(@PathVariable("username") String username) {
+        List<UserDTO> followingsDTO = userService.getFollowingUsers(username)
+                .stream()
+                .map(userFacade::userToUserDTO).collect(Collectors.toList());
+        return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
+    }
+
 
 }

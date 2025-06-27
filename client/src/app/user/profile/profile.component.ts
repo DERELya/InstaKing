@@ -13,6 +13,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 import {of, Subject, switchMap, takeUntil} from 'rxjs';
 import {AddPostComponent} from '../add-post/add-post.component';
+import {FollowersComponent} from '../followers/followers.component';
+import {FollowingComponent} from '../following/following.component';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -43,7 +45,9 @@ export class ProfileComponent implements OnInit {
   activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
   isCurrentUser: boolean = false;
   private destroy$ = new Subject<void>();
-  postsCount?: number | null;
+  postsCount: number =0;
+  followersCount: number=0 ;
+  followingCount: number=0;
 
   constructor(private tokenService: TokenStorageService,
               private postService: PostService,
@@ -76,6 +80,15 @@ export class ProfileComponent implements OnInit {
           this.user = user;
           this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
           this.isUserDataLoaded = true;
+          this.userService.getFollowers(this.user.username)
+            .subscribe(users=>{
+              console.log(users);
+              this.followersCount=users.length;
+            });
+          this.userService.getFollowing(this.user.username)
+            .subscribe(users=>{
+              this.followingCount=users.length;
+            });
           // грузим фотку только после того, как получили user
           return this.imageService.getImageToUser(user.username);
         })
@@ -107,6 +120,7 @@ export class ProfileComponent implements OnInit {
     this.userProfileImage = 'assets/placeholder.jpg';
     this.isUserDataLoaded = true;
     this.isCurrentUser = false;
+
     this.cd.markForCheck();
   }
 
@@ -152,10 +166,32 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  openFollowersDialog(): void {
+    const dialogUserFollowersConfig = new MatDialogConfig();
+    dialogUserFollowersConfig.width = '400px';
+    dialogUserFollowersConfig.data = {
+      username: this.user.username
+    }
+    const dialogRef = this.dialog.open(FollowersComponent, dialogUserFollowersConfig);
+  }
+  openFollowingDialog(): void {
+    const dialogUserFollowingConfig = new MatDialogConfig();
+    dialogUserFollowingConfig.width = '400px';
+    dialogUserFollowingConfig.data = {
+      user: this.user
+    }
+    const dialogRef = this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
+  }
 
 
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
     this.activeTab = tab;
+  }
+
+  pluralize(count: number, one: string, few: string, many: string): string {
+    if (count % 10 === 1 && count % 100 !== 11) return one;
+    if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return few;
+    return many;
   }
 
 
