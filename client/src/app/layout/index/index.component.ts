@@ -11,9 +11,11 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {CommonModule, NgClass} from '@angular/common';
 import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {catchError, forkJoin, of, Subject, takeUntil, throwError} from 'rxjs';
+import {catchError, Subject, takeUntil, throwError} from 'rxjs';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {RouterLink} from '@angular/router';
+import {LikesPostComponent} from '../../user/likes-post/likes-post.component';
+import {MatDialog} from '@angular/material/dialog';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -56,24 +58,41 @@ export class IndexComponent implements OnInit {
     private commentService: CommentService,
     private notificationService: NotificationService,
     private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private dialog: MatDialog
   ) {
   }
 
 
   ngOnInit(): void {
-
     this.posts = [];
-    this.postService.loadAllPosts();
-    this.cd.markForCheck();
-    this.postService.posts$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(posts => {
-        this.posts = posts;
-        this.cd.markForCheck();
-        console.log(this.posts);
-      });
+    this.isPostsLoaded = false;
+    this.isUserDataLoaded = false;
 
+    this.userService.getCurrentUser().subscribe(user => {
+      this.user = user;
+      this.isUserDataLoaded = true;
+
+      this.postService.loadAllPosts();
+      this.postService.posts$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(posts => {
+          // корректно выставляем isLiked для каждого поста
+          this.posts = posts.map(post => ({
+            ...post,
+            isLiked: (post.usersLiked ?? []).includes(this.user.username)
+          }));
+          this.isPostsLoaded = true;
+          this.cd.markForCheck();
+        });
+    });
+  }
+
+  loaduser() {
+    this.userService.getCurrentUser().subscribe(user => {
+      this.user = user;
+      this.isUserDataLoaded = true;
+    });
   }
 
 
@@ -129,6 +148,7 @@ export class IndexComponent implements OnInit {
     this.cd.markForCheck();
   }
 
+
   likePost(postId: number, i: number): void {
     const post = this.posts[i];
     const liked = post.isLiked;
@@ -148,6 +168,14 @@ export class IndexComponent implements OnInit {
         return throwError(() => err);
       })
     ).subscribe();
+  }
+  openLikesDialog(postIndex: number): void {
+    const post = this.posts[postIndex];
+    if (!post || !post.usersLiked || !post.usersLiked.length) return;
+    this.dialog.open(LikesPostComponent, {
+      data: post.usersLiked,
+      width: '350px'
+    });
   }
 
   getUserImage(username: string): string {

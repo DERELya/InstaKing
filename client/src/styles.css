@@ -13,7 +13,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 body, html {
   background: var(--color-bg) !important; /* Совпадает с профилем */
-  color: var(--color-bg);
+  color: var(--color-text);
 }
 .my-custom-menu-item.mat-mdc-menu-item {
   background: transparent !important;

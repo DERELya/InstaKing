@@ -107,16 +107,16 @@
         </section>
         <section class="likes"
                  *ngIf="data.post.usersLiked && data.post.usersLiked!.length > 0">
-  <span class="likes-avatars">
-    <ng-container *ngFor="let username of data.post.usersLiked!.slice(0, 3); let idx = index">
-      <img
-        [src]="getUserImage(username)"
-        [style.z-index]="10 - idx"
-        [style.margin-left.px]="idx > 0 ? -12 : 0"
-        alt="avatar"
-        class="ig-modal-avatar like-avatar"/>
-    </ng-container>
-  </span>
+      <span class="likes-avatars">
+        <ng-container *ngFor="let username of data.post.usersLiked!.slice(0, 3); let idx = index">
+          <img
+            [src]="getUserImage(username)"
+            [style.z-index]="10 - idx"
+            [style.margin-left.px]="idx > 0 ? -12 : 0"
+            alt="avatar"
+            class="ig-modal-avatar like-avatar"/>
+              </ng-container>
+           </span>
           <span class="likes-label">Нравится <b>
                 <a [routerLink]="['/profile', data.post.usersLiked![0]]" class="like-username"
                    (click)="close()">
