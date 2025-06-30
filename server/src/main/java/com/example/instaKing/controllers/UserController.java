@@ -24,13 +24,11 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private UserService userService;
-    private UserFacade userFacade;
     private ResponseErrorValidator responseErrorValidator;
 
     @Autowired
-    public UserController(UserService userService, UserFacade userFacade, ResponseErrorValidator responseErrorValidator) {
+    public UserController(UserService userService, ResponseErrorValidator responseErrorValidator) {
         this.userService = userService;
-        this.userFacade = userFacade;
         this.responseErrorValidator = responseErrorValidator;
     }
 
@@ -38,14 +36,14 @@ public class UserController {
     public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
         User user = userService.getCurrentUser(principal);
 
-        UserDTO userDTO = userFacade.userToUserDTO(user);
+        UserDTO userDTO = UserFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId) {
         User user = userService.getUserById(Long.parseLong(userId));
-        UserDTO userDTO = userFacade.userToUserDTO(user);
+        UserDTO userDTO = UserFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
@@ -56,14 +54,14 @@ public class UserController {
 
         User user = userService.updateUser(userDTO, principal);
 
-        UserDTO userUpdated = userFacade.userToUserDTO(user);
+        UserDTO userUpdated = UserFacade.userToUserDTO(user);
         return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
 
     @GetMapping("/getUser/{username}")
     public ResponseEntity<UserDTO> getUserProfileByUsername(@PathVariable("username") String username) {
         User user = userService.getUserByUsername(username);
-        UserDTO userDTO = userFacade.userToUserDTO(user);
+        UserDTO userDTO = UserFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
@@ -84,7 +82,7 @@ public class UserController {
 
         List<UserDTO> followersDTO = userService.getFollowersUser(username)
                 .stream()
-                .map(userFacade::userToUserDTO).collect(Collectors.toList());
+                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
         return new ResponseEntity<>(followersDTO, HttpStatus.OK);
     }
 
@@ -92,9 +90,15 @@ public class UserController {
     public ResponseEntity<Object> followingUser(@PathVariable("username") String username) {
         List<UserDTO> followingsDTO = userService.getFollowingUsers(username)
                 .stream()
-                .map(userFacade::userToUserDTO).collect(Collectors.toList());
+                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
         return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
     }
+    @GetMapping("{username}/foll")
+    public ResponseEntity<Boolean> foll(Principal principal, @PathVariable String username) {
 
+
+        boolean following=userService.isFollowing(principal.getName(), username);
+        return ResponseEntity.ok(following);
+    }
 
 }

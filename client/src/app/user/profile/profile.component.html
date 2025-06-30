@@ -33,8 +33,8 @@
       </div>
       <div class="profile-stats">
         <span><b>{{ postsCount }}</b> {{ pluralize(postsCount, 'публикация', 'публикации', 'публикаций') }}</span>
-        <span (click)="openFollowersDialog()"><b>{{ followersCount }}</b> {{ pluralize(followersCount, 'подписчик', 'подписчика', 'подписчиков') }}</span>
-        <span (click)="openFollowingDialog()"><b>{{ followingCount }}</b> {{ pluralize(followingCount, 'подписка', 'подписки', 'подписок') }}</span>
+        <span (click)="openFollowingDialog(true)"><b>{{ followersCount }}</b> {{ pluralize(followersCount, 'подписчик', 'подписчика', 'подписчиков') }}</span>
+        <span (click)="openFollowingDialog(false)"><b>{{ followingCount }}</b> {{ pluralize(followingCount, 'подписка', 'подписки', 'подписок') }}</span>
       </div>
       <div class="profile-bio">
         <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>

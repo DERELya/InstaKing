@@ -24,12 +24,10 @@ import java.util.stream.Collectors;
 public class PostController {
 
     private final ResponseErrorValidator responseErrorValidator;
-    private PostFacade postFacade;
-    private PostService postService;
+    private final PostService postService;
 
     @Autowired
-    public PostController(PostFacade postFacade, PostService postService, ResponseErrorValidator responseErrorValidator) {
-        this.postFacade = postFacade;
+    public PostController( PostService postService, ResponseErrorValidator responseErrorValidator) {
         this.postService = postService;
         this.responseErrorValidator = responseErrorValidator;
     }
@@ -42,7 +40,7 @@ public class PostController {
         if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
 
         Post post = postService.createPost(postDTO, principal);
-        PostDTO createdPost = postFacade.postToPostDTO(post);
+        PostDTO createdPost = PostFacade.postToPostDTO(post);
 
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
@@ -51,7 +49,7 @@ public class PostController {
     public ResponseEntity<List<PostDTO>> getAllPosts() {
         List<PostDTO> postsDTO = postService.getAllPosts()
                 .stream()
-                .map(postFacade::postToPostDTO)
+                .map(PostFacade::postToPostDTO)
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
@@ -62,7 +60,7 @@ public class PostController {
     public ResponseEntity<List<PostDTO>> getAllPostsForCurrentUser(Principal principal) {
         List<PostDTO> postsDTO = postService.getAllPostsForCurrentUser(principal)
                 .stream()
-                .map(postFacade::postToPostDTO)
+                .map(PostFacade::postToPostDTO)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
     }
@@ -70,7 +68,7 @@ public class PostController {
     public ResponseEntity<List<PostDTO>> getAllPostsForUser(@PathVariable("username") String username) {
         List<PostDTO> postsDTO = postService.getAllPostsForUser(username)
                 .stream()
-                .map(postFacade::postToPostDTO)
+                .map(PostFacade::postToPostDTO)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
     }
@@ -80,7 +78,7 @@ public class PostController {
     public ResponseEntity<PostDTO> likePost(@PathVariable("postId") String postId,
                                             @PathVariable("username") String username) {
         Post post = postService.likePost(Long.parseLong(postId), username);
-        PostDTO postDTO = postFacade.postToPostDTO(post);
+        PostDTO postDTO = PostFacade.postToPostDTO(post);
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }

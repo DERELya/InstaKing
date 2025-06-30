@@ -82,7 +82,6 @@ export class ProfileComponent implements OnInit {
           this.isUserDataLoaded = true;
           this.userService.getFollowers(this.user.username)
             .subscribe(users=>{
-              console.log(users);
               this.followersCount=users.length;
             });
           this.userService.getFollowing(this.user.username)
@@ -174,11 +173,12 @@ export class ProfileComponent implements OnInit {
     }
     const dialogRef = this.dialog.open(FollowersComponent, dialogUserFollowersConfig);
   }
-  openFollowingDialog(): void {
+  openFollowingDialog(followers:boolean): void {
     const dialogUserFollowingConfig = new MatDialogConfig();
     dialogUserFollowingConfig.width = '400px';
     dialogUserFollowingConfig.data = {
-      user: this.user
+      followers: followers,
+      username: this.user.username
     }
     const dialogRef = this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
   }

@@ -23,7 +23,6 @@ import java.util.Collections;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
-    public static final Logger LOGGER = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
     private final JWTTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
@@ -36,7 +35,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, AuthenticationException {
 
-        LOGGER.info("JWT filter triggered for URI: {}", request.getRequestURI());
 
         try {
             String jwt = getJWTFromRequest(request);
@@ -46,22 +44,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, Collections.emptyList());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                LOGGER.info("Аутентификация прошла: {}", userDetails.getUsername());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             }
             if (!StringUtils.hasText(jwt)) {
-                LOGGER.warn("JWT отсутствует — пользователь анонимный");
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // переносим сюда
         } catch (AuthenticationException ex) {
-            System.out.println("daun");
-            SecurityContextHolder.clearContext(); // на всякий случай
-            LOGGER.error("Ошибка аутентификации: {}", ex.getMessage());
-            // передаём ошибку дальше, чтобы её перехватил AuthenticationEntryPoint
+            SecurityContextHolder.clearContext();
             throw ex;
         }
 

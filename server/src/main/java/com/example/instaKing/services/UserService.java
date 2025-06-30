@@ -98,5 +98,12 @@ public class UserService {
         follower.getFollowing().remove(following);
         userRepository.save(follower);
     }
+    public boolean isFollowing(String currentUsername, String targetUsername) {
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException(currentUsername));
+        User targetUser = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new UsernameNotFoundException(targetUsername));
+        return currentUser.getFollowing().contains(targetUser);
+    }
 
 }

@@ -4,10 +4,9 @@ import com.example.instaKing.dto.CommentDTO;
 import com.example.instaKing.models.Comment;
 import org.springframework.stereotype.Component;
 
-@Component
 public class CommentFacade {
 
-    public CommentDTO CommentToCommentDTO(Comment comment) {
+    public static CommentDTO CommentToCommentDTO(Comment comment) {
         CommentDTO commentDTO = new CommentDTO();
 
         commentDTO.setId(comment.getId());

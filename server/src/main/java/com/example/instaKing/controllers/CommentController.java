@@ -23,13 +23,11 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class CommentController {
     private CommentService commentService;
-    private CommentFacade commentFacade;
     private ResponseErrorValidator responseErrorValidator;
 
     @Autowired
-    public CommentController(CommentService commentService, CommentFacade commentFacade, ResponseErrorValidator responseErrorValidator) {
+    public CommentController(CommentService commentService, ResponseErrorValidator responseErrorValidator) {
         this.commentService = commentService;
-        this.commentFacade = commentFacade;
         this.responseErrorValidator = responseErrorValidator;
     }
 
@@ -42,7 +40,7 @@ public class CommentController {
         if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
 
         Comment comment = commentService.saveComment(Long.parseLong(postId), commentDTO, principal);
-        CommentDTO createdComment = commentFacade.CommentToCommentDTO(comment);
+        CommentDTO createdComment = CommentFacade.CommentToCommentDTO(comment);
 
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
@@ -52,7 +50,7 @@ public class CommentController {
     public ResponseEntity<List<CommentDTO>> getAllComments(@PathVariable("postId") String postId) {
         List<CommentDTO> commentsDTOList = commentService.getAllCommentForPost(Long.parseLong(postId))
                 .stream()
-                .map(commentFacade::CommentToCommentDTO)
+                .map(CommentFacade::CommentToCommentDTO)
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(commentsDTOList, HttpStatus.OK);
