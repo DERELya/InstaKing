@@ -2,10 +2,12 @@ package com.example.instaKing.services;
 
 import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.exceptions.UserExistException;
+import com.example.instaKing.exceptions.UserNotFoundException;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.ERole;
 import com.example.instaKing.payload.request.SignUpRequest;
 import com.example.instaKing.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.beans.Transient;
 import java.security.Principal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -85,25 +92,44 @@ public class UserService {
         return userRepository.findAllByFollowing_Username(username);
     }
 
+    @Transactional
     public void followUser(Principal principal, String followingUsername) {
-        User follower =getUserByPrincipal(principal);
+        if (principal.getName().equals(followingUsername)) {
+            return;
+        }
+        User follower = getUserByPrincipal(principal);
         User following = userRepository.findByUsername(followingUsername).orElseThrow();
-        follower.getFollowing().add(following);
-        userRepository.save(follower);
+        following.getFollowing().add(follower);
+        userRepository.save(following);
     }
 
+    @Transactional
     public void unfollowUser(Principal principal, String followingUsername) {
         User follower = getUserByPrincipal(principal);
         User following = userRepository.findByUsername(followingUsername).orElseThrow();
-        follower.getFollowing().remove(following);
-        userRepository.save(follower);
+        following.getFollowing().remove(follower);
+        userRepository.save(following);
     }
+
     public boolean isFollowing(String currentUsername, String targetUsername) {
+
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(currentUsername));
         User targetUser = userRepository.findByUsername(targetUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(targetUsername));
-        return currentUser.getFollowing().contains(targetUser);
+        Set<User> followers = new HashSet<>(currentUser.getFollowers());
+        return followers.contains(targetUser);
     }
 
+    public Map<String, Boolean> isFollowingBatch(String currentUsername, List<String> usernames) {
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UserNotFoundException(currentUsername));
+        Set<User> following = currentUser.getFollowers();
+        return usernames.stream()
+                .collect(Collectors.toMap(
+                        username -> username,
+                        username -> following.stream()
+                                .anyMatch(u -> u.getUsername().equals(username))
+                ));
+    }
 }

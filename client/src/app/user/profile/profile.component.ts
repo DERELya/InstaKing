@@ -1,133 +1,137 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {User} from '../../models/User';
-import {TokenStorageService} from '../../services/token-storage.service';
-import {PostService} from '../../services/post.service';
-import {MatDialog, MatDialogConfig, MatDialogModule} from '@angular/material/dialog';
-import {NotificationService} from '../../services/notification.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {UserService} from '../../services/user.service';
-import {EditUserComponent} from '../edit-user/edit-user.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { User } from '../../models/User';
+import { TokenStorageService } from '../../services/token-storage.service';
+import { PostService } from '../../services/post.service';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { NotificationService } from '../../services/notification.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { UserService } from '../../services/user.service';
+import { EditUserComponent } from '../edit-user/edit-user.component';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
-import {MatButton} from '@angular/material/button';
+import { AddPostComponent } from '../add-post/add-post.component';
+import { FollowingComponent } from '../following/following.component';
+import { forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
-import {of, Subject, switchMap, takeUntil} from 'rxjs';
-import {AddPostComponent} from '../add-post/add-post.component';
-import {FollowersComponent} from '../followers/followers.component';
-import {FollowingComponent} from '../following/following.component';
-
-const USER_API = 'http://localhost:8080/api/user/';
 
 @Component({
   selector: 'app-profile',
+  changeDetection: ChangeDetectionStrategy.Default,
+  standalone: true,
+  templateUrl: './profile.component.html',
   imports: [
-    MatDialogModule,
-    RouterOutlet,
     MatIconModule,
     NgSwitch,
-    MatButton,
+    RouterOutlet,
     NgIf,
     NgSwitchCase,
     CommonModule
   ],
-  changeDetection: ChangeDetectionStrategy.Default,
-  standalone: true,
-  templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
-export class ProfileComponent implements OnInit {
-
-  user!: User;
+export class ProfileComponent implements OnInit, OnDestroy {
+  user?: User;
   isUserDataLoaded = false;
-  selectedFile!: File;
+  selectedFile?: File;
   userProfileImage?: string;
   previewUrl?: string;
   activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
   isCurrentUser: boolean = false;
   private destroy$ = new Subject<void>();
-  postsCount: number =0;
-  followersCount: number=0 ;
-  followingCount: number=0;
+  postsCount: number = 0;
+  followersCount: number = 0;
+  followingCount: number = 0;
+  isFollow: boolean = false;
+  profileUsername!: string|null;
 
-  constructor(private tokenService: TokenStorageService,
-              private postService: PostService,
-              private dialog: MatDialog,
-              private notificationService: NotificationService,
-              private imageService: ImageUploadService,
-              private userService: UserService,
-              private cd: ChangeDetectorRef,
-              private route: ActivatedRoute,
-              private cdRef: ChangeDetectorRef) {
-  }
+  constructor(
+    private tokenService: TokenStorageService,
+    private postService: PostService,
+    private dialog: MatDialog,
+    private notificationService: NotificationService,
+    private imageService: ImageUploadService,
+    protected userService: UserService,
+    private cd: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
         takeUntil(this.destroy$),
         switchMap(params => {
-          const profileUsername = params.get('username');
-          if (!profileUsername) return of(null);
-          this.postService.getPostForUser(profileUsername).subscribe(list => {
-            this.postsCount = Array.isArray(list) ? list.length : 0;
-          });
-          return this.userService.getUserByUsername(profileUsername);
-        }),
-        switchMap(user => {
-          if (!user) {
+          this.profileUsername = params.get('username');
+          if (!this.profileUsername) {
             this.setDefaultState();
             return of(null);
           }
-          this.user = user;
-          this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
-          this.isUserDataLoaded = true;
-          this.userService.getFollowers(this.user.username)
-            .subscribe(users=>{
-              this.followersCount=users.length;
-            });
-          this.userService.getFollowing(this.user.username)
-            .subscribe(users=>{
-              this.followingCount=users.length;
-            });
-          // грузим фотку только после того, как получили user
-          return this.imageService.getImageToUser(user.username);
+          return this.loadProfile(this.profileUsername);
         })
       )
-      .subscribe({
-        next: blob => {
-          if (blob) {
-            if (this.userProfileImage) {
-              URL.revokeObjectURL(this.userProfileImage);
-            }
-            this.userProfileImage = URL.createObjectURL(blob);
-          } else {
-            this.userProfileImage = 'assets/placeholder.jpg';
-          }
-          this.cd.markForCheck();
-
-        },
-        error: err => {
-          console.warn('Image load failed', err);
-          this.userProfileImage = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
+      .subscribe(result => {
+        if (!result) return;
+        this.updateProfileData(result);
+        this.cd.markForCheck();
       });
-    this.cdRef.detectChanges();
+  }
+
+  private loadProfile(profileUsername: string) {
+    return this.userService.getUserByUsername(profileUsername).pipe(
+      switchMap(user => {
+        if (!user) {
+          this.setDefaultState();
+          return of(null);
+        }
+        this.user = user;
+        this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
+        this.isUserDataLoaded = true;
+        return forkJoin({
+          avatar: this.imageService.getImageToUser(user.username),
+          followers: this.userService.getFollowers(user.username),
+          following: this.userService.getFollowing(user.username),
+          posts: this.postService.getPostForUser(user.username),
+          isFollow: this.userService.isFollow(user.username)
+        });
+      })
+    );
+  }
+
+  private updateProfileData(data: any) {
+    // Обработка аватарки
+    if (data.avatar) {
+      if (this.userProfileImage) {
+        URL.revokeObjectURL(this.userProfileImage);
+      }
+      this.userProfileImage = URL.createObjectURL(data.avatar);
+    } else {
+      this.userProfileImage = 'assets/placeholder.jpg';
+    }
+    this.followersCount = data.followers?.length ?? 0;
+    this.followingCount = data.following?.length ?? 0;
+    this.postsCount = Array.isArray(data.posts) ? data.posts.length : 0;
+    this.isFollow = data.isFollow ?? false;
   }
 
   setDefaultState() {
-    this.user = undefined!;
+    this.user = undefined;
     this.userProfileImage = 'assets/placeholder.jpg';
     this.isUserDataLoaded = true;
     this.isCurrentUser = false;
-
+    this.postsCount = 0;
+    this.followersCount = 0;
+    this.followingCount = 0;
+    this.isFollow = false;
     this.cd.markForCheck();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.userProfileImage) {
+    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
       URL.revokeObjectURL(this.userProfileImage);
+    }
+    if (this.previewUrl) {
+      URL.revokeObjectURL(this.previewUrl);
     }
   }
 
@@ -136,53 +140,79 @@ export class ProfileComponent implements OnInit {
     if (!input.files?.length) {
       return;
     }
-
     const file = input.files[0];
     this.selectedFile = file;
-    /* создаём превью */
+    if (this.previewUrl) {
+      URL.revokeObjectURL(this.previewUrl);
+    }
     this.previewUrl = URL.createObjectURL(file);
-    console.log('test:' + this.previewUrl);
   }
 
+  onUpload(): void {
+    if (!this.selectedFile) return;
+
+    this.imageService.uploadImageToUser(this.selectedFile).subscribe({
+      next: () => {
+        if (this.previewUrl) {
+          URL.revokeObjectURL(this.previewUrl);
+          this.previewUrl = undefined;
+        }
+        // После загрузки — перезагружаем профиль, чтобы обновить аватар и др. данные
+        if (this.user?.username) {
+          this.loadProfile(this.user.username).subscribe(result => {
+            if (result) {
+              this.updateProfileData(result);
+              this.cd.markForCheck();
+            }
+          });
+        }
+        this.notificationService.showSnackBar('Profile image updated successfully');
+      },
+      error: () => {
+        this.notificationService.showSnackBar('Upload failed');
+      }
+    });
+  }
 
   openEditDialog(): void {
     const dialogUserEditConfig = new MatDialogConfig();
     dialogUserEditConfig.width = '400px';
-    dialogUserEditConfig.data = {
-      user: this.user
-    }
+    dialogUserEditConfig.data = { user: this.user };
     const dialogRef = this.dialog.open(EditUserComponent, dialogUserEditConfig);
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Повторно загружаем пользователя после редактирования
-        this.userService.getCurrentUser().subscribe(updatedUser => {
-          this.user = updatedUser;
-          this.userService.setCurrentUser(updatedUser);
-          this.cd.markForCheck();
+      if (this.user?.username) {
+        // Перезагружаем профиль после редактирования
+        this.loadProfile(this.user.username).subscribe(profileResult => {
+          if (profileResult) {
+            this.updateProfileData(profileResult);
+            this.cd.markForCheck();
+          }
         });
       }
     });
   }
 
-  openFollowersDialog(): void {
-    const dialogUserFollowersConfig = new MatDialogConfig();
-    dialogUserFollowersConfig.width = '400px';
-    dialogUserFollowersConfig.data = {
-      username: this.user.username
-    }
-    const dialogRef = this.dialog.open(FollowersComponent, dialogUserFollowersConfig);
-  }
-  openFollowingDialog(followers:boolean): void {
+  openFollowingDialog(followers: boolean): void {
     const dialogUserFollowingConfig = new MatDialogConfig();
     dialogUserFollowingConfig.width = '400px';
     dialogUserFollowingConfig.data = {
       followers: followers,
-      username: this.user.username
-    }
-    const dialogRef = this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
+      username: this.user?.username
+    };
+    const dialogRef=this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.user?.username) {
+        // Перезагружаем профиль после редактирования
+        this.loadProfile(this.user.username).subscribe(profileResult => {
+          if (profileResult) {
+            this.updateProfileData(profileResult);
+            this.cd.markForCheck();
+          }
+        });
+      }
+    });
   }
-
 
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
     this.activeTab = tab;
@@ -194,36 +224,48 @@ export class ProfileComponent implements OnInit {
     return many;
   }
 
-
-  onUpload(): void {
-    if (!this.selectedFile) return;
-
-    this.imageService.uploadImageToUser(this.selectedFile).subscribe({
-      next: (relativeUrl: string) => {
-        // очищаем старый Blob, если был
-        if (this.previewUrl) {
-          URL.revokeObjectURL(this.previewUrl);
-        }
-        // обнуляем preview + файл
-        this.selectedFile = undefined!; // <--- СБРОС!
-        // обновляем URL аватарки
-        this.userProfileImage = `${USER_API}/${relativeUrl}`;
-        this.notificationService.showSnackBar('Profile image updated successfully');
-        this.cd.markForCheck(); // чтобы Angular обновил шаблон
-      },
-      error: () => {
-        this.notificationService.showSnackBar('Upload failed');
-      }
-    });
-  }
-
   openCreatePostDialog() {
-    this.dialog.open(AddPostComponent, {
+    const dialogRef=this.dialog.open(AddPostComponent, {
       width: '500px',
       maxWidth: '95vw',
       panelClass: 'custom-create-post-modal'
     });
+    dialogRef.afterClosed().subscribe(result => {
+      if ( this.user?.username) {
+        // Перезагружаем профиль после редактирования
+        this.loadProfile(this.user.username).subscribe(profileResult => {
+          if (profileResult) {
+            this.updateProfileData(profileResult);
+            this.cd.markForCheck();
+          }
+        });
+      }
+    });
   }
 
+  follow(username: string) {
+    this.userService.follow(username).subscribe(() => {
+      if (this.user?.username) {
+        this.loadProfile(this.user.username).subscribe(result => {
+          if (result) {
+            this.updateProfileData(result);
+            this.cd.markForCheck();
+          }
+        });
+      }
+    });
+  }
 
+  unfollow(username: string) {
+    this.userService.unFollow(username).subscribe(() => {
+      if (this.user?.username) {
+        this.loadProfile(this.user.username).subscribe(result => {
+          if (result) {
+            this.updateProfileData(result);
+            this.cd.markForCheck();
+          }
+        });
+      }
+    });
+  }
 }

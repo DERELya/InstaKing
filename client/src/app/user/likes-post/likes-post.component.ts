@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
@@ -8,6 +8,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {forkJoin} from 'rxjs';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {Router, RouterLink} from '@angular/router';
+import {TokenStorageService} from '../../services/token-storage.service';
 
 @Component({
   selector: 'app-likes-post',
@@ -25,19 +26,23 @@ import {Router, RouterLink} from '@angular/router';
 })
 export class LikesPostComponent implements OnInit {
   users: User[] = [];
+  isFollowingMap: { [username: string]: boolean } = {};
+  meUsername!: string | null;
 
-  constructor(private dialogRef: MatDialogRef<LikesPostComponent>,
-              private userService: UserService,
-              @Inject(MAT_DIALOG_DATA) public usernames: string[],
-              private cd: ChangeDetectorRef,
-              private imageService: ImageUploadService,
-              private dialog: MatDialog,
-              private router:Router) {
+  constructor(
+    private tokenService: TokenStorageService,
+    private dialogRef: MatDialogRef<LikesPostComponent>,
+    protected userService: UserService,
+    @Inject(MAT_DIALOG_DATA) public usernames: string[],
+    private cd: ChangeDetectorRef,
+    private imageService: ImageUploadService,
+    private dialog: MatDialog,
+    private router: Router) {
   }
 
   ngOnInit(): void {
+
     this.loadAllUsers()
-    console.log(this.usernames);
   }
 
   loadAllUsers() {
@@ -46,10 +51,16 @@ export class LikesPostComponent implements OnInit {
       Promise.resolve().then(() => {
         this.users = users;
         this.cd.markForCheck();
-        this.users.forEach(user => this.loadAvatar(user));
 
+        this.users.forEach(user => this.loadAvatar(user));
+        this.meUsername = this.tokenService.getUsernameFromToken();
       });
     });
+    this.userService.isFollowingBatch(this.usernames).subscribe(map => {
+      this.isFollowingMap = map;
+      console.log(this.isFollowingMap);
+    });
+
   }
 
   loadAvatar(user: User) {
@@ -66,8 +77,23 @@ export class LikesPostComponent implements OnInit {
     });
   }
 
+
   close() {
-    this.dialogRef.close();
+    this.dialogRef.close(true);
+  }
+
+  follow(username: string) {
+    this.userService.follow(username).subscribe(() => {
+      this.cd.markForCheck();
+      // Можно добавить уведомление или обновить данные
+    });
+  }
+
+  unfollow(username: string) {
+    this.userService.unFollow(username).subscribe(() => {
+      this.cd.markForCheck();
+      // Можно добавить уведомление или обновить данные
+    });
   }
 
   closePostDetails(username: string) {

@@ -13,9 +13,21 @@
           <div [routerLink]="['/profile', user.username]" (click)="closePostDetails(user.username)" class="username">{{ user.username }}</div>
           <div class="fullname" *ngIf="user.firstname">{{ user.firstname }} {{user.lastname}}</div>
         </div>
-        <button mat-stroked-button color="primary" class="follow-btn">
-          Подписаться
-        </button>
+        <!-- userService.isFollow(user.username) возвращает Observable<boolean> -->
+        <div *ngIf="user.username!=meUsername">
+          <button *ngIf="isFollowingMap[user.username]; else subscribeBtn"
+                  (click)="unfollow(user.username)" class="follow-btn">
+            Отписаться
+          </button>
+
+          <ng-template #subscribeBtn>
+            <button (click)="follow(user.username)" class="follow-btn">
+              Подписаться
+            </button>
+          </ng-template>
+        </div>
+
+
       </div>
     </ng-container>
   </div>

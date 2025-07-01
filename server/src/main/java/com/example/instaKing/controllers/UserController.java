@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,8 +25,8 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class UserController {
 
-    private UserService userService;
-    private ResponseErrorValidator responseErrorValidator;
+    private final UserService userService;
+    private final ResponseErrorValidator responseErrorValidator;
 
     @Autowired
     public UserController(UserService userService, ResponseErrorValidator responseErrorValidator) {
@@ -93,12 +95,18 @@ public class UserController {
                 .map(UserFacade::userToUserDTO).collect(Collectors.toList());
         return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
     }
-    @GetMapping("{username}/foll")
+    @GetMapping("{username}/isFollow")
     public ResponseEntity<Boolean> foll(Principal principal, @PathVariable String username) {
-
-
+        if(Objects.equals(principal.getName(), username)) return ResponseEntity.ok(false);
         boolean following=userService.isFollowing(principal.getName(), username);
         return ResponseEntity.ok(following);
+    }
+
+    @PostMapping("/isFollowingBatch")
+    public Map<String, Boolean> isFollowingBatch(
+            Principal principal,
+            @RequestBody List<String> usernames) {
+        return userService.isFollowingBatch(principal.getName(), usernames);
     }
 
 }

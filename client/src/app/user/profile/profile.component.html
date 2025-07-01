@@ -29,7 +29,16 @@
       <div class="profile-row">
         <span class="profile-username">{{ user?.username }}</span>
         <button *ngIf="isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Редактировать</button>
-        <button *ngIf="!isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Подписаться</button>
+        <button *ngIf="isFollow&&!isCurrentUser; else subscribeBtn"
+                (click)="unfollow(user!.username)" class="follow-btn">
+          Отписаться
+        </button>
+
+        <ng-template #subscribeBtn>
+          <button *ngIf="!isCurrentUser" (click)="follow(user!.username)" class="follow-btn">
+            Подписаться
+          </button>
+        </ng-template>
       </div>
       <div class="profile-stats">
         <span><b>{{ postsCount }}</b> {{ pluralize(postsCount, 'публикация', 'публикации', 'публикаций') }}</span>
@@ -38,7 +47,7 @@
       </div>
       <div class="profile-bio">
         <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>
-        <div class="profile-description">{{ user.bio }}</div>
+        <div class="profile-description">{{ user!.bio }}</div>
       </div>
 
     </div>

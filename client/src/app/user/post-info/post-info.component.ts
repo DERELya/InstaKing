@@ -14,11 +14,6 @@ import {LikesPostComponent} from '../likes-post/likes-post.component';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {Subject, takeUntil} from 'rxjs';
 
-interface UiPost extends Post {
-  isLiked: boolean;
-  avatarUrl?: string;
-  showAllComments?: boolean;
-}
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -60,13 +55,11 @@ export class PostInfoComponent {
     private tokenService: TokenStorageService,
   ) {
     this.meUsername=tokenService.getUsernameFromToken() || '';
-    console.log(this.meUsername);
-    // Пример: this.meUsername = localStorage.getItem('username') || '';
   }
 
 
   close(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(true);
   }
 
   likePost(): void {
@@ -126,6 +119,7 @@ export class PostInfoComponent {
     if (this.userImages[username]) {
       return this.userImages[username];
     }
+
     this.imageService.getImageToUser(username)
       .subscribe({
         next: blob => {

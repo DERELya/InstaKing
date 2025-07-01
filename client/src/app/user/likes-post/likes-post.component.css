@@ -58,6 +58,13 @@
 }
 
 .follow-btn {
-  min-width: 90px;
-  color: var(--color-primary);
+  font-size: 14px;
+  padding: 2px 13px;
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-primary); !important;
+  border: 1.2px solid var(--color-primary);
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  min-height: 32px;
 }

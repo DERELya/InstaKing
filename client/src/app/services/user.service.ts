@@ -47,5 +47,20 @@ export class UserService {
     // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
     return this.http.get<User[]>(USER_API+username+'/following');
   }
+  isFollow(username:string|null): Observable<boolean>{
+    return this.http.get<boolean>(USER_API+username+'/isFollow');
+  }
+  follow(username:string|null): Observable<any>{
+    console.log(username);
+    return this.http.post(USER_API+'follow/'+username,username);
+  }
 
+  unFollow(username:string| null):Observable<any>{
+    console.log(username);
+    return this.http.post(USER_API+'unfollow/'+username,username);
+  }
+  isFollowingBatch(usernames: string[]): Observable<{ [username: string]: boolean }> {
+    return this.http.post<{ [username: string]: boolean }>(USER_API+
+      'isFollowingBatch',usernames);
+  }
 }
