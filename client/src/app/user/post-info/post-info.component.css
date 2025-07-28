@@ -259,6 +259,27 @@
   word-break: break-word;
   box-sizing: border-box;
   color: var(--color-bg);
+  scroll-behavior: smooth;
+}
+
+
+/* Стили для WebKit-браузеров */
+.comments-scrollable-block::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a8a8a8, #5a5a5a);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #888, #333);
 }
 
 .comments-scrollable-block img.ig-modal-avatar {

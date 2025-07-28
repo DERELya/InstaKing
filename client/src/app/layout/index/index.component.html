@@ -72,7 +72,7 @@
                     }
                   </ng-container>
                   <ng-container *ngIf="post!.comments!.length > MAX_VISIBLE_COMMENTS">
-                    <button mat-button type="button"
+                    <button mat-button
                             (click)="toggleShowAllComments(i!)"
                             class="show-comments-btn">
                       @if (!post!.showAllComments) {

@@ -103,3 +103,55 @@
   font-weight: 500 !important;
   color: inherit !important;
 }
+
+.theme-switch-icon {
+  margin-left: 6px;
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+}
+
+.theme-switch-icon input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  background-color: #ccc;
+  border-radius: 30px;
+  top: 0; left: 0; right: 0; bottom: 0;
+  cursor: pointer;
+  transition: .4s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 13px;
+  color: #333;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+

@@ -16,7 +16,7 @@
 }
 
 .post-card:hover {
-  box-shadow: 0 12px 42px rgba(0,0,0,0.11);
+  box-shadow: 0 5px 12px rgba(4, 160, 188, 0.3);
 }
 
 /* Post header (avatar + username) */
@@ -135,10 +135,30 @@
 
 /* Comments block */
 .comments-scrollable-block {
-  max-height: 220px;
+  margin-left: 14px;
+  max-height: 300px; /* или сколько нужно */
   overflow-y: auto;
-  margin-bottom: 8px;
-  padding: 0 16px;
+  padding-right: 8px; /* чтобы не перекрывалось скроллом */
+  scroll-behavior: smooth;
+}
+
+/* Стили для WebKit-браузеров */
+.comments-scrollable-block::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a8a8a8, #5a5a5a);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.comments-scrollable-block::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #888, #333);
 }
 .comment {
   font-size: 15px;
@@ -148,11 +168,11 @@
 .show-comments-btn {
   padding: 0 0 8px 0;
   text-transform: none;
-  color: var(--color-primary);
   font-size: 13px;
   background: none;
   border: none;
   cursor: pointer;
+  color:#888;
 }
 
 /* Add comment form */
