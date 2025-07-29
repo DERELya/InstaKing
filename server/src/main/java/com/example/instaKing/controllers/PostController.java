@@ -8,6 +8,8 @@ import com.example.instaKing.services.PostService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
@@ -48,6 +50,16 @@ public class PostController {
     @GetMapping("/all")
     public ResponseEntity<List<PostDTO>> getAllPosts() {
         List<PostDTO> postsDTO = postService.getAllPosts()
+                .stream()
+                .map(PostFacade::postToPostDTO)
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(postsDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/posts")
+    public ResponseEntity<List<PostDTO>> getPosts(@RequestParam int page,@RequestParam int size) {
+        List<PostDTO> postsDTO = postService.getPosts(page,size)
                 .stream()
                 .map(PostFacade::postToPostDTO)
                 .collect(Collectors.toList());

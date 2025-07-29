@@ -51,6 +51,9 @@ export class IndexComponent implements OnInit {
   userImages: { [key: string]: string } = {};
   MAX_VISIBLE_COMMENTS = 1;
   private destroy$ = new Subject<void>();
+  currentPage = 0;
+  pageSize = 2;
+
 
   constructor(
     private postService: PostService,
@@ -85,6 +88,12 @@ export class IndexComponent implements OnInit {
           this.isPostsLoaded = true;
           this.cd.markForCheck();
         });
+    });
+  }
+  loadMore() {
+    this.postService.loadPostsByPage(this.currentPage, this.pageSize).subscribe(newPosts => {
+      this.posts = [...this.posts, ...newPosts];
+      this.currentPage++;
     });
   }
 

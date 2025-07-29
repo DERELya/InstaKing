@@ -91,6 +91,50 @@ export class PostService {
     });
   }
 
+  loadPostsByPage(page: number, size: number): void {
+    this.http.get<Post[]>(`${this.api}?page=${page}&size=${size}`).pipe(
+      switchMap(posts => posts.length === 0
+        ? of([])
+        : forkJoin(
+          posts.map(post =>
+            forkJoin({
+              postImg: this.imageService.getImageToPost(post.id!).pipe(
+                map(blob => URL.createObjectURL(blob)),
+                catchError(() => of('assets/placeholder.jpg'))
+              ),
+              avatar: this.imageService.getImageToUser(post.username!).pipe(
+                map(blob => URL.createObjectURL(blob)),
+                catchError(() => of('assets/blank-avatar.png'))
+              ),
+              comments: this.commentService.getCommentsToPost(post.id!).pipe(
+                catchError(() => of([]))
+              )
+            }).pipe(
+              map(({postImg, avatar, comments}) => ({
+                ...post,
+                image: postImg,
+                avatarUrl: avatar,
+                comments: comments,
+                usersLiked: post.usersLiked ?? [],
+                isLiked: false
+              } as UiPost))
+            )
+          )
+        )
+      )
+    ).subscribe({
+      next: uiPosts => {
+        const prevPosts = this.postsSubject.getValue();
+        this.postsSubject.next([...prevPosts, ...uiPosts]);
+      },
+      error: () => {
+        // обработка ошибок
+      }
+    });
+  }
+
+
+
   /** Получить посты для текущего пользователя — если нужна отдельная подписка */
   getPostForCurrentUser(): Observable<Post[]> {
     return this.http.get<Post[]>(this.api + 'user/posts');
