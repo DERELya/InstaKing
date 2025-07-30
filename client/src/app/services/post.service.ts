@@ -91,8 +91,8 @@ export class PostService {
     });
   }
 
-  loadPostsByPage(page: number, size: number): void {
-    this.http.get<Post[]>(`${this.api}?page=${page}&size=${size}`).pipe(
+  loadPostsByPage(page: number, size: number): Observable<UiPost[]> {
+    return this.http.get<Post[]>(`${this.api}posts?page=${page}&size=${size}`).pipe(
       switchMap(posts => posts.length === 0
         ? of([])
         : forkJoin(
@@ -122,15 +122,7 @@ export class PostService {
           )
         )
       )
-    ).subscribe({
-      next: uiPosts => {
-        const prevPosts = this.postsSubject.getValue();
-        this.postsSubject.next([...prevPosts, ...uiPosts]);
-      },
-      error: () => {
-        // обработка ошибок
-      }
-    });
+    );
   }
 
 

@@ -5,13 +5,15 @@
       @if (isPostsLoaded) {
         @for (post of posts; track post.id; let i = $index) {
           <mat-card class="post-card mb-4">
+            <div *ngIf="(i + 1) % 2 === 0" #anchor style="height: 30px; background: #ffcccc;">Anchor {{i}}</div>
             <div class="d-flex align-items-center mb-2 post-header">
               <img *ngIf="post?.username"
                    [src]="getUserImage(post!.username!)"
                    alt="avatar" class="avatar me-2">
               <span class="username" [routerLink]="['/profile/', post!.username]">{{ post!.username }}</span>
-            </div>
 
+            </div>
+            <span class="title">{{post.title}}</span>
             <img mat-card-image
                  *ngIf="post.image"
                  [src]="post.image"
@@ -52,6 +54,7 @@
                       </b>
                    </ng-container>
                           </span>
+
               </section>
 
 
@@ -108,10 +111,24 @@
                 <mat-icon>send</mat-icon>
               </button>
             </form>
+
           </mat-card>
         }
+
       }
+      <div style="text-align:center; margin: 18px 0;">
+        <button class="btn"
+                color="primary"
+                (click)="loadNextPage()"
+                *ngIf="!noMorePosts"
+                [disabled]="isLoading">
+          Загрузить ещё
+        </button>
+        <div *ngIf="noMorePosts" style="margin-top:8px; color:#888;">
+          Больше постов нет
+        </div>
 
     </div>
   </div>
+</div>
 </div>

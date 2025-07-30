@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef, OnDestroy,
+  OnInit, QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import {Post} from '../../models/Post';
 import {User} from '../../models/User';
 import {PostService} from '../../services/post.service';
@@ -42,7 +51,7 @@ interface UiPost extends Post {
   templateUrl: './index.component.html',
   styleUrls: ['./index.component.css']
 })
-export class IndexComponent implements OnInit {
+export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
 
   posts!: UiPost[];
   user!: User;
@@ -53,6 +62,8 @@ export class IndexComponent implements OnInit {
   private destroy$ = new Subject<void>();
   currentPage = 0;
   pageSize = 2;
+  isLoading = false;
+  noMorePosts = false;
 
 
   constructor(
@@ -75,8 +86,10 @@ export class IndexComponent implements OnInit {
     this.userService.getCurrentUser().subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
-
-      this.postService.loadAllPosts();
+      this.currentPage = 0;
+      this.noMorePosts = false;
+      this.loadPosts();
+      //this.postService.loadAllPosts();
       this.postService.posts$
         .pipe(takeUntil(this.destroy$))
         .subscribe(posts => {
@@ -90,11 +103,63 @@ export class IndexComponent implements OnInit {
         });
     });
   }
-  loadMore() {
-    this.postService.loadPostsByPage(this.currentPage, this.pageSize).subscribe(newPosts => {
-      this.posts = [...this.posts, ...newPosts];
-      this.currentPage++;
+
+  loadPosts(): void {
+    this.isLoading = true;
+    this.postService.loadPostsByPage(this.currentPage, this.pageSize).subscribe((uiPosts: UiPost[]) => {
+      // Проставляем лайки для текущего пользователя
+      uiPosts = uiPosts.map(post => ({
+        ...post,
+        isLiked: (post.usersLiked ?? []).includes(this.user.username)
+      }));
+      if (uiPosts.length === 0) {
+        this.noMorePosts = true;
+      }
+      if (uiPosts.length < this.pageSize) {
+        this.noMorePosts = true;
+      }
+      this.posts = [...this.posts, ...uiPosts];
+      this.isLoading = false;
+      this.cd.markForCheck();
     });
+  }
+  loadNextPage(): void {
+    if (this.noMorePosts || this.isLoading) return;
+    this.currentPage++;
+    this.loadPosts();
+  }
+
+  @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
+  observers: IntersectionObserver[] = [];
+
+  ngAfterViewInit() {
+    this.anchors.changes.subscribe(() => this.setUpObservers());
+    this.setUpObservers();
+  }
+
+  setUpObservers() {
+    // Отключаем старые observers
+    this.observers.forEach(obs => obs.disconnect());
+    this.observers = [];
+
+    this.anchors.forEach(anchor => {
+      const observer = new IntersectionObserver(entries => {
+        if (
+          entries[0].isIntersecting &&
+          !this.noMorePosts &&
+          !this.isLoading
+        ) {
+          console.log('Anchor seen after every 2 posts, loading...');
+          this.loadNextPage();
+        }
+      }, { root: null, threshold: 0 });
+      observer.observe(anchor.nativeElement);
+      this.observers.push(observer);
+    });
+  }
+
+  ngOnDestroy() {
+    this.observers.forEach(obs => obs.disconnect());
   }
 
   loaduser() {
