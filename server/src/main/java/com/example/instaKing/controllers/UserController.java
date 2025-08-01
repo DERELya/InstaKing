@@ -102,6 +102,14 @@ public class UserController {
         return ResponseEntity.ok(following);
     }
 
+    @GetMapping("/search/{username}")
+    public ResponseEntity<?> search(@PathVariable("username") String username) {
+        List<UserDTO> followingsDTO = userService.search(username)
+                .stream()
+                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
+        return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
+    }
+
     @PostMapping("/isFollowingBatch")
     public Map<String, Boolean> isFollowingBatch(
             Principal principal,

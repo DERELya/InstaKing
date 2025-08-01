@@ -2,9 +2,38 @@
 .mat-toolbar {
   background: var(--color-bg) !important;
   color: #fff !important;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
   box-shadow: 0 2px 8px 0 #0003;
   border-bottom: 1.2px solid var(--color-bg);
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+
+}
+.toolbar-section {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-section.left {
+  flex: 0 0 auto;
+}
+.toolbar-section.center {
+  flex: 1 1 0;
+  justify-content: center;
+}
+.toolbar-section.right {
+  flex: 0 0 auto;
+  justify-content: right;
+  gap: 12px;
+}
+
+.mat-toolbar span[routerLink="/main"] {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+  margin-right: 18px;
 }
 
 .mat-toolbar .spacer {
@@ -152,6 +181,78 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(18px);
+}
+
+.user-search {
+  position: relative;
+  width: 100%;
+  margin-left: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-btn {
+  margin-left: 70px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 50%;
+  justify-content: center;
+  transition: background 0.2s;
+  font-size: 22px;
+}
+
+.search-btn:hover {
+  background: #f0f0f0;
+}
+
+.search-box {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 260px;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  border-radius: 12px;
+  z-index: 30;
+  padding: 14px 12px 8px 12px;
+  animation: fadeIn 0.2s;
+}
+
+.search-field {
+  width: 100%;
+}
+
+.results {
+  margin-top: 9px;
+}
+
+.loading {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.error {
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  padding: 6px 0;
+}
+
+/* Список пользователей */
+mat-list-item {
+  border-radius: 7px;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+mat-list-item:hover {
+  background: #f0f6fb;
+}
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(-5px);}
+  100% { opacity: 1; transform: translateY(0);}
 }
 
 

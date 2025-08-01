@@ -121,6 +121,10 @@ public class UserService {
         return followers.contains(targetUser);
     }
 
+    public List<User> search(String query) {
+        return userRepository.findAllByUsernameContaining(query);
+    }
+
     public Map<String, Boolean> isFollowingBatch(String currentUsername, List<String> usernames) {
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new UserNotFoundException(currentUsername));

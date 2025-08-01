@@ -11,6 +11,10 @@ import {MatTooltip} from '@angular/material/tooltip';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
 import {ThemeService} from '../../services/theme.service';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MatFormField} from '@angular/material/input';
+import {FormsModule} from '@angular/forms';
+import {MatList, MatListItem} from '@angular/material/list';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -25,7 +29,12 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatMenuItem,
     MatIconButton,
     MatMenuTrigger,
-    CommonModule
+    CommonModule,
+    MatProgressSpinner,
+    MatFormField,
+    FormsModule,
+    MatList,
+    MatListItem
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
@@ -37,6 +46,12 @@ export class NavigationComponent implements OnInit {
   user!: User;
   userProfileImage?: string;
   previewUrl?: string;
+
+  isOpen = false;
+  query = '';
+  users: any[] = [];
+  isLoading = false;
+  error: string | null = null;
 
   constructor(
     private tokenService: TokenStorageService,
@@ -82,6 +97,40 @@ export class NavigationComponent implements OnInit {
   logout(): void {
     this.tokenService.logOut();
     this.router.navigate(['/login']);
+  }
+
+  searchUsers() {
+    this.isLoading = true;
+    this.error = null;
+    setTimeout(() => {
+      if (this.query.length < 2) {
+        this.users = [];
+        this.error = 'Введите минимум 2 символа';
+      } else {
+        this.users = [
+          { username: 'john_doe', avatar: 'https://i.pravatar.cc/100?u=john' },
+          { username: 'jane_smith', avatar: 'https://i.pravatar.cc/100?u=jane' },
+          { username: 'alex_ivanov', avatar: 'https://i.pravatar.cc/100?u=alex' }
+        ].filter(u => u.username.includes(this.query.toLowerCase()));
+        if (this.users.length === 0) this.error = 'Нет пользователей';
+      }
+      this.isLoading = false;
+    }, 600);
+  }
+
+  openSearch() {
+    this.isOpen = true;
+    setTimeout(() => {
+      const input = document.querySelector<HTMLInputElement>('#user-search-input');
+      if (input) input.focus();
+    });
+  }
+
+  closeSearch() {
+    this.isOpen = false;
+    this.query = '';
+    this.users = [];
+    this.error = null;
   }
 
 }

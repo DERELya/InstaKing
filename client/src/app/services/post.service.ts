@@ -148,11 +148,6 @@ export class PostService {
     return this.http.post(this.api + id + '/' + username + '/like', null);
   }
 
-  /** Очистить кэшированные посты (например, при логауте) */
-  clearPosts(): void {
-    this.postsSubject.next([]);
-  }
-
   loadProfilePosts(profileUsername: string) {
     this.userService.getUserByUsername(profileUsername).pipe(
       switchMap(user => {
@@ -200,15 +195,5 @@ export class PostService {
     });
   }
 
-  getCommentsToPost(posts: Post[]): void {
-    posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.commentService.getCommentsToPost(p.id)
-          .subscribe(data => {
-            p.comments = data;
-          })
-      }
-    });
-  }
 
 }
