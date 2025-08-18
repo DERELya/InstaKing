@@ -18,10 +18,6 @@
 .toolbar-section.left {
   flex: 0 0 auto;
 }
-.toolbar-section.center {
-  flex: 1 1 0;
-  justify-content: center;
-}
 .toolbar-section.right {
   flex: 0 0 auto;
   justify-content: right;
@@ -92,6 +88,7 @@
   padding: 0 !important;
   border: none !important;
 }
+
 
 /* Для всех пунктов меню */
 :host ::ng-deep .my-custom-menu-item.mat-mdc-menu-item {
@@ -191,38 +188,85 @@ input:checked + .slider:before {
   justify-content: center;
   align-items: center;
 }
-
-.search-btn {
-  margin-left: 70px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 7px;
-  border-radius: 50%;
+/* Центрирование секции поиска */
+.toolbar-section.center {
+  display: flex;
   justify-content: center;
-  transition: background 0.2s;
-  font-size: 22px;
-}
-
-.search-btn:hover {
-  background: #f0f0f0;
-}
-
-.search-box {
-  position: absolute;
-  top: 0;
-  right: 0;
-  min-width: 260px;
-  background: #fff;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
-  border-radius: 12px;
-  z-index: 30;
-  padding: 14px 12px 8px 12px;
-  animation: fadeIn 0.2s;
-}
-
-.search-field {
+  align-items: center;
   width: 100%;
+}
+
+/* Контейнер поиска */
+.search-container {
+  width: 100%;
+  max-width: 400px; /* Ограничение ширины */
+}
+
+/* Стиль для поля поиска */
+.search-field.mat-mdc-text-field-wrapper {
+  height: 65px;
+  width: 100%;
+  background: var(--color-bg); /* Темный фон */
+  border-radius: 24px; /* Скругленные границы */
+  padding: 0 16px; /* Внутренние отступы */
+  display: flex;
+  border-color: var(--color-bg);
+  align-items: center;
+  border: none;
+  background: transparent !important;
+}
+/* Убираем эффект при наведении */
+.search-field:hover,
+.mat-form-field:hover,
+.mat-mdc-text-field-wrapper:hover,
+.mdc-text-field:hover {
+  background: transparent !important; /* Убираем изменение фона */
+  box-shadow: none !important; /* Убираем тень */
+  border: none !important; /* Убираем изменение границы */
+}
+.search-input {
+  width: 100%;
+  background: var(--color-bg); /* Темный фон */
+  border-radius: 24px; /* Скругленные границы */
+  padding: 0 16px; /* Внутренние отступы */
+  display: flex;
+  border-color: var(--color-bg);
+  align-items: center;
+  border: none;
+  background: transparent;
+}
+
+.mat-form-field {
+  border: none; /* Убираем рамку */
+  background: transparent; /* Прозрачный фон */
+}
+
+.mat-icon {
+  color: var(--color-text); /* Цвет иконки поиска */
+  margin-right: 8px; /* Отступ между иконкой и текстом */
+}
+
+.mat-input-element {
+  font-size: 16px; /* Размер текста */
+  color: var(--color-text); /* Цвет текста */
+  background: transparent; /* Прозрачный фон */
+  border: none; /* Убираем линию */
+}
+
+.mat-input-element::placeholder {
+  color: #aaa; /* Цвет плейсхолдера */
+}
+
+/* Стили для кнопки "Закрыть" */
+button[mat-icon-button] {
+  color: #aaa; /* Цвет иконки */
+  margin-left: 8px; /* Отступ слева */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+button[mat-icon-button]:hover {
+  color: #fff; /* Цвет при наведении */
 }
 
 .results {
@@ -240,6 +284,7 @@ input:checked + .slider:before {
   font-size: 14px;
   padding: 6px 0;
 }
+
 
 /* Список пользователей */
 mat-list-item {

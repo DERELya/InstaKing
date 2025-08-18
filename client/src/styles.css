@@ -33,6 +33,26 @@ body, html {
 .my-custom-menu-item.mat-mdc-menu-item:last-child {
   border-bottom: none !important;
 }
+/* Переопределение глобальных стилей Material Design */
+.mat-mdc-text-field-wrapper {
+  background: transparent !important; /* Убираем фон */
+}
+
+.mdc-text-field {
+  background: transparent !important; /* Убираем фон */
+}
+
+.mdc-text-field:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.mdc-text-field--filled {
+  background: transparent !important; /* Убираем фон */
+}
+
+.mdc-text-field--no-label {
+  background: transparent !important; /* Убираем фон */
+}
 
 .my-custom-menu-item.mat-mdc-menu-item:hover,
 .my-custom-menu-item.mat-mdc-menu-item.cdk-focused {

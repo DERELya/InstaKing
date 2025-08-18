@@ -1,84 +1,53 @@
-<mat-toolbar color="primary">
-  <!-- Кнопка перехода на главную всегда видна -->
+<mat-toolbar color="primary" class="toolbar">
+  <!-- Левая часть: лого и переключатель темы -->
   <div class="toolbar-section left">
-    <span routerLink="/main">InstaKing</span>
+    <span class="logo" routerLink="/main">InstaKing</span>
     <label class="theme-switch-icon">
       <input
         type="checkbox"
         [checked]="isDarkTheme()"
         (change)="toggleTheme()"/>
       <span class="slider">
-    <span class="icon sun">☀️</span>
-    <span class="icon moon">🌙</span>
+        <span class="icon sun">☀️</span>
+        <span class="icon moon">🌙</span>
       </span>
     </label>
   </div>
 
-
-  <button class="search-btn" (click)="openSearch()" *ngIf="!isOpen">
-    <mat-icon>search</mat-icon>
-  </button>
-
-  <!-- Поле поиска и крестик -->
-  <div class="search-box" *ngIf="isOpen">
-    <mat-form-field class="search-field" appearance="outline">
-      <input
-        matInput
-        id="user-search-input"
-        [(ngModel)]="query"
-        (input)="searchUsers()"
-        placeholder="Поиск пользователя"
-        autocomplete="off"
-      >
-      <button mat-icon-button matSuffix (click)="closeSearch()" tabindex="-1">
-        <mat-icon>close</mat-icon>
-      </button>
-    </mat-form-field>
-    <!-- Результаты -->
-    <div class="results">
-      <div *ngIf="isLoading" class="loading">
-        <mat-progress-spinner diameter="24" mode="indeterminate"></mat-progress-spinner>
-      </div>
-      <div *ngIf="error && !isLoading" class="error">
-        {{ error }}
-      </div>
-      <mat-list *ngIf="users.length > 0">
-        <mat-list-item *ngFor="let user of users">
-          <img matListAvatar [src]="user.avatar" alt="avatar">
-          <span matLine>{{ user.username }}</span>
-          <button mat-icon-button [routerLink]="['/profile', user.username]">
-            <mat-icon>person</mat-icon>
-          </button>
-        </mat-list-item>
-      </mat-list>
+  <div class="toolbar-section center">
+    <div class="search-container">
+      <mat-form-field class="search-field"  appearance="fill">
+        <mat-icon matPrefix>search</mat-icon>
+        <input class="search-input"
+               color="red"
+               matInput
+          [(ngModel)]="query"
+          (input)="searchUsers()"
+          placeholder="Поиск"
+          autocomplete="off">
+        <button mat-icon-button matSuffix >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
     </div>
   </div>
 
-
+  <!-- Правая часть: имя пользователя и аватар -->
   <div class="toolbar-section right">
-    <span class="spacer"></span>
     <ng-container *ngIf="!router.url.startsWith('/profile')">
-
-      @if (isDataLoaded) {
-        <h3>{{ user?.username }}</h3>
-      }
-
-      @if (isLoggedIn) {
-        <button [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
-          <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
-               alt="avatar"
-               width="40"
-               height="40"
-               class="avatar-icon">
-        </button>
-      }
-
-      <mat-menu #menu="matMenu" class="my-custom-menu">
-        <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">Profile</button>
-        <button mat-menu-item class="my-custom-menu-item" (click)="logout()">Logout</button>
-      </mat-menu>
+      <h3 *ngIf="isDataLoaded" class="username">{{ user?.username }}</h3>
+      <button *ngIf="isLoggedIn" [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
+        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+             alt="avatar"
+             width="40"
+             height="40"
+             class="avatar-icon">
+      </button>
     </ng-container>
+
+    <mat-menu #menu="matMenu" class="my-custom-menu">
+      <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">Profile</button>
+      <button mat-menu-item class="my-custom-menu-item" (click)="logout()">Logout</button>
+    </mat-menu>
   </div>
-
-
 </mat-toolbar>

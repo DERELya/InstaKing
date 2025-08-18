@@ -12,9 +12,10 @@ import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
 import {ThemeService} from '../../services/theme.service';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {MatFormField} from '@angular/material/input';
+import {MatFormField, MatInput} from '@angular/material/input';
 import {FormsModule} from '@angular/forms';
 import {MatList, MatListItem} from '@angular/material/list';
+import {MatFormFieldModule} from '@angular/material/form-field';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -30,11 +31,10 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatIconButton,
     MatMenuTrigger,
     CommonModule,
-    MatProgressSpinner,
     MatFormField,
     FormsModule,
-    MatList,
-    MatListItem
+    MatFormFieldModule,
+    MatInput
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
