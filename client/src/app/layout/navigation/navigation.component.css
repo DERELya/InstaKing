@@ -204,7 +204,7 @@ input:checked + .slider:before {
 
 /* Стиль для поля поиска */
 .search-field.mat-mdc-text-field-wrapper {
-  height: 65px;
+  height: 100px;
   width: 100%;
   background: var(--color-bg); /* Темный фон */
   border-radius: 24px; /* Скругленные границы */
@@ -269,6 +269,10 @@ button[mat-icon-button]:hover {
   color: #fff; /* Цвет при наведении */
 }
 
+.mat-autocomplete-panel {
+  min-width: 500px !important;
+}
+
 .results {
   margin-top: 9px;
 }
@@ -286,14 +290,135 @@ button[mat-icon-button]:hover {
 }
 
 
-/* Список пользователей */
-mat-list-item {
-  border-radius: 7px;
-  margin-bottom: 2px;
-  transition: background 0.2s;
+.like-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
 }
+
+.like-user-row:last-child {
+  border-bottom: none;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.fullname {
+  font-size: 0.9em;
+  color: var(--color-text);
+}
+/* Панель автокомплита */
+:host ::ng-deep .mat-autocomplete-panel {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border-radius: 12px !important;
+  min-width: 350px !important;
+  box-shadow: 0 8px 32px #000a !important;
+  padding: 8px 0 !important;
+  border: 1px solid var(--color-border) !important;
+  animation: fadeIn 0.2s ease-in-out;
+  max-height: 320px !important;
+  overflow-y: auto;
+}
+
+/* Каждый результат — строка пользователя */
+:host ::ng-deep .mat-option {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 16px !important;
+  gap: 12px !important;
+  cursor: pointer;
+  background: var(--color-bg);
+  transition: background 0.2s, color 0.2s !important;
+}
+
+/* Hover и активная опция */
+:host ::ng-deep .mat-option:hover,
+:host ::ng-deep .mat-option.mat-active {
+  background: var(--color-bg-dark) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Аватарка */
+:host ::ng-deep .mat-option .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 6px #0003;
+}
+
+/* Информация о пользователе */
+:host ::ng-deep .mat-option .user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .mat-option .username {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+:host ::ng-deep .mat-option .fullname {
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* Стиль строки пользователя */
+.like-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.like-user-row .username {
+  text-decoration: none;
+}
+
+.like-user-row .username:hover {
+  color: var(--color-primary);
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(-5px);}
+  100% { opacity: 1; transform: translateY(0);}
+}
+
+/* Скролл для длинного списка */
+:host ::ng-deep .mat-autocomplete-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+:host ::ng-deep .mat-autocomplete-panel::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+:host ::ng-deep .mat-autocomplete-panel::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
 mat-list-item:hover {
-  background: #f0f6fb;
+  background: var(--color-bg);
 }
 @keyframes fadeIn {
   0% { opacity: 0; transform: translateY(-5px);}

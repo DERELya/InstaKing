@@ -11,11 +11,10 @@ import {MatTooltip} from '@angular/material/tooltip';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
 import {ThemeService} from '../../services/theme.service';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatFormField, MatInput} from '@angular/material/input';
 import {FormsModule} from '@angular/forms';
-import {MatList, MatListItem} from '@angular/material/list';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
 
 const USER_API = 'http://localhost:8080/api/user/';
 
@@ -34,7 +33,10 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatFormField,
     FormsModule,
     MatFormFieldModule,
-    MatInput
+    MatInput,
+    MatAutocomplete,
+    MatOption,
+    MatAutocompleteTrigger
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
@@ -100,37 +102,45 @@ export class NavigationComponent implements OnInit {
   }
 
   searchUsers() {
-    this.isLoading = true;
-    this.error = null;
-    setTimeout(() => {
-      if (this.query.length < 2) {
-        this.users = [];
-        this.error = 'Введите минимум 2 символа';
-      } else {
-        this.users = [
-          { username: 'john_doe', avatar: 'https://i.pravatar.cc/100?u=john' },
-          { username: 'jane_smith', avatar: 'https://i.pravatar.cc/100?u=jane' },
-          { username: 'alex_ivanov', avatar: 'https://i.pravatar.cc/100?u=alex' }
-        ].filter(u => u.username.includes(this.query.toLowerCase()));
-        if (this.users.length === 0) this.error = 'Нет пользователей';
-      }
-      this.isLoading = false;
-    }, 600);
+    if (this.query.trim()) {
+      this.userService.search(this.query).subscribe({
+        next: (users) => {
+          this.users = users;
+          this.users.forEach(user => this.loadAvatar(user));
+        },
+        error: (err) => {
+          console.error('Ошибка при поиске:', err);
+          this.users = [];
+        }
+      });
+
+    } else {
+      this.users = [];
+    }
   }
 
-  openSearch() {
-    this.isOpen = true;
-    setTimeout(() => {
-      const input = document.querySelector<HTMLInputElement>('#user-search-input');
-      if (input) input.focus();
-    });
-  }
-
-  closeSearch() {
-    this.isOpen = false;
+  clearSearch() {
     this.query = '';
     this.users = [];
-    this.error = null;
+  }
+
+  selectUser(user: User) {
+    this.query = user.username; // например вставляем username
+    this.users = [];
+  }
+
+  loadAvatar(user: User) {
+    this.imageService.getImageToUser(user.username).subscribe({
+      next: blob => {
+        const preview = URL.createObjectURL(blob);
+        user.avatarUrl = preview;
+        this.cd.markForCheck();
+      },
+      error: () => {
+        user.avatarUrl = 'assets/placeholder.jpg';
+        this.cd.markForCheck();
+      }
+    });
   }
 
 }

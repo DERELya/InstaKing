@@ -41,6 +41,11 @@ body, html {
 .mdc-text-field {
   background: transparent !important; /* Убираем фон */
 }
+.mat-mdc-autocomplete-panel {
+  background-color: var(--color-bg) !important; /* или любой цвет */
+  color: var(--color-text) !important; /* текст тоже можно изменить */
+}
+
 
 .mdc-text-field:hover {
   background: transparent !important;

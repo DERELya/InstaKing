@@ -15,20 +15,23 @@
   </div>
 
   <div class="toolbar-section center">
-    <div class="search-container">
+    <div class="search-container" *ngIf="router.url.startsWith('/main')">
       <mat-form-field class="search-field"  appearance="fill">
         <mat-icon matPrefix>search</mat-icon>
         <input class="search-input"
-               color="red"
                matInput
-          [(ngModel)]="query"
-          (input)="searchUsers()"
-          placeholder="Поиск"
-          autocomplete="off">
-        <button mat-icon-button matSuffix >
+               [(ngModel)]="query"
+               (input)="searchUsers()"
+               placeholder="Поиск"
+               autocomplete="off"
+               [matAutocomplete]="auto">
+
+        <button mat-icon-button matSuffix *ngIf="query" (click)="clearSearch()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
+
+
     </div>
   </div>
 
@@ -51,3 +54,17 @@
     </mat-menu>
   </div>
 </mat-toolbar>
+<mat-autocomplete #auto="matAutocomplete">
+  <mat-option *ngFor="let user of users" [value]="user.username">
+    <ng-container>
+      <div class="like-user-row">
+        <img class="avatar" [src]="user.avatarUrl" alt="avatar" />
+        <div class="user-info">
+          <div [routerLink]="['/profile', user.username]" class="username">{{ user.username }}</div>
+          <div class="fullname" *ngIf="user.firstname">{{ user.firstname }} {{user.lastname}}</div>
+        </div>
+        </div>
+    </ng-container>
+  </mat-option>
+</mat-autocomplete>
+
