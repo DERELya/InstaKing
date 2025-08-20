@@ -37,7 +37,7 @@
 
   <!-- Правая часть: имя пользователя и аватар -->
   <div class="toolbar-section right">
-    <ng-container *ngIf="!router.url.startsWith('/profile')">
+    <ng-container *ngIf="!router.url.startsWith('/profile/'+user?.username)">
       <h3 *ngIf="isDataLoaded" class="username">{{ user?.username }}</h3>
       <button *ngIf="isLoggedIn" [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
         <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"

@@ -28,5 +28,11 @@
   background: var(--color-bg-dark);
   cursor: pointer;
 }
+.empty-tab-msg {
+  text-align: center;
+  padding: 28px 0;
+  color: #555;
+  font-size: 16px;
+}
 
 
