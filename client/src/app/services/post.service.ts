@@ -158,26 +158,12 @@ export class PostService {
               ? of([])
               : forkJoin(
                 posts.map(post =>
-                  forkJoin({
-                    postImg: this.imageService.getImageToPost(post.id!).pipe(
-                      map(blob => URL.createObjectURL(blob)),
-                      catchError(() => of('assets/placeholder.jpg'))
-                    ),
-                    avatar: this.imageService.getImageToUser(post.username!).pipe(
-                      map(blob => URL.createObjectURL(blob)),
-                      catchError(() => of('assets/blank-avatar.png'))
-                    ),
-                    comments: this.commentService.getCommentsToPost(post.id!).pipe(
-                      catchError(() => of([]))
-                    )
-                  }).pipe(
-                    map(({postImg, avatar, comments}) => ({
+                  this.imageService.getImageToPost(post.id!).pipe(
+                    map(blob => URL.createObjectURL(blob)),
+                    catchError(() => of('assets/placeholder.jpg')),
+                    map(postImg => ({
                       ...post,
-                      image: postImg,
-                      avatarUrl: avatar,
-                      comments: comments,
-                      usersLiked: post.usersLiked ?? [],
-                      isLiked: (post.usersLiked ?? []).includes(meUsername)
+                      image: postImg
                     } as UiPost))
                   )
                 )
@@ -194,6 +180,7 @@ export class PostService {
       }
     });
   }
+
 
 
 }

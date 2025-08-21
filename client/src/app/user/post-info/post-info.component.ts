@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Inject} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule, DatePipe, NgForOf, NgIf} from '@angular/common';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatInput} from '@angular/material/input';
@@ -12,7 +12,8 @@ import {Post} from '../../models/Post';
 import {MatIcon} from '@angular/material/icon';
 import {LikesPostComponent} from '../likes-post/likes-post.component';
 import {TokenStorageService} from '../../services/token-storage.service';
-import {Subject, takeUntil} from 'rxjs';
+import {catchError, of, Subject, takeUntil} from 'rxjs';
+import {Comment} from '@angular/compiler';
 
 
 interface UiPost extends Post {
@@ -37,15 +38,16 @@ interface UiPost extends Post {
   templateUrl: './post-info.component.html',
   styleUrl: './post-info.component.css'
 })
-export class PostInfoComponent {
+export class PostInfoComponent implements OnInit, OnDestroy{
   meUsername: string = ''; // Получи из токена/сервиса, если нужно
   menuOpen = false;
   userImages: { [key: string]: string } = {};
   MAX_VISIBLE_COMMENTS = 10;
+  comments: Comment[]=[];
 
   constructor(
     public dialogRef: MatDialogRef<PostInfoComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { post: UiPost },
+    @Inject(MAT_DIALOG_DATA) public data: { post: UiPost,index: number },
     private postService: PostService,
     private notify: NotificationService,
     private commentService: CommentService,
@@ -56,6 +58,21 @@ export class PostInfoComponent {
   ) {
     this.meUsername=tokenService.getUsernameFromToken() || '';
   }
+
+  ngOnDestroy(): void {
+        throw new Error('Method not implemented.');
+    }
+
+  ngOnInit(): void {
+    this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername)
+    this.commentService.getCommentsToPost(this.data.post.id!).pipe(
+      catchError(() => of([]))
+    ).subscribe(comments => {
+      this.data.post.comments = comments;
+      this.cd.markForCheck();
+    });
+  }
+
 
 
   close(): void {
@@ -120,6 +137,9 @@ export class PostInfoComponent {
       return this.userImages[username];
     }
 
+    // Ставим временный плейсхолдер, чтобы следующий вызов не делал новый запрос
+    this.userImages[username] = 'assets/placeholder.jpg';
+
     this.imageService.getImageToUser(username)
       .subscribe({
         next: blob => {
@@ -132,8 +152,9 @@ export class PostInfoComponent {
           this.cd.markForCheck();
         }
       });
-    return 'assets/placeholder.jpg';
+    return this.userImages[username];
   }
+
 
   onAvatarError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';

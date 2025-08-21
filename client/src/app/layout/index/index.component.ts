@@ -121,7 +121,8 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
       this.posts = [...this.posts, ...uiPosts];
       this.isLoading = false;
       this.cd.markForCheck();
-    });
+    })
+    console.log(this.userImages);
   }
   loadNextPage(): void {
     if (this.noMorePosts || this.isLoading) return;
@@ -253,11 +254,13 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
   }
 
   getUserImage(username: string): string {
-    // Если уже загрузили, возвращаем сразу
     if (this.userImages[username]) {
       return this.userImages[username];
     }
-    // Загружаем новый и сохраняем
+
+    // Ставим временный плейсхолдер, чтобы следующий вызов не делал новый запрос
+    this.userImages[username] = 'assets/placeholder.jpg';
+
     this.imageService.getImageToUser(username)
       .subscribe({
         next: blob => {
@@ -265,14 +268,12 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
           this.userImages[username] = preview;
           this.cd.markForCheck();
         },
-        error: err => {
-          console.warn('Image load failed', err);
+        error: () => {
           this.userImages[username] = 'assets/placeholder.jpg';
           this.cd.markForCheck();
         }
       });
-    // Пока грузится — можно возвращать плейсхолдер
-    return 'assets/placeholder.jpg';
+    return this.userImages[username];
   }
 
   postComment(event: Event, message: string, postId: number, postIndex: number): void {

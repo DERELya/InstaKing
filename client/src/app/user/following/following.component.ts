@@ -65,6 +65,10 @@ export class FollowingComponent implements OnInit {
     if (this.userImages[username]) {
       return this.userImages[username];
     }
+
+    // Ставим временный плейсхолдер, чтобы следующий вызов не делал новый запрос
+    this.userImages[username] = 'assets/placeholder.jpg';
+
     this.imageService.getImageToUser(username)
       .subscribe({
         next: blob => {
@@ -77,7 +81,7 @@ export class FollowingComponent implements OnInit {
           this.cd.markForCheck();
         }
       });
-    return 'assets/placeholder.jpg';
+    return this.userImages[username];
   }
 
   follow(username: string) {
