@@ -262,6 +262,11 @@
   background: var(--color-primary);
   color: var(--color-bg);
 }
+.anchor-sentinel {
+  height: 1px;
+  opacity: 0;
+}
+
 
 /* Responsive */
 @media (max-width: 600px) {

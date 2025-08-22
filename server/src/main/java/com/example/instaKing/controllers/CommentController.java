@@ -1,7 +1,9 @@
 package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.CommentDTO;
+import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.facade.CommentFacade;
+import com.example.instaKing.facade.PostFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.CommentService;
@@ -46,6 +48,7 @@ public class CommentController {
     }
 
 
+
     @GetMapping("/{postId}/all")
     public ResponseEntity<List<CommentDTO>> getAllComments(@PathVariable("postId") String postId) {
         List<CommentDTO> commentsDTOList = commentService.getAllCommentForPost(Long.parseLong(postId))
@@ -54,12 +57,26 @@ public class CommentController {
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(commentsDTOList, HttpStatus.OK);
+    }
 
+    @GetMapping("/{postId}/countComment")
+    public ResponseEntity<Object> getCommentCount(@PathVariable("postId") String postId) {
+        long count = commentService.getCountCommentForPost(Long.parseLong(postId));
+        return ResponseEntity.ok(count);
     }
 
     @PostMapping("/{commentId}/delete")
     public ResponseEntity<MessageResponse> deleteComment(@PathVariable("commentId") String commentId) {
         commentService.deleteComment(Long.parseLong(commentId));
         return new ResponseEntity<>(new MessageResponse("PostService was deleted"), HttpStatus.OK);
+    }
+
+    @GetMapping("{postId}/comments")
+    public ResponseEntity<List<CommentDTO>> getPosts(@RequestParam int page, @RequestParam int size,@PathVariable("postId") String postId) {
+        List<CommentDTO> commentsDTO = commentService.getComments(Long.parseLong(postId),page,size)
+                .stream()
+                .map(CommentFacade::CommentToCommentDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(commentsDTO, HttpStatus.OK);
     }
 }

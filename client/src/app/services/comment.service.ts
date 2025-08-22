@@ -21,6 +21,9 @@ export class CommentService {
   getCommentsToPost(postId: number): Observable<any> {
     return this.http.get(COMMENT_API + postId + '/all');
   }
+  getCountCommentsToPost(postId: number): Observable<number>{
+    return this.http.get<number>(COMMENT_API+postId+'/countComment');
+  }
 
   delete(commentId: number): Observable<any> {
     return this.http.post(COMMENT_API + commentId + '/delete', null);

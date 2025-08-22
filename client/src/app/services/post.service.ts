@@ -105,16 +105,12 @@ export class PostService {
               avatar: this.imageService.getImageToUser(post.username!).pipe(
                 map(blob => URL.createObjectURL(blob)),
                 catchError(() => of('assets/blank-avatar.png'))
-              ),
-              comments: this.commentService.getCommentsToPost(post.id!).pipe(
-                catchError(() => of([]))
               )
             }).pipe(
-              map(({postImg, avatar, comments}) => ({
+              map(({postImg, avatar}) => ({
                 ...post,
                 image: postImg,
                 avatarUrl: avatar,
-                comments: comments,
                 usersLiked: post.usersLiked ?? [],
                 isLiked: false
               } as UiPost))

@@ -25,11 +25,13 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {RouterLink} from '@angular/router';
 import {LikesPostComponent} from '../../user/likes-post/likes-post.component';
 import {MatDialog} from '@angular/material/dialog';
+import {PostInfoComponent} from '../../user/post-info/post-info.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
   avatarUrl?: string;
   showAllComments?: boolean;
+  commentCount?: number;
 }
 
 @Component({
@@ -69,7 +71,7 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
   constructor(
     private postService: PostService,
     private userService: UserService,
-    private commentService: CommentService,
+    protected commentService: CommentService,
     private notificationService: NotificationService,
     private imageService: ImageUploadService,
     private cd: ChangeDetectorRef,
@@ -82,7 +84,6 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     this.posts = [];
     this.isPostsLoaded = false;
     this.isUserDataLoaded = false;
-
     this.userService.getCurrentUser().subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
@@ -118,16 +119,35 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
       if (uiPosts.length < this.pageSize) {
         this.noMorePosts = true;
       }
+      uiPosts.forEach(p => {
+        if (p.id) {
+          this.commentService.getCountCommentsToPost(p.id)
+            .subscribe(count => {
+              p.commentCount = count;
+              this.cd.markForCheck();
+            });
+        }
+      });
       this.posts = [...this.posts, ...uiPosts];
       this.isLoading = false;
       this.cd.markForCheck();
     })
-    console.log(this.userImages);
   }
   loadNextPage(): void {
     if (this.noMorePosts || this.isLoading) return;
     this.currentPage++;
     this.loadPosts();
+  }
+
+  openPostDetails(index: number) {
+    console.log(this.posts[index]);
+    const dialogRef = this.dialog.open(PostInfoComponent, {
+      data: {post: this.posts[index], index}
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // Можно обновить что-то, если нужно
+    });
   }
 
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
@@ -150,7 +170,6 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
           !this.noMorePosts &&
           !this.isLoading
         ) {
-          console.log('Anchor seen after every 2 posts, loading...');
           this.loadNextPage();
         }
       }, { root: null, threshold: 0 });
@@ -175,13 +194,11 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     posts.forEach(p => {
       this.imageService.getImageToPost(p.id!).subscribe({
         next: blob => {
-          console.log('Blob size', blob.size);        // ← должно быть > 0
           p.image = URL.createObjectURL(blob);
           showAllComments: typeof p.showAllComments === 'boolean' ? p.showAllComments : false
           this.cd.markForCheck();
         },
         error: err => {
-          console.warn('Image load failed', err);
           /* fallback */
           p.image = 'assets/placeholder.jpg';
         }
@@ -279,7 +296,6 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
   postComment(event: Event, message: string, postId: number, postIndex: number): void {
     event.preventDefault();
     const post = this.posts[postIndex];
-    console.log(post);
     this.commentService.addToCommentToPost(postId, message)
       .subscribe(data => {
         post.comments?.push(data);
