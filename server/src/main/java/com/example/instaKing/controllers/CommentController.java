@@ -1,21 +1,22 @@
 package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.CommentDTO;
-import com.example.instaKing.dto.PostDTO;
+import com.example.instaKing.dto.CommentPageResponse;
 import com.example.instaKing.facade.CommentFacade;
-import com.example.instaKing.facade.PostFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.CommentService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,11 +73,22 @@ public class CommentController {
     }
 
     @GetMapping("{postId}/comments")
-    public ResponseEntity<List<CommentDTO>> getPosts(@RequestParam int page, @RequestParam int size,@PathVariable("postId") String postId) {
-        List<CommentDTO> commentsDTO = commentService.getComments(Long.parseLong(postId),page,size)
+    public ResponseEntity<CommentPageResponse> getPosts(@RequestParam int page, @RequestParam int size,
+                                                     @PathVariable("postId") String postId) {
+        Page<Comment> commentPage = (Page<Comment>) commentService.getComments(Long.parseLong(postId), page, size);
+        List<CommentDTO> commentsDTO = commentPage.getContent()
                 .stream()
                 .map(CommentFacade::CommentToCommentDTO)
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(commentsDTO, HttpStatus.OK);
+
+        CommentPageResponse response = new CommentPageResponse(
+                commentsDTO,
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages(),
+                commentPage.getNumber(),
+                commentPage.getSize()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

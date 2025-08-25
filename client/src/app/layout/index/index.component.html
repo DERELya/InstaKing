@@ -4,7 +4,7 @@
 
       @if (isPostsLoaded) {
         @for (post of posts; track post.id; let i = $index) {
-          <mat-card class="post-card mb-4">
+          <mat-card class="post-card mb-4" >
             <div *ngIf="i === posts.length - 1" #anchor class="anchor-sentinel"></div>
 
             <div class="d-flex align-items-center mb-2 post-header">
@@ -19,7 +19,7 @@
                  *ngIf="post.image"
                  [src]="post.image"
                  class="feed-image"
-                 alt="post image"/>
+                 alt="post image" />
             <div class="modal-info-block">
               <section class="actions">
                 <div class="actions-horizontal">

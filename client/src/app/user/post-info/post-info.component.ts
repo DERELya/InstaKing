@@ -21,6 +21,23 @@ interface UiPost extends Post {
   avatarUrl?: string;
   showAllComments?: boolean;
 }
+export interface PostComment {
+  id: number;
+  username: string;
+  message: string;
+  createdDate: string; // или Date, если парсишь
+}
+
+
+export interface CommentPageResponse {
+  comments: PostComment[];
+  totalElements: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+
 
 @Component({
   selector: 'app-post-info',
@@ -43,7 +60,12 @@ export class PostInfoComponent implements OnInit, OnDestroy{
   menuOpen = false;
   userImages: { [key: string]: string } = {};
   MAX_VISIBLE_COMMENTS = 10;
-  comments: Comment[]=[];
+  comments: PostComment[] = [];
+  totalPages: number = 0;
+  currentPage: number = 0;
+  pageSize: number = 10; // сколько комментов за раз
+  loadingComments = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     public dialogRef: MatDialogRef<PostInfoComponent>,
@@ -55,23 +77,23 @@ export class PostInfoComponent implements OnInit, OnDestroy{
     private dialog: MatDialog,
     private cd: ChangeDetectorRef,
     private tokenService: TokenStorageService,
-  ) {
+) {
     this.meUsername=tokenService.getUsernameFromToken() || '';
   }
 
   ngOnDestroy(): void {
-        throw new Error('Method not implemented.');
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 
   ngOnInit(): void {
-    this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername)
-    this.commentService.getCommentsToPost(this.data.post.id!).pipe(
-      catchError(() => of([]))
-    ).subscribe(comments => {
-      this.data.post.comments = comments;
-      this.cd.markForCheck();
-    });
+    this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
+
+    this.loadComments(0); // пагинация комментариев
+    console.log(this.comments);
   }
+
 
 
 
@@ -108,17 +130,21 @@ export class PostInfoComponent implements OnInit, OnDestroy{
     });
   }
 
+  trackByCommentId(index: number, comment: PostComment) {
+    return comment.id;
+  }
+
   postComment(event: Event, message: string): void {
     event.preventDefault();
     const post = this.data.post;
     this.commentService.addToCommentToPost(post.id!, message)
       .subscribe(data => {
-        post.comments = post.comments ?? [];
-        post.comments.push(data);
+        this.comments = [data, ...this.comments];
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
       });
   }
+
 
   deleteComment(commentId: number, commentIndex: number): void {
     const post = this.data.post;
@@ -159,6 +185,35 @@ export class PostInfoComponent implements OnInit, OnDestroy{
   onAvatarError(event: Event) {
     (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';
   }
+  loadComments(page: number = 0) {
+    const postId = this.data.post.id!;
+    this.loadingComments = true;
+
+    this.commentService.getComments(postId, page, this.pageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (page === 0) {
+            this.comments = response.comments;  // теперь типы совпадут
+          } else {
+            this.comments = [...this.comments, ...response.comments];
+          }
+          this.totalPages = response.totalPages;
+          this.currentPage = response.pageNumber;
+          this.loadingComments = false;
+          this.cd.markForCheck();
+        },
+        error: () => {
+          this.loadingComments = false;
+        }
+      });
+  }
+
+  loadNextPage() {
+    if (this.currentPage + 1 >= this.totalPages || this.loadingComments) return;
+    this.loadComments(this.currentPage + 1);
+  }
+
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;

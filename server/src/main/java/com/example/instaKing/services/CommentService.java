@@ -9,6 +9,7 @@ import com.example.instaKing.repositories.CommentRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -71,8 +72,9 @@ public class CommentService {
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
     }
 
-    public List<Comment> getComments(Long postId,int size,int page) {
-        Pageable pageable= PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "createdAt"));
-        return commentRepository.findAll(pageable).getContent();
+    public Page<Comment> getComments(Long postId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+        return commentRepository.findByPostId(postId, pageable);
     }
+
 }
