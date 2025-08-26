@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {NavigationComponent} from './layout/navigation/navigation.component';
 import {ThemeService} from './services/theme.service';
+import {TimeAgoPipe} from './helper/time-ago.pipe';
 
 @Component({
   selector: 'app-root',

@@ -14,6 +14,7 @@ import {LikesPostComponent} from '../likes-post/likes-post.component';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {catchError, of, Subject, takeUntil} from 'rxjs';
 import {Comment} from '@angular/compiler';
+import {TimeAgoPipe} from '../../helper/time-ago.pipe';
 
 
 interface UiPost extends Post {
@@ -50,7 +51,8 @@ export interface CommentPageResponse {
     NgForOf,
     NgIf,
     CommonModule,
-    RouterLink
+    RouterLink,
+    TimeAgoPipe
   ],
   templateUrl: './post-info.component.html',
   styleUrl: './post-info.component.css'
@@ -91,7 +93,6 @@ export class PostInfoComponent implements OnInit, OnDestroy{
     this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
 
     this.loadComments(0); // пагинация комментариев
-    console.log(this.comments);
   }
 
 

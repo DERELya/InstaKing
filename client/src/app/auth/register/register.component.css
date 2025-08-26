@@ -93,8 +93,6 @@ button[mat-flat-button]:disabled {
   border: 1.5px solid var(--color-primary);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   text-decoration: none;
-  margin-top: 0;
-  margin-bottom: 0;
 }
 .register-page a:hover {
   background: var(--color-primary);

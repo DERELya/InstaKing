@@ -15,7 +15,7 @@
   background: var(--color-bg);
   color: var(--color-text);
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.13);
   overflow: hidden;
   padding: 0;
   position: relative;
@@ -47,7 +47,7 @@
   flex-direction: row;
   background: var(--color-bg);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.32);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
   max-width: 900px;
   width: 90vw;
   max-height: 90vh;
@@ -65,7 +65,7 @@
   background: var(--color-bg);
   color: var(--color-text);
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   width: 40px;
   height: 40px;
   display: flex;
@@ -75,6 +75,7 @@
   cursor: pointer;
   transition: background 0.18s;
 }
+
 .close-modal-btn:hover {
   background: var(--color-bg);
 }
@@ -149,7 +150,7 @@
   background: var(--color-bg);
   margin-right: 10px;
   border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.13);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.13);
 }
 
 .username {
@@ -174,7 +175,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;   /* или сколько нужно */
+  width: 40px; /* или сколько нужно */
   height: 40px;
   background: none;
   border: none;
@@ -196,7 +197,7 @@
   background: var(--color-bg);
   color: var(--color-text);
   border-radius: var(--border-radius);
-  box-shadow: 0 8px 32px rgba(60,60,60,0.18);
+  box-shadow: 0 8px 32px rgba(60, 60, 60, 0.18);
   padding: 7px 0;
   z-index: 200;
   display: flex;
@@ -206,13 +207,20 @@
 }
 
 @keyframes menu-pop {
-  from { transform: translateY(-12px) scale(0.98); opacity: 0; }
-  to   { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(-12px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
+
 .dots-btn svg,
 .close-btn svg {
-  display: block;                /* убирает baseline выравнивание */
-  width: 24px;                   /* или свой размер */
+  display: block; /* убирает baseline выравнивание */
+  width: 24px; /* или свой размер */
   height: 24px;
 }
 
@@ -232,6 +240,7 @@
   gap: 6px;
   transition: background 0.15s, color 0.15s;
 }
+
 .dots-menu-item:hover {
   background: var(--color-bg-dark);
   color: var(--color-primary);
@@ -240,6 +249,7 @@
 .dots-menu-item.delete {
   color: #e53935;
 }
+
 .dots-menu-item.delete:hover {
   background: #381818;
   color: #ff5d5d;
@@ -310,6 +320,26 @@
   align-items: center;
 }
 
+.comment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.comment-content {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.comment-date {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
 .likes {
   display: flex;
   align-items: center;
@@ -336,7 +366,7 @@
   border-radius: 50%;
   border: 2px solid var(--color-bg);
   object-fit: cover;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.11);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.11);
   margin-right: 0;
   transition: box-shadow .2s;
   background: var(--color-bg);
@@ -359,6 +389,7 @@
   color: inherit;
   cursor: pointer;
 }
+
 .like-username:hover {
   text-decoration: underline;
 }
@@ -371,16 +402,25 @@
   padding-left: 18px;
 }
 
+.date {
+  align-content: center;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
 .liked {
   color: #ed4956 !important;
 }
+
 .add-comment-form .send-btn {
   min-width: 40px;
   color: var(--color-primary);
 }
+
 .add-comment-form input:focus {
   border-color: var(--color-primary);
 }
+
 .add-comment-form .send-btn {
   min-width: 40px;
   color: var(--color-primary);
@@ -394,9 +434,11 @@
   display: inline-flex;
   align-items: center;
 }
+
 .profile-link:hover {
   text-decoration: underline;
 }
+
 .profile-link .ig-modal-avatar {
   width: 32px;
   height: 32px;
@@ -407,22 +449,24 @@
   background: var(--color-bg);
   transition: box-shadow 0.2s;
 }
+
 .profile-link:hover .ig-modal-avatar,
 .profile-link:focus .ig-modal-avatar {
-  box-shadow: 0 0 0 2px var(--color-primary)33;
+  box-shadow: 0 0 0 2px var(--color-primary) 33;
 }
+
 .profile-link,
 .profile-link * {
   font-weight: normal !important;
 }
 
-/* ===== Адаптив ===== */
 @media (max-width: 800px) {
   .fullscreen-content {
     flex-direction: column;
     max-width: 98vw;
     max-height: 98vh;
   }
+
   .modal-img-block,
   .info-block {
     width: 100%;
@@ -431,6 +475,7 @@
     height: auto;
     min-height: 0;
   }
+
   .info-block {
     height: auto;
     max-height: 70vh;
@@ -442,11 +487,13 @@
     border-radius: 0;
     padding: 0;
   }
+
   .info-block {
     min-width: 0;
     max-width: 100vw;
     padding: 5px 2px 0 2px;
   }
+
   .ig-modal-author,
   .modal-info-block {
     padding-left: 8px;

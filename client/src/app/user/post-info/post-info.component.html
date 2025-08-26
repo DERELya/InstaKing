@@ -47,17 +47,25 @@
       <!-- ... -->
       <div class="comments-scrollable-block">
         <div *ngIf="comments.length > 0">
-          <div style="text-align:left">
+          <div style="text-align:left" >
             <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
-              <p>
-                <a [routerLink]="['/profile', comment.username]" class="profile-link" (click)="close()">
-                  <img *ngIf="comment.username"
-                       [src]="getUserImage(comment.username!)"
-                       alt="avatar" class="ig-modal-avatar">
+              <p> </p>
+                <div class="comment-item">
+              <a [routerLink]="['/profile', comment.username]" class="profile-link" (click)="close()">
+                <img *ngIf="comment.username"
+                     [src]="getUserImage(comment.username!)"
+                     alt="avatar" class="ig-modal-avatar">
+                <div class="comment-content">
                   <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
-                </a>
-                <span class="comment-date">{{ comment.createdDate | date:'short' }}</span>
-              </p>
+                </div>
+
+
+              </a>
+                  <span class="comment-date">{{ comment.createdDate | timeAgo }}</span>
+            </div>
+
+
+
             </ng-container>
 
             <button *ngIf="currentPage + 1 < totalPages && !loadingComments"

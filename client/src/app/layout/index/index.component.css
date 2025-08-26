@@ -36,7 +36,6 @@
   border: 2px solid var(--color-border);
   margin-right: 8px;
 }
-.avatar-sm,
 .ig-modal-avatar {
   width: 22px;
   height: 22px;
@@ -133,47 +132,12 @@
   text-decoration: underline;
 }
 
-/* Comments block */
-.comments-scrollable-block {
-  margin-left: 14px;
-  max-height: 300px; /* или сколько нужно */
-  overflow-y: auto;
-  padding-right: 8px; /* чтобы не перекрывалось скроллом */
-  scroll-behavior: smooth;
-}
 
-/* Стили для WebKit-браузеров */
-.comments-scrollable-block::-webkit-scrollbar {
-  width: 6px;
-}
-
-.comments-scrollable-block::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.comments-scrollable-block::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #a8a8a8, #5a5a5a);
-  border-radius: 10px;
-  transition: background 0.3s;
-}
-
-.comments-scrollable-block::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #888, #333);
-}
 .comment {
   font-size: 15px;
   line-height: 1.4;
 }
 
-.show-comments-btn {
-  padding: 0 0 8px 0;
-  text-transform: none;
-  font-size: 13px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color:#888;
-}
 
 /* Add comment form */
 .add-comment-form {
@@ -199,17 +163,6 @@
   color: var(--color-primary);
 }
 
-/* Profile links in comments */
-.profile-link {
-  text-decoration: none;
-  color: var(--color-text);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-}
-.profile-link:hover {
-  text-decoration: underline;
-}
 .profile-link .ig-modal-avatar {
   width: 32px;
   height: 32px;
@@ -224,7 +177,6 @@
 .profile-link:focus .ig-modal-avatar {
   box-shadow: 0 0 0 2px var(--color-primary)33;
 }
-.profile-link,
 .profile-link * {
   font-weight: normal !important;
 }

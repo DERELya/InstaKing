@@ -2,7 +2,7 @@
 
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label, .mat-form-field-appearance-outline.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper .mat-form-field-label {
+.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float  .mat-form-field-appearance-outline.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper {
   transform: translateY(-0.8em) scale(0.75);
   width: 133.3333333333%;
 }
@@ -38,13 +38,6 @@ body, html {
   background: transparent !important; /* Убираем фон */
 }
 
-.mdc-text-field {
-  background: transparent !important; /* Убираем фон */
-}
-.mat-mdc-autocomplete-panel {
-  background-color: var(--color-bg) !important; /* или любой цвет */
-  color: var(--color-text) !important; /* текст тоже можно изменить */
-}
 
 
 .mdc-text-field:hover {
