@@ -64,12 +64,12 @@ export class LoginComponent implements OnInit{
       email: this.loginForm.value.email,
       password: this.loginForm.value.password
     }).subscribe(data => {
-      console.log(data);
-      this.tokenStorage.saveToken(data.token);
+      this.tokenStorage.saveToken(data.accessToken);
       this.tokenStorage.saveUser(data);
+      this.tokenStorage.saveRefreshToken(data.refreshToken);
 
       this.notificationService.showSnackBar('Successfully logged in');
-      this.router.navigate(['/']);
+      this.router.navigate(['/main'], { state: { justLoggedIn: true } });
       window.location.reload();
 
     }, error => {

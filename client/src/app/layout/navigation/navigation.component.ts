@@ -66,12 +66,12 @@ export class NavigationComponent implements OnInit {
 
 
   ngOnInit(): void {
-
     this.isLoggedIn = !!this.tokenService.getToken();
     if (this.isLoggedIn) {
       this.userService.getCurrentUser().subscribe(data => {
         this.user = data;
         this.isDataLoaded = true;
+        this.cd.markForCheck();
       });
 
       this.imageService.getProfileImage().subscribe({

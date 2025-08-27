@@ -1,5 +1,6 @@
 package com.example.instaKing.controllers;
 
+import com.example.instaKing.models.User;
 import com.example.instaKing.payload.request.LoginRequest;
 import com.example.instaKing.payload.request.SignUpRequest;
 import com.example.instaKing.payload.response.JWTTokenSuccessResponse;
@@ -20,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -55,16 +58,44 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getEmail(),
-                loginRequest.getPassword()
-        ));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = SecurityConstants.TOKEN_PREFIX + jwtTokenProvider.generateToken(authentication);
 
-        return ResponseEntity.ok(new JWTTokenSuccessResponse(true, jwt));
+        String accessToken = jwtTokenProvider.generateAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "accessToken", SecurityConstants.TOKEN_PREFIX + accessToken, // добавляем Bearer только для access
+                "refreshToken", refreshToken // refresh возвращаем "чистым"
+        ));
     }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<Object> refreshToken(@RequestParam("refreshToken") String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken,true,SecurityConstants.REFRESH_SECRET)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid refresh token"));
+        }
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken,true,SecurityConstants.REFRESH_SECRET);
+        User user = userService.getUserById(userId);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
+
+        return ResponseEntity.ok(Map.of(
+                "accessToken", SecurityConstants.TOKEN_PREFIX + newAccessToken,
+                "refreshToken", refreshToken
+        ));
+    }
+
+
 
 
 }

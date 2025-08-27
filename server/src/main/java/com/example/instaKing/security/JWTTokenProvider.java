@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,52 +15,75 @@ import java.util.Map;
 @Component
 public class JWTTokenProvider {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(JWTTokenProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JWTTokenProvider.class);
 
-    public String generateToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        Date now = new Date(System.currentTimeMillis());
-        Date expiryDate = new Date(now.getTime() + SecurityConstants.EXPIRATION_TIME);
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + SecurityConstants.ACCESS_EXPIRATION_TIME);
 
-        String userId = Long.toString(user.getId());
+        return buildToken(user, now, expiryDate, "access", SecurityConstants.ACCESS_SECRET);
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + SecurityConstants.REFRESH_EXPIRATION_TIME);
+
+        return buildToken(user, now, expiryDate, "refresh", SecurityConstants.REFRESH_SECRET);
+    }
+
+    // --- Общая сборка токена ---
+    private String buildToken(User user, Date now, Date expiryDate, String type, Key secret) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
+        claims.put("userId", user.getId());
         claims.put("username", user.getUsername());
         claims.put("firstname", user.getFirstname());
         claims.put("lastname", user.getLastname());
+        claims.put("tokenType", type);
+
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(String.valueOf(user.getId()))
                 .addClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, SecurityConstants.SECRET)
+                .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
 
-    public Boolean validateToken(String token) {
+    // --- Валидация токена ---
+    public boolean validateToken(String token, boolean isRefresh,Key secret) {
         try {
-            Jwts.parser()
-                    .setSigningKey(SecurityConstants.SECRET)
-                    .build()
-                    .parseClaimsJws(token);
+            getClaims(token, isRefresh,secret);
             return true;
-        } catch (MalformedJwtException |
-                 ExpiredJwtException |
-                 UnsupportedJwtException |
-                 IllegalArgumentException e) {
-            LOGGER.error(e.getMessage());
-            return false;
+        } catch (MalformedJwtException e) {
+            LOGGER.error("Невалидный JWT токен: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            LOGGER.error("Срок действия JWT токена истёк: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            LOGGER.error("Неподдерживаемый JWT токен: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Пустое тело JWT токена: {}", e.getMessage());
         }
-
+        return false;
     }
 
-    public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SecurityConstants.SECRET)
+    // --- Извлечение данных ---
+    public Long getUserIdFromToken(String token, boolean isRefresh, Key secret) {
+        Object id = getClaims(token, isRefresh,secret).get("userId");
+        return Long.parseLong(String.valueOf(id));
+    }
+
+    public String getTokenType(String token, boolean isRefresh, Key secret) {
+        return String.valueOf(getClaims(token, isRefresh,secret).get("tokenType"));
+    }
+
+    // --- Вспомогательный метод ---
+    private Claims getClaims(String token, boolean isRefresh,Key secret) {
+        return Jwts.parser()
+                .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        String id = (String) claims.get("userId");
-        return Long.parseLong(id);
     }
 }

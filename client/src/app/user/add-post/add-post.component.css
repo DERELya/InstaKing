@@ -1,3 +1,14 @@
+/* Цвет текста и фон input */
+.mat-mdc-input-element {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+::ng-deep input:-webkit-autofill,
+::ng-deep .mat-mdc-input-element:-webkit-autofill {
+  box-shadow: 0 0 0 1000px var(--color-text) inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+}
+
 .create-post-container {
   background: var(--color-bg);
   border-radius: 18px;
@@ -126,3 +137,4 @@ button[mat-flat-button]:disabled {
     font-size: 15px;
   }
 }
+

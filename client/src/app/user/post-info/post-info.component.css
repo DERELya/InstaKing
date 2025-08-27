@@ -459,6 +459,10 @@
 .profile-link * {
   font-weight: normal !important;
 }
+.title{
+  color: var(--color-text);
+  margin-left: 17px;
+}
 
 @media (max-width: 800px) {
   .fullscreen-content {

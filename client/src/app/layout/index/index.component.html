@@ -19,7 +19,9 @@
                  *ngIf="post.image"
                  [src]="post.image"
                  class="feed-image"
-                 alt="post image" />
+                 alt="post image"
+            (dblclick)="likePost(post.id!,i)"/>
+            <div *ngIf="showHeart" class="heart-overlay">❤</div>
             <div class="modal-info-block">
               <section class="actions">
                 <div class="actions-horizontal">

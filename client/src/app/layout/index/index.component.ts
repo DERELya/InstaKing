@@ -13,7 +13,6 @@ import {User} from '../../models/User';
 import {PostService} from '../../services/post.service';
 import {UserService} from '../../services/user.service';
 import {CommentService} from '../../services/comment.service';
-import {NotificationService} from '../../services/notification.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {MatCardImage, MatCardModule} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
@@ -60,19 +59,17 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
   isPostsLoaded = false;
   isUserDataLoaded = false;
   userImages: { [key: string]: string } = {};
-  MAX_VISIBLE_COMMENTS = 1;
   private destroy$ = new Subject<void>();
   currentPage = 0;
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
-
+  showHeart = false;
 
   constructor(
     private postService: PostService,
     private userService: UserService,
     protected commentService: CommentService,
-    private notificationService: NotificationService,
     private imageService: ImageUploadService,
     private cd: ChangeDetectorRef,
     private dialog: MatDialog
@@ -182,54 +179,6 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     this.observers.forEach(obs => obs.disconnect());
   }
 
-  loaduser() {
-    this.userService.getCurrentUser().subscribe(user => {
-      this.user = user;
-      this.isUserDataLoaded = true;
-    });
-  }
-
-
-  getImagesToPosts(posts: UiPost[]): void {
-    posts.forEach(p => {
-      this.imageService.getImageToPost(p.id!).subscribe({
-        next: blob => {
-          p.image = URL.createObjectURL(blob);
-          showAllComments: typeof p.showAllComments === 'boolean' ? p.showAllComments : false
-          this.cd.markForCheck();
-        },
-        error: err => {
-          /* fallback */
-          p.image = 'assets/placeholder.jpg';
-        }
-      });
-    });
-  }
-
-
-  getCommentsToPost(posts: Post[]): void {
-
-    posts.forEach(p => {
-      if (p.id !== undefined) {
-        this.commentService.getCommentsToPost(p.id)
-          .subscribe(data => {
-            p.comments = data;
-            this.cd.markForCheck();
-          })
-      }
-    });
-  }
-
-
-  toggleShowAllComments(index: number): void {
-    const post = this.posts[index];
-    if (!post) return;
-    if (typeof post.showAllComments === 'undefined') post.showAllComments = false;
-    post.showAllComments = !post.showAllComments;
-    this.cd.markForCheck();
-  }
-
-
   private patchPost(index: number, patch: Partial<UiPost>): void {
     const updated = {...this.posts[index], ...patch};
     this.posts = [
@@ -260,7 +209,10 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
         return throwError(() => err);
       })
     ).subscribe();
+    if(!post.isLiked)
+      this.animateHeart();
   }
+
   openLikesDialog(postIndex: number): void {
     const post = this.posts[postIndex];
     if (!post || !post.usersLiked || !post.usersLiked.length) return;
@@ -268,6 +220,11 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
       data: post.usersLiked,
       width: '350px'
     });
+  }
+
+  animateHeart() {
+    this.showHeart = true;
+    setTimeout(() => this.showHeart = false, 800);
   }
 
   getUserImage(username: string): string {

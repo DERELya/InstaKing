@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 
-const TOKEN_KEY = 'auth-token';
+const ACCESS_TOKEN='access-token'
 const USER_KEY = 'auth-user';
+const REFRESH_TOKEN='refresh-token'
 
 @Injectable({
   providedIn: 'root'
@@ -12,26 +13,41 @@ export class TokenStorageService {
 
   public saveToken(token: string): void {
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('auth-token', encodeURIComponent(token));
+      sessionStorage.setItem(ACCESS_TOKEN, encodeURIComponent(token));
     }
   }
 
   public getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('auth-token');
+      return sessionStorage.getItem(ACCESS_TOKEN);
     }
     return null;
   }
 
   public saveUser(user: any): void {
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('auth-user', JSON.stringify(user));
+      sessionStorage.setItem(USER_KEY, JSON.stringify(user));
     }
+  }
+  public saveRefreshToken(token: string):void{
+    if (typeof window!== 'undefined'){
+      localStorage.setItem(REFRESH_TOKEN,encodeURIComponent(token));
+    }
+  }
+  public getRefreshToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(REFRESH_TOKEN);
+    }
+    return null;
+  }
+  public clearTokens(): void {
+    sessionStorage.removeItem('access-token');
+    sessionStorage.removeItem('refresh-token');
   }
 
   public getUser(): any {
     if (typeof window !== 'undefined') {
-      const data = sessionStorage.getItem('auth-user');
+      const data = sessionStorage.getItem(USER_KEY);
       return data ? JSON.parse(data) : null;
     }
     return null;

@@ -37,4 +37,8 @@ export class AuthService {
     })
   }
 
+  public refreshToken(token: string): Observable<any> {
+    return this.http.post(AUTH_API+'refreshToken?refreshToken='+ token, {});
+  }
+
 }

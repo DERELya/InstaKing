@@ -84,7 +84,6 @@ export class UserPostsComponent implements OnInit, OnDestroy {
   }
 
   openPostDetails(index: number) {
-    console.log(this.posts[index]);
     const dialogRef = this.dialog.open(PostInfoComponent, {
       data: {post: this.posts[index], index}
     });
