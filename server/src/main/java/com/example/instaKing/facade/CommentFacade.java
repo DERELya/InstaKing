@@ -2,7 +2,6 @@ package com.example.instaKing.facade;
 
 import com.example.instaKing.dto.CommentDTO;
 import com.example.instaKing.models.Comment;
-import org.springframework.stereotype.Component;
 
 public class CommentFacade {
 

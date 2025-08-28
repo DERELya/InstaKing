@@ -19,6 +19,6 @@ public class SecurityConstants {
 
     public static final String UPLOAD_DIR = "uploads/";
 
-    public static final long ACCESS_EXPIRATION_TIME = 1000*60;
+    public static final long ACCESS_EXPIRATION_TIME = 1000*60*15;
     public static final long REFRESH_EXPIRATION_TIME =1000L*60*60*24*7;
 }
