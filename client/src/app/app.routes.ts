@@ -6,6 +6,7 @@ import {AuthGuard} from './helper/auth-guard';
 import {ProfileComponent} from './user/profile/profile.component';
 import {UserPostsComponent} from './user/user-posts/user-posts.component';
 import {AddPostComponent} from './user/add-post/add-post.component';
+import {UserFavoriteComponent} from './user/user-favorite/user-favorite.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
@@ -16,7 +17,8 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     component: ProfileComponent,
     children: [
-      { path: '', component: UserPostsComponent }      // /profile/:username// /profile/:username/add
+      { path: '', component: UserPostsComponent },
+      { path: '', component: UserFavoriteComponent } // /profile/:username// /profile/:username/add
     ]
   },
   {path: '', redirectTo: 'main', pathMatch: 'full'}

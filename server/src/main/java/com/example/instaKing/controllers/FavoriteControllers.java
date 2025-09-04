@@ -51,17 +51,10 @@ public class FavoriteControllers {
     }
 
     @PostMapping("/{postId}")
-    public ResponseEntity<Favorite> addFavorite(Principal principal, @PathVariable("postId") Long postId) {
+    public ResponseEntity<String> toggleFavorite(Principal principal, @PathVariable Long postId) {
         User user = userService.getCurrentUser(principal);
-        System.out.println("охуеть"+user.getId());
-        System.out.println("gg");
-//        if (favoriteRepository.findByUserAndPost(user, post).isPresent()) {
-//            System.out.println("gg1");
-//            favoriteService.removeFromFavorites(user.getId(), postId);
-//        }else {
-            favoriteService.addToFavorites(user.getId(), postId);
-        //}
-
-        return ResponseEntity.ok().build();
+        boolean added = favoriteService.toggleFavorite(user.getId(), postId);
+        return ResponseEntity.ok(added ? "added" : "removed");
     }
+
 }

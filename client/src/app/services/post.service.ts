@@ -122,7 +122,6 @@ export class PostService {
   }
 
 
-
   /** Получить посты для текущего пользователя — если нужна отдельная подписка */
   getPostForCurrentUser(): Observable<Post[]> {
     return this.http.get<Post[]>(this.api + 'user/posts');
@@ -133,6 +132,12 @@ export class PostService {
     return this.http.get<Post[]>(this.api + 'user/' + username);
   }
 
+  getFavoritePostForUser(): Observable<Post[]> {
+    return this.http.get<Post[]>(this.api + 'favorite');
+  }
+  toggleFavorite(postId: number): Observable<string> {
+    return this.http.post(this.api + postId, {}, { responseType: 'text' });
+  }
   /** Удалить пост */
   deletePost(id: number): Observable<any> {
 
@@ -167,6 +172,34 @@ export class PostService {
           )
         );
       })
+    ).subscribe({
+      next: uiPosts => {
+        this.postsSubject.next(uiPosts);
+      },
+      error: () => {
+        // обработка ошибок
+      }
+    });
+  }
+
+  loadProfileFavoritePosts() {
+    this.getFavoritePostForUser().pipe(
+      switchMap((posts: Post[]) =>
+        posts.length === 0
+          ? of([])
+          : forkJoin(
+            posts.map(post =>
+              this.imageService.getImageToPost(post.id!).pipe(
+                map(blob => URL.createObjectURL(blob)),
+                catchError(() => of('assets/placeholder.jpg')),
+                map(postImg => ({
+                  ...post,
+                  image: postImg
+                } as UiPost))
+              )
+            )
+          )
+      )
     ).subscribe({
       next: uiPosts => {
         this.postsSubject.next(uiPosts);

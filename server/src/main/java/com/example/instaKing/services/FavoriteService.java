@@ -21,20 +21,27 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public void addToFavorites(Long userId,Long postId) {
-        User user=userRepository.findById(userId).get();
-        Post post=postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("PostService cannot be found"));
-        System.out.println(user);
-        System.out.println(post);
-        if (favoriteRepository.findByUserAndPost(user,post).isPresent()) {
-            Favorite favorite=new Favorite();
-            favorite.setUser(user);
-            favorite.setPost(post);
-            favorite.setAddedAt(LocalDateTime.now());
-            favoriteRepository.save(favorite);
-        }
+    public boolean toggleFavorite(Long userId, Long postId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+
+        return favoriteRepository.findByUserAndPost(user, post)
+                .map(fav -> {
+                    favoriteRepository.delete(fav);
+                    return false; // удалено
+                })
+                .orElseGet(() -> {
+                    Favorite favorite = new Favorite();
+                    favorite.setUser(user);
+                    favorite.setPost(post);
+                    favorite.setAddedAt(LocalDateTime.now());
+                    favoriteRepository.save(favorite);
+                    return true; // добавлено
+                });
     }
+
 
     public void removeFromFavorites(Long userId,Long postId) {
         User user=userRepository.findById(userId).orElseThrow();

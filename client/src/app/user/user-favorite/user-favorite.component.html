@@ -1,0 +1,13 @@
+<div class="feed" *ngIf="isUserPostsLoaded" >
+  <mat-card  class="ig-post" *ngFor="let post of posts; let i = index">
+    <!-- Фото -->
+    <img class="ig-photo"
+         [src]="post.image"
+         alt="photo"
+         (click)="openPostDetails(i)" style="cursor: pointer;"/>
+  </mat-card>
+</div>
+<div *ngIf="this.posts.length==0" class="empty-tab-msg">
+  Пока что нет публикаций
+</div>
+
