@@ -24,9 +24,13 @@ export class AuthInterceptor implements HttpInterceptor {
     const token = this.tokenService.getToken();
 
     if (token != null) {
+      const raw = decodeURIComponent(token);
+      const headerValue = raw.startsWith('Bearer ')
+        ? raw
+        : `Bearer ${raw}`;
       authRequest = req.clone({
         setHeaders: {
-          [TOKEN_HEADER_KEY]: ' ' + decodeURIComponent(token)
+          [TOKEN_HEADER_KEY]: headerValue
         }
       });
     }

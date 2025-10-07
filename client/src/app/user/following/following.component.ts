@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {Subject, takeUntil} from 'rxjs';
 import {MatIconButton} from "@angular/material/button";
 import {CommonModule, NgForOf, NgIf} from "@angular/common";
 import {MatIcon} from '@angular/material/icon';
@@ -23,12 +24,13 @@ import {TokenStorageService} from '../../services/token-storage.service';
   templateUrl: './following.component.html',
   styleUrl: './following.component.css'
 })
-export class FollowingComponent implements OnInit {
+export class FollowingComponent implements OnInit, OnDestroy {
   users$: Observable<User[]> = of([]);
   userImages: { [key: string]: string } = {};
   isFollowingMap: { [username: string]: boolean } = {};
   usernames!: string[] | null;
   meUsername!: string | null;
+  private destroy$ = new Subject<void>();
 
   constructor(private userService: UserService,
               @Inject(MAT_DIALOG_DATA) public data: { followers: boolean, username: string },
@@ -44,17 +46,22 @@ export class FollowingComponent implements OnInit {
     } else {
       this.users$ = this.userService.getFollowing(this.data.username);
     }
-    this.users$.subscribe(users => {
+    this.users$.pipe(takeUntil(this.destroy$)).subscribe(users => {
       this.usernames = users.map(user => user.username);
 
       // Загружаем "isFollowingMap" для всех username
-      this.userService.isFollowingBatch(this.usernames).subscribe(map => {
+      this.userService.isFollowingBatch(this.usernames).pipe(takeUntil(this.destroy$)).subscribe(map => {
         this.isFollowingMap = map;
       });
-      users.forEach(user => this.imageService.getImageToUser(user.username));
+      users.forEach(user => this.imageService.getImageToUser(user.username).pipe(takeUntil(this.destroy$)).subscribe());
     });
     this.meUsername=this.tokenService.getUsernameFromToken();
 
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   close() {

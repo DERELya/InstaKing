@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of} from 'rxjs';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {UserService} from '../../services/user.service';
@@ -41,7 +42,7 @@ const USER_API = 'http://localhost:8080/api/user/';
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
 })
-export class NavigationComponent implements OnInit {
+export class NavigationComponent implements OnInit, OnDestroy {
 
   isLoggedIn = false;
   isDataLoaded = false;
@@ -54,6 +55,8 @@ export class NavigationComponent implements OnInit {
   users: any[] = [];
   isLoading = false;
   error: string | null = null;
+  private destroy$ = new Subject<void>();
+  private searchInput$ = new Subject<string>();
 
   constructor(
     private tokenService: TokenStorageService,
@@ -68,13 +71,13 @@ export class NavigationComponent implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = !!this.tokenService.getToken();
     if (this.isLoggedIn) {
-      this.userService.getCurrentUser().subscribe(data => {
+      this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(data => {
         this.user = data;
         this.isDataLoaded = true;
         this.cd.markForCheck();
       });
 
-      this.imageService.getProfileImage().subscribe({
+      this.imageService.getProfileImage().pipe(takeUntil(this.destroy$)).subscribe({
         next: (blob) => {
           this.userProfileImage = URL.createObjectURL(blob);
           this.isDataLoaded=true;
@@ -86,6 +89,27 @@ export class NavigationComponent implements OnInit {
       });
       this.cd.markForCheck();
     }
+    this.searchInput$
+      .pipe(
+        takeUntil(this.destroy$),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(q => q.trim() ? this.userService.search(q) : of([]))
+      )
+      .subscribe({
+        next: (users) => {
+          this.users = users;
+          this.users.forEach(user => this.loadAvatar(user));
+        },
+        error: () => {
+          this.users = [];
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   toggleTheme() {
@@ -102,21 +126,7 @@ export class NavigationComponent implements OnInit {
   }
 
   searchUsers() {
-    if (this.query.trim()) {
-      this.userService.search(this.query).subscribe({
-        next: (users) => {
-          this.users = users;
-          this.users.forEach(user => this.loadAvatar(user));
-        },
-        error: (err) => {
-          console.error('Ошибка при поиске:', err);
-          this.users = [];
-        }
-      });
-
-    } else {
-      this.users = [];
-    }
+    this.searchInput$.next(this.query);
   }
 
   clearSearch() {
@@ -130,7 +140,7 @@ export class NavigationComponent implements OnInit {
   }
 
   loadAvatar(user: User) {
-    this.imageService.getImageToUser(user.username).subscribe({
+    this.imageService.getImageToUser(user.username).pipe(takeUntil(this.destroy$)).subscribe({
       next: blob => {
         const preview = URL.createObjectURL(blob);
         user.avatarUrl = preview;

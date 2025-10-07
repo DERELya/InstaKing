@@ -37,10 +37,10 @@ public class JWTTokenProvider {
     private String buildToken(User user, Date now, Date expiryDate, String type, Key secret) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
-        claims.put("username", user.getUsername());
-        claims.put("firstname", user.getFirstname());
-        claims.put("lastname", user.getLastname());
         claims.put("tokenType", type);
+        if ("access".equals(type)) {
+            claims.put("username", user.getUsername());
+        }
 
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))

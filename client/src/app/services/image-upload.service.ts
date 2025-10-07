@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, of, shareReplay} from 'rxjs';
 
 const IMAGE_API = 'http://localhost:8080/api/image/';
 
@@ -11,6 +11,9 @@ export class ImageUploadService {
 
   constructor(private http: HttpClient) {
   }
+
+  private userImageCache: Map<string, Observable<Blob>> = new Map();
+  private postImageCache: Map<number, Observable<Blob>> = new Map();
 
   uploadImageToUser(file: File): Observable<any> {
     const uploadData = new FormData();
@@ -32,11 +35,39 @@ export class ImageUploadService {
 
 
   getImageToPost(postId: number): Observable<Blob> {
-    return this.http.get(IMAGE_API + postId + '/image', {responseType: 'blob'});
+    const cached = this.postImageCache.get(postId);
+    if (cached) {
+      return cached;
+    }
+    const req = this.http.get(IMAGE_API + postId + '/image', {responseType: 'blob'}).pipe(shareReplay(1));
+    this.postImageCache.set(postId, req);
+    return req;
   }
 
   getImageToUser(username:string):Observable<Blob>{
-    return this.http.get(IMAGE_API+'profileImage/'+username,{responseType: 'blob'});
+    const cached = this.userImageCache.get(username);
+    if (cached) {
+      return cached;
+    }
+    const req = this.http.get(IMAGE_API+'profileImage/'+username,{responseType: 'blob'}).pipe(shareReplay(1));
+    this.userImageCache.set(username, req);
+    return req;
+  }
+
+  clearUserImageCache(username?: string) {
+    if (username) {
+      this.userImageCache.delete(username);
+      return;
+    }
+    this.userImageCache.clear();
+  }
+
+  clearPostImageCache(postId?: number) {
+    if (postId !== undefined) {
+      this.postImageCache.delete(postId);
+      return;
+    }
+    this.postImageCache.clear();
   }
 
 }

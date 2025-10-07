@@ -91,11 +91,7 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
       this.postService.posts$
         .pipe(takeUntil(this.destroy$))
         .subscribe(posts => {
-          // корректно выставляем isLiked для каждого поста
-          this.posts = posts.map(post => ({
-            ...post,
-            isLiked: (post.usersLiked ?? []).includes(this.user.username)
-          }));
+          this.posts = posts;
           this.isPostsLoaded = true;
           this.cd.markForCheck();
         });
@@ -104,32 +100,13 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
 
   loadPosts(): void {
     this.isLoading = true;
-    this.postService.loadPostsByPage(this.currentPage, this.pageSize).subscribe((uiPosts: UiPost[]) => {
-      // Проставляем лайки для текущего пользователя
-      uiPosts = uiPosts.map(post => ({
-        ...post,
-        isLiked: (post.usersLiked ?? []).includes(this.user.username)
-      }));
-      if (uiPosts.length === 0) {
-        this.noMorePosts = true;
-      }
-      if (uiPosts.length < this.pageSize) {
-        this.noMorePosts = true;
-      }
-      uiPosts.forEach(p => {
-        if (p.id) {
-          this.commentService.getCountCommentsToPost(p.id)
-            .subscribe(count => {
-              p.commentCount = count;
-              this.cd.markForCheck();
-            });
-        }
-      });
-      this.posts = [...this.posts, ...uiPosts];
-      this.isLoading = false;
-      this.cd.markForCheck();
-    })
+    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username);
+    // no manual concatenation; posts$ stream will emit
+    this.isLoading = false;
+    this.cd.markForCheck();
   }
+
+  private fetchCommentCounts(items: UiPost[]): void {}
   loadNextPage(): void {
     if (this.noMorePosts || this.isLoading) return;
     this.currentPage++;
@@ -248,6 +225,10 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
         }
       });
     return this.userImages[username];
+  }
+
+  trackByUsername(index: number, username: string): string {
+    return username;
   }
 
   postComment(event: Event, message: string, postId: number, postIndex: number): void {

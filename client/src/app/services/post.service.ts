@@ -4,6 +4,7 @@ import {Post} from '../models/Post';
 import {BehaviorSubject, catchError, forkJoin, map, Observable, of, switchMap} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {UserService} from './user.service';
+import {TokenStorageService} from './token-storage.service';
 import {ImageUploadService} from './image-upload.service';
 import {CommentService} from './comment.service';
 
@@ -12,6 +13,7 @@ interface UiPost extends Post {
   isLiked: boolean;
   avatarUrl?: string;
   showAllComments?: boolean;
+  commentCount?: number;
 }
 
 @Injectable({
@@ -25,7 +27,28 @@ export class PostService {
   constructor(private http: HttpClient,
               private userService: UserService,
               private imageService: ImageUploadService,
-              private commentService: CommentService) {
+              private commentService: CommentService,
+              private tokenService: TokenStorageService) {
+  }
+
+  private mergeAndEmit(newPosts: UiPost[], replace: boolean = false): void {
+    if (replace) {
+      // Replace entire list but ensure dedupe by id just in case
+      const seen = new Set<number>();
+      const deduped = newPosts.filter(p => {
+        const id = p.id as number;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      this.postsSubject.next(deduped);
+      return;
+    }
+
+    const current = this.postsSubject.getValue();
+    const existingIds = new Set(current.map(p => p.id as number));
+    const filtered = newPosts.filter(p => !existingIds.has(p.id as number));
+    this.postsSubject.next([...current, ...filtered]);
   }
 
   /** Создать пост */
@@ -35,6 +58,7 @@ export class PostService {
 
   /** Загрузить все посты (например, для ленты) и обновить поток */
   loadAllPosts(): void {
+    const meUsername = this.tokenService.getUsernameFromToken?.() ?? undefined;
     this.http.get<Post[]>(this.api + 'all').pipe(
       switchMap(posts =>
         posts.length === 0
@@ -50,17 +74,17 @@ export class PostService {
                   map(blob => URL.createObjectURL(blob)),
                   catchError(() => of('assets/blank-avatar.png'))
                 ),
-                comments: this.commentService.getCommentsToPost(post.id!).pipe(
-                  catchError(() => of([]))
+                commentCount: this.commentService.getCountCommentsToPost(post.id!).pipe(
+                  catchError(() => of(0))
                 )
               }).pipe(
-                map(({postImg, avatar, comments}) => ({
+                map(({postImg, avatar, commentCount}) => ({
                   ...post,
                   image: postImg,
                   avatarUrl: avatar,
-                  comments: comments,
                   usersLiked: post.usersLiked ?? [],
-                  isLiked: false // тут не знаем, кто залогинен, если надо - добавь проверку по своему юзеру
+                  isLiked: meUsername ? (post.usersLiked ?? []).includes(meUsername) : false,
+                  commentCount
                 } as UiPost))
               )
             )
@@ -68,7 +92,7 @@ export class PostService {
       )
     ).subscribe({
       next: uiPosts => {
-        this.postsSubject.next(uiPosts);
+        this.mergeAndEmit(uiPosts, true);
       },
       error: () => {
         // обработка ошибок
@@ -91,7 +115,7 @@ export class PostService {
     });
   }
 
-  loadPostsByPage(page: number, size: number): Observable<UiPost[]> {
+  loadPostsByPage(page: number, size: number, currentUsername?: string): Observable<UiPost[]> {
     return this.http.get<Post[]>(`${this.api}posts?page=${page}&size=${size}`).pipe(
       switchMap(posts => posts.length === 0
         ? of([])
@@ -105,20 +129,32 @@ export class PostService {
               avatar: this.imageService.getImageToUser(post.username!).pipe(
                 map(blob => URL.createObjectURL(blob)),
                 catchError(() => of('assets/blank-avatar.png'))
+              ),
+              commentCount: this.commentService.getCountCommentsToPost(post.id!).pipe(
+                catchError(() => of(0))
               )
             }).pipe(
-              map(({postImg, avatar}) => ({
+              map(({postImg, avatar, commentCount}) => ({
                 ...post,
                 image: postImg,
                 avatarUrl: avatar,
                 usersLiked: post.usersLiked ?? [],
-                isLiked: false
+                isLiked: currentUsername ? (post.usersLiked ?? []).includes(currentUsername) : false,
+                commentCount
               } as UiPost))
             )
           )
         )
       )
     );
+  }
+
+  /** Append a page of posts into the posts$ stream with dedupe */
+  appendPostsPage(page: number, size: number, currentUsername?: string): void {
+    this.loadPostsByPage(page, size, currentUsername).subscribe({
+      next: uiPosts => this.mergeAndEmit(uiPosts, false),
+      error: () => {}
+    });
   }
 
 
@@ -150,31 +186,36 @@ export class PostService {
   }
 
   loadProfilePosts(profileUsername: string) {
-    this.userService.getUserByUsername(profileUsername).pipe(
-      switchMap(user => {
-        const meUsername = user.username;
-        return this.getPostForUser(profileUsername).pipe(
-          switchMap((posts: Post[]) =>
-            posts.length === 0
-              ? of([])
-              : forkJoin(
-                posts.map(post =>
-                  this.imageService.getImageToPost(post.id!).pipe(
-                    map(blob => URL.createObjectURL(blob)),
-                    catchError(() => of('assets/placeholder.jpg')),
-                    map(postImg => ({
-                      ...post,
-                      image: postImg
-                    } as UiPost))
-                  )
+    const meUsername = this.tokenService.getUsernameFromToken?.() ?? undefined;
+    this.getPostForUser(profileUsername).pipe(
+      switchMap((posts: Post[]) =>
+        posts.length === 0
+          ? of([])
+          : forkJoin(
+            posts.map(post =>
+              forkJoin({
+                postImg: this.imageService.getImageToPost(post.id!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/placeholder.jpg'))
+                ),
+                commentCount: this.commentService.getCountCommentsToPost(post.id!).pipe(
+                  catchError(() => of(0))
                 )
+              }).pipe(
+                map(({postImg, commentCount}) => ({
+                  ...post,
+                  image: postImg,
+                  usersLiked: post.usersLiked ?? [],
+                  isLiked: meUsername ? (post.usersLiked ?? []).includes(meUsername) : false,
+                  commentCount
+                } as UiPost))
               )
+            )
           )
-        );
-      })
+      )
     ).subscribe({
       next: uiPosts => {
-        this.postsSubject.next(uiPosts);
+        this.mergeAndEmit(uiPosts, true);
       },
       error: () => {
         // обработка ошибок
@@ -183,18 +224,28 @@ export class PostService {
   }
 
   loadProfileFavoritePosts() {
+    const meUsername = this.tokenService.getUsernameFromToken?.() ?? undefined;
     this.getFavoritePostForUser().pipe(
       switchMap((posts: Post[]) =>
         posts.length === 0
           ? of([])
           : forkJoin(
             posts.map(post =>
-              this.imageService.getImageToPost(post.id!).pipe(
-                map(blob => URL.createObjectURL(blob)),
-                catchError(() => of('assets/placeholder.jpg')),
-                map(postImg => ({
+              forkJoin({
+                postImg: this.imageService.getImageToPost(post.id!).pipe(
+                  map(blob => URL.createObjectURL(blob)),
+                  catchError(() => of('assets/placeholder.jpg'))
+                ),
+                commentCount: this.commentService.getCountCommentsToPost(post.id!).pipe(
+                  catchError(() => of(0))
+                )
+              }).pipe(
+                map(({postImg, commentCount}) => ({
                   ...post,
-                  image: postImg
+                  image: postImg,
+                  usersLiked: post.usersLiked ?? [],
+                  isLiked: meUsername ? (post.usersLiked ?? []).includes(meUsername) : false,
+                  commentCount
                 } as UiPost))
               )
             )
@@ -202,7 +253,7 @@ export class PostService {
       )
     ).subscribe({
       next: uiPosts => {
-        this.postsSubject.next(uiPosts);
+        this.mergeAndEmit(uiPosts, true);
       },
       error: () => {
         // обработка ошибок

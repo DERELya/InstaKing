@@ -38,7 +38,7 @@
               </section>
               <section class="likes" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
                    <span class="likes-avatars">
-                      <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index">
+                      <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index; trackBy: trackByUsername">
                          <img
                            [src]="getUserImage(username)"
                            [style.z-index]="10 - idx"

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject, takeUntil} from 'rxjs';
+import {Observable, Subject, takeUntil} from 'rxjs';
 import {PostService} from '../../services/post.service';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {UserService} from '../../services/user.service';
@@ -41,7 +41,7 @@ interface UiPost extends Post {
   ]
 })
 export class UserPostsComponent implements OnInit, OnDestroy {
-  posts: UiPost[] = [];
+  posts$!: Observable<UiPost[]>;
   isUserPostsLoaded = false;
   meUsername!: string;
   menuOpen = false;
@@ -61,31 +61,25 @@ export class UserPostsComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const username = params.get('username');
         if (username) {
-          this.posts = [];
           this.postService.loadProfilePosts(username);
           this.meUsername = username;
           this.cd.markForCheck();
         }
       });
 
-    this.postService.posts$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(posts => {
-        this.posts = posts;
-        this.isUserPostsLoaded = true;
-        this.cd.markForCheck();
-      });
+    this.posts$ = this.postService.posts$ as Observable<UiPost[]>;
+    this.isUserPostsLoaded = true;
+    this.cd.markForCheck();
   }
 
   ngOnDestroy(): void {
-    this.posts=[];
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  openPostDetails(index: number) {
+  openPostDetails(index: number, post: UiPost) {
     const dialogRef = this.dialog.open(PostInfoComponent, {
-      data: {post: this.posts[index], index}
+      data: {post, index}
     });
 
     dialogRef.afterClosed().subscribe(() => {
@@ -100,6 +94,10 @@ export class UserPostsComponent implements OnInit, OnDestroy {
     if (!target.closest('.menu-wrapper')) {
       this.menuOpen = false;
     }
+  }
+
+  trackById(index: number, post: UiPost) {
+    return post.id ?? index;
   }
 
 }
