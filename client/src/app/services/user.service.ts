@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {User} from '../models/User';
 
 const USER_API = 'http://localhost:8080/api/user/';
@@ -10,7 +10,13 @@ const USER_API = 'http://localhost:8080/api/user/';
 })
 export class UserService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private avatarUpdated = new Subject<void>();
+  public avatarUpdated$ = this.avatarUpdated.asObservable();
 
+  // 2. Метод для оповещения об изменении
+  public notifyAvatarUpdated(): void {
+    this.avatarUpdated.next();
+  }
   constructor(private http: HttpClient) {
   }
 

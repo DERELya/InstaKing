@@ -72,6 +72,14 @@ public class ImageService {
 
         return imageRepository.save(imageModel);
     }
+    public  void deleteImageByPostId(Long postId) throws IOException {
+        ImageModel imageModel = imageRepository.findByPostId(postId).orElse(null);
+        if (imageModel != null) {
+            System.out.println("gg"+postId);
+            Files.deleteIfExists(Paths.get(UPLOAD_DIR + imageModel.getImagePath()));
+            imageRepository.delete(imageModel);
+        }
+    }
 
     public ImageModel uploadImageToPost(MultipartFile file, Principal principal, Long postId) throws IOException {
         User user = getUserByPrincipal(principal);

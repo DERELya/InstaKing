@@ -14,7 +14,7 @@
           <span class="username">{{ data.post.username }}</span>
         </div>
         <div class="ig-modal-actions">
-          <button class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
+          <button *ngIf="data.post.username==meUsername" class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
             <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="4" cy="12" r="2" fill="currentColor"/>
               <circle cx="12" cy="12" r="2" fill="currentColor"/>
@@ -63,6 +63,7 @@
 
               </a>
                   <span class="comment-date">{{ comment.createdDate | timeAgo }}</span>
+
             </div>
 
 

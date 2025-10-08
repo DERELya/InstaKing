@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of, shareReplay} from 'rxjs';
+import {Observable, of, shareReplay, tap} from 'rxjs'; // Добавлен tap
+import { UserService } from './user.service'; // Импорт UserService
 
 const IMAGE_API = 'http://localhost:8080/api/image/';
 
@@ -9,17 +10,28 @@ const IMAGE_API = 'http://localhost:8080/api/image/';
 })
 export class ImageUploadService {
 
-  constructor(private http: HttpClient) {
+  // Инжектируем UserService
+  constructor(private http: HttpClient, private userService: UserService) {
   }
 
   private userImageCache: Map<string, Observable<Blob>> = new Map();
   private postImageCache: Map<number, Observable<Blob>> = new Map();
 
+
   uploadImageToUser(file: File): Observable<any> {
     const uploadData = new FormData();
     uploadData.append('file', file);
 
-    return this.http.post(IMAGE_API + 'upload', uploadData);
+    // Очищаем кэш изображения текущего пользователя перед загрузкой,
+    // чтобы при следующем запросе гарантированно получить новое изображение.
+    this.clearUserImageCache();
+
+    return this.http.post(IMAGE_API + 'upload', uploadData).pipe(
+      // 1. Используем tap, чтобы вызвать уведомление после успешного завершения HTTP-запроса
+      tap(() => {
+        this.userService.notifyAvatarUpdated();
+      })
+    );
   }
 
   uploadImageToPost(file: File, postId: number): Observable<any> {
@@ -59,6 +71,8 @@ export class ImageUploadService {
       this.userImageCache.delete(username);
       return;
     }
+    // Если username не указан, очищаем все (можно было бы узнать текущего пользователя,
+    // но для простоты реактивного обновления очищаем весь кэш аватаров).
     this.userImageCache.clear();
   }
 

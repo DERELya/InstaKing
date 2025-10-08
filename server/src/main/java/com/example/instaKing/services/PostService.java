@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
@@ -25,12 +26,14 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final ImageService imageService;
 
     @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, ImageRepository imageRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, ImageRepository imageRepository, ImageService imageService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
+        this.imageService=imageService;
     }
 
     public Post createPost(PostDTO postDTO, Principal principal) {
@@ -85,8 +88,14 @@ public class PostService {
 
     public void deletePost(Long postId, Principal principal) {
         Post post = getPostById(postId, principal);
+        try {
+            imageService.deleteImageByPostId(postId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Optional<ImageModel> imageModel = imageRepository.findByPostId(post.getId());
         postRepository.delete(post);
+
         imageModel.ifPresent(imageRepository::delete);
     }
 

@@ -77,18 +77,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       });
 
-      this.imageService.getProfileImage().pipe(takeUntil(this.destroy$)).subscribe({
-        next: (blob) => {
-          this.userProfileImage = URL.createObjectURL(blob);
-          this.isDataLoaded=true;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userProfileImage = 'assets/placeholder.jpg';
-        }
-      });
+      // Инициализируем загрузку аватара
+      this.loadProfileImage();
+
+      // ПОДПИСКА: Реакция на сигнал обновления аватара
+      this.userService.avatarUpdated$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          // Вызываем повторную загрузку аватара
+          this.loadProfileImage();
+        });
+
       this.cd.markForCheck();
     }
+
     this.searchInput$
       .pipe(
         takeUntil(this.destroy$),
@@ -110,6 +112,34 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // Очистка старого BLOB URL
+    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
+      URL.revokeObjectURL(this.userProfileImage);
+    }
+  }
+
+  // Новый метод для загрузки и обновления аватара
+  loadProfileImage(): void {
+    // 1. Очищаем старый URL, чтобы избежать утечки памяти
+    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
+      URL.revokeObjectURL(this.userProfileImage);
+    }
+
+    // 2. Запрашиваем новый аватар.
+    // ImageUploadService гарантирует, что если аватар был обновлен,
+    // его внутренний кэш сброшен, и будет сделан новый HTTP-запрос.
+    this.imageService.getProfileImage().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (blob) => {
+        this.userProfileImage = URL.createObjectURL(blob);
+        this.isDataLoaded = true;
+        this.cd.markForCheck();
+      },
+      error: () => {
+        this.userProfileImage = 'assets/placeholder.jpg';
+        this.isDataLoaded = true;
+        this.cd.markForCheck();
+      }
+    });
   }
 
   toggleTheme() {

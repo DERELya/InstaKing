@@ -73,6 +73,38 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.updateProfileData(result);
         this.cd.markForCheck();
       });
+
+    // 1. Подписываемся на сигнал изменения счетчика постов (от PostService)
+    this.postService.postCountChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // 2. Если пост удален/добавлен, перезагружаем данные профиля, чтобы обновить счетчики.
+        if (this.user?.username) {
+          this.refreshProfileData();
+        }
+      });
+
+    // 3. Подписываемся на сигнал обновления аватара (предполагаем, что он в UserService)
+    this.userService.avatarUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Обновляем данные только если мы находимся на странице текущего пользователя
+        if (this.user?.username && this.isCurrentUser) {
+          this.refreshProfileData();
+        }
+      });
+  }
+
+  // Создаем отдельный метод для обновления данных профиля, чтобы избежать дублирования кода.
+  private refreshProfileData(): void {
+    if (this.user?.username) {
+      this.loadProfile(this.user.username).subscribe(profileResult => {
+        if (profileResult) {
+          this.updateProfileData(profileResult);
+          this.cd.markForCheck();
+        }
+      });
+    }
   }
 
   private loadProfile(profileUsername: string) {
@@ -157,15 +189,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           URL.revokeObjectURL(this.previewUrl);
           this.previewUrl = undefined;
         }
-        // После загрузки — перезагружаем профиль, чтобы обновить аватар и др. данные
-        if (this.user?.username) {
-          this.loadProfile(this.user.username).subscribe(result => {
-            if (result) {
-              this.updateProfileData(result);
-              this.cd.markForCheck();
-            }
-          });
-        }
+        this.selectedFile = undefined;
         this.notificationService.showSnackBar('Profile image updated successfully');
       },
       error: () => {
@@ -183,12 +207,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (this.user?.username) {
         // Перезагружаем профиль после редактирования
-        this.loadProfile(this.user.username).subscribe(profileResult => {
-          if (profileResult) {
-            this.updateProfileData(profileResult);
-            this.cd.markForCheck();
-          }
-        });
+        this.refreshProfileData();
       }
     });
   }
@@ -204,12 +223,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.user?.username) {
         // Перезагружаем профиль после редактирования
-        this.loadProfile(this.user.username).subscribe(profileResult => {
-          if (profileResult) {
-            this.updateProfileData(profileResult);
-            this.cd.markForCheck();
-          }
-        });
+        this.refreshProfileData();
       }
     });
   }
@@ -232,13 +246,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if ( this.user?.username) {
-        // Перезагружаем профиль после редактирования
-        this.loadProfile(this.user.username).subscribe(profileResult => {
-          if (profileResult) {
-            this.updateProfileData(profileResult);
-            this.cd.markForCheck();
-          }
-        });
+        // Обновление счетчика постов происходит через подписку на postCountChanged$ в ngOnInit.
       }
     });
   }
@@ -246,12 +254,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   follow(username: string) {
     this.userService.follow(username).subscribe(() => {
       if (this.user?.username) {
-        this.loadProfile(this.user.username).subscribe(result => {
-          if (result) {
-            this.updateProfileData(result);
-            this.cd.markForCheck();
-          }
-        });
+        this.refreshProfileData();
       }
     });
   }
@@ -259,12 +262,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   unfollow(username: string) {
     this.userService.unFollow(username).subscribe(() => {
       if (this.user?.username) {
-        this.loadProfile(this.user.username).subscribe(result => {
-          if (result) {
-            this.updateProfileData(result);
-            this.cd.markForCheck();
-          }
-        });
+        this.refreshProfileData();
       }
     });
   }
