@@ -13,7 +13,6 @@ import {MatIcon} from '@angular/material/icon';
 import {LikesPostComponent} from '../likes-post/likes-post.component';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {catchError, of, Subject, takeUntil} from 'rxjs';
-import {Comment} from '@angular/compiler';
 import {TimeAgoPipe} from '../../helper/time-ago.pipe';
 
 
@@ -42,6 +41,7 @@ export interface CommentPageResponse {
 
 @Component({
   selector: 'app-post-info',
+  standalone: true, // Указание standalone, так как в предыдущем коде это было
   imports: [
     DatePipe,
     MatButton,
@@ -79,7 +79,7 @@ export class PostInfoComponent implements OnInit, OnDestroy{
     private dialog: MatDialog,
     private cd: ChangeDetectorRef,
     private tokenService: TokenStorageService,
-) {
+  ) {
     this.meUsername=tokenService.getUsernameFromToken() || '';
   }
 
@@ -140,6 +140,7 @@ export class PostInfoComponent implements OnInit, OnDestroy{
     const post = this.data.post;
     this.commentService.addToCommentToPost(post.id!, message)
       .subscribe(data => {
+        // Добавляем новый комментарий в начало списка
         this.comments = [data, ...this.comments];
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
@@ -147,14 +148,23 @@ export class PostInfoComponent implements OnInit, OnDestroy{
   }
 
 
-  deleteComment(commentId: number, commentIndex: number): void {
-    const post = this.data.post;
+  deleteComment(commentId: number): void {
+    // 1. Вызываем сервис для удаления комментария
     this.commentService.delete(commentId)
-      .subscribe(() => {
-        this.notify.showSnackBar('Comment removed');
-        if (post.comments) {
-          post.comments.splice(commentIndex, 1);
+      .subscribe({
+        next: () => {
+          this.notify.showSnackBar('Comment removed');
+
+          // 2. Обновляем локальный список комментариев (UI)
+          // Фильтруем массив, оставляя только те комментарии, ID которых НЕ совпадает с удаляемым
+          this.comments = this.comments.filter(c => c.id !== commentId);
+
+          // 3. Уведомляем Angular о необходимости обновления представления
           this.cd.markForCheck();
+        },
+        error: (err) => {
+          this.notify.showSnackBar('Ошибка при удалении комментария');
+          console.error('Error deleting comment', err);
         }
       });
   }

@@ -63,6 +63,13 @@
 
               </a>
                   <span class="comment-date">{{ comment.createdDate | timeAgo }}</span>
+                  <button *ngIf="comment.username === meUsername"
+                          mat-icon-button
+                          (click)="deleteComment(comment.id!)"
+                          class="delete-comment-btn"
+                          aria-label="Удалить комментарий">
+                    <mat-icon class="comment-date" style="margin-left:-12px">close</mat-icon>
+                  </button>
 
             </div>
 
