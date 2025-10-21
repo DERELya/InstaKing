@@ -9,6 +9,7 @@ import com.example.instaKing.repositories.ImageRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,9 +48,9 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public List<Post> getPosts(int page, int size) {
+    public Page<Post> getPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC, "createdAt"));
-        return postRepository.findAll(pageable).getContent();
+        return postRepository.findAll(pageable);
     }
 
     public List<Post> getAllPosts() {
@@ -109,4 +110,6 @@ public class PostService {
         User user=userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
         return postRepository.findByUserOrderByCreatedAtDesc(user);
     }
+
+
 }

@@ -1,13 +1,17 @@
 package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.PostDTO;
+import com.example.instaKing.dto.PostPageResponse;
+import com.example.instaKing.facade.Facade;
 import com.example.instaKing.facade.PostFacade;
+import com.example.instaKing.models.Comment;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.PostService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -58,13 +62,26 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<List<PostDTO>> getPosts(@RequestParam int page,@RequestParam int size) {
-        List<PostDTO> postsDTO = postService.getPosts(page,size)
-                .stream()
-                .map(PostFacade::postToPostDTO)
-                .collect(Collectors.toList());
+    public ResponseEntity<PostPageResponse> getPosts(@RequestParam int page,@RequestParam int size) {
+//        List<PostDTO> postsDTO = postService.getPosts(page,size)
+//                .stream()
+//                .map(PostFacade::postToPostDTO)
+//                .collect(Collectors.toList());
 
-        return new ResponseEntity<>(postsDTO, HttpStatus.OK);
+        Page<Post> postPage = (Page<Post>) postService.getPosts( page, size);
+        List<PostDTO> postsDTO=postPage.getContent().
+                stream()
+                .map(Facade::postToPostDTO)
+                .collect(Collectors.toList());
+        PostPageResponse response=new PostPageResponse(
+                postsDTO,
+                postPage.getTotalElements(),
+                postPage.getTotalPages(),
+                postPage.getNumber(),
+                postPage.getSize()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 
