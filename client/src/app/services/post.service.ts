@@ -190,12 +190,11 @@ export class PostService {
     );
   }
 
-  /** Append a page of posts into the posts$ stream with dedupe */
-  appendPostsPage(page: number, size: number, currentUsername?: string): void {
-    this.loadPostsByPage(page, size, currentUsername).subscribe({
-      next: uiPosts => this.mergeAndEmit(uiPosts, false),
-      error: () => {}
-    });
+  /** Append a page of posts into the posts$ stream with dedupe and return the page */
+  appendPostsPage(page: number, size: number, currentUsername?: string): Observable<UiPost[]> {
+    return this.loadPostsByPage(page, size, currentUsername).pipe(
+      tap(uiPosts => this.mergeAndEmit(uiPosts, false))
+    );
   }
 
   /** Получить посты для указанного пользователя — если нужна отдельная подписка */
