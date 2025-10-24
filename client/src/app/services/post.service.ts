@@ -27,6 +27,15 @@ interface UiPost extends Post {
   commentCount?: number;
 }
 
+// Отвечает форме ответа пагинации бэкенда /api/post/posts
+interface PostPageResponse {
+  comments: Post[]; // список постов находится в поле comments
+  totalElements: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -171,13 +180,13 @@ export class PostService {
 
 
   loadPostsByPage(page: number, size: number, currentUsername?: string): Observable<UiPost[]> {
-    return this.http.get<Post[]>(`${this.api}posts?page=${page}&size=${size}`).pipe(
-      switchMap(posts => posts.length === 0
-        ? of([])
-        : forkJoin(
-          posts.map(post => this.processSinglePost(post))
-        )
-      )
+    return this.http.get<PostPageResponse>(`${this.api}posts?page=${page}&size=${size}`).pipe(
+      switchMap(resp => {
+        const posts = resp?.comments ?? [];
+        return posts.length === 0
+          ? of([])
+          : forkJoin(posts.map(post => this.processSinglePost(post)));
+      })
     );
   }
 
