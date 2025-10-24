@@ -7,6 +7,7 @@ import com.example.instaKing.facade.PostFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.payload.response.MessageResponse;
+import com.example.instaKing.services.FavoriteService;
 import com.example.instaKing.services.PostService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
@@ -31,11 +32,13 @@ public class PostController {
 
     private final ResponseErrorValidator responseErrorValidator;
     private final PostService postService;
+    private final FavoriteService favoriteService;
 
     @Autowired
-    public PostController( PostService postService, ResponseErrorValidator responseErrorValidator) {
+    public PostController(PostService postService, ResponseErrorValidator responseErrorValidator, FavoriteService favoriteService) {
         this.postService = postService;
         this.responseErrorValidator = responseErrorValidator;
+        this.favoriteService = favoriteService;
     }
 
     @PostMapping("/create")
@@ -63,11 +66,6 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<PostPageResponse> getPosts(@RequestParam int page,@RequestParam int size) {
-//        List<PostDTO> postsDTO = postService.getPosts(page,size)
-//                .stream()
-//                .map(PostFacade::postToPostDTO)
-//                .collect(Collectors.toList());
-
         Page<Post> postPage = (Page<Post>) postService.getPosts( page, size);
         List<PostDTO> postsDTO=postPage.getContent().
                 stream()
@@ -115,6 +113,7 @@ public class PostController {
 
     @PostMapping("/{postId}/delete")
     public ResponseEntity<MessageResponse> deletePost(@PathVariable("postId") String postId, Principal principal) {
+        favoriteService.removeFromFavorites(principal,Long.parseLong(postId));
         postService.deletePost(Long.parseLong(postId), principal);
         return new ResponseEntity<>(new MessageResponse("PostService deleted successfully"), HttpStatus.OK);
     }

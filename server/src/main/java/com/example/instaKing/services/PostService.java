@@ -8,6 +8,7 @@ import com.example.instaKing.models.User;
 import com.example.instaKing.repositories.ImageRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -86,7 +87,7 @@ public class PostService {
 
 
     }
-
+    @Transactional
     public void deletePost(Long postId, Principal principal) {
         Post post = getPostById(postId, principal);
         try {

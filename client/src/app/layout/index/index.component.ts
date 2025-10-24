@@ -3,9 +3,10 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef, OnDestroy,
-  OnInit, QueryList,
-  ViewChild,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  QueryList,
   ViewChildren
 } from '@angular/core';
 import {Post} from '../../models/Post';
@@ -52,19 +53,22 @@ interface UiPost extends Post {
   templateUrl: './index.component.html',
   styleUrls: ['./index.component.css']
 })
-export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
+export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  posts!: UiPost[];
+  posts: UiPost[] = [];
   user!: User;
   isPostsLoaded = false;
   isUserDataLoaded = false;
   userImages: { [key: string]: string } = {};
   private destroy$ = new Subject<void>();
-  currentPage = 0;
+  currentPage = 0;       // 0-based page index
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
   showHeart = false;
+
+  @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
+  private observer?: IntersectionObserver;
 
   constructor(
     private postService: PostService,
@@ -73,87 +77,113 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     private imageService: ImageUploadService,
     private cd: ChangeDetectorRef,
     private dialog: MatDialog
-  ) {
-  }
-
+  ) {}
 
   ngOnInit(): void {
-    this.posts = [];
-    this.isPostsLoaded = false;
-    this.isUserDataLoaded = false;
-    this.userService.getCurrentUser().subscribe(user => {
+    // Подписка на поток постов (источник истины)
+    this.postService.posts$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(posts => {
+        this.posts = posts;
+        this.isPostsLoaded = true;
+        // isLoading будет сброшен в завершении конкретного запроса, но на всякий случай:
+        this.isLoading = false;
+        this.cd.markForCheck();
+      });
+
+    // Подписка на totalPages — корректируем флаг noMorePosts
+    this.postService.totalPages$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(totalPages => {
+        if (typeof totalPages === 'number' && totalPages > 0) {
+          // totalPages — количество страниц; последний индекс = totalPages - 1
+          this.noMorePosts = this.currentPage >= (totalPages - 1);
+        } else {
+          // если сервер не дал метаданные — не меняем ничего здесь
+          // (компонент использует длину ответа как fallback)
+        }
+        this.cd.markForCheck();
+      });
+
+    // Загрузка текущего пользователя и первой страницы
+    this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
-      this.currentPage = 0;
-      this.noMorePosts = false;
-      this.loadPosts();
-      //this.postService.loadAllPosts();
-      this.postService.posts$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(posts => {
-          this.posts = posts;
-          this.isPostsLoaded = true;
-          this.cd.markForCheck();
-        });
+      this.resetPaging();
+      this.loadPosts(); // первая загрузка (page = 0)
     });
   }
 
-  loadPosts(): void {
-    this.isLoading = true;
-    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username);
-    // no manual concatenation; posts$ stream will emit
+  // Сброс пагинации (вызывать при смене пользователя или явном refresh)
+  private resetPaging(): void {
+    this.currentPage = 0;
+    this.noMorePosts = false;
     this.isLoading = false;
-    this.cd.markForCheck();
+    this.postService.clearPosts?.(); // если реализовано в сервисе
   }
 
-  private fetchCommentCounts(items: UiPost[]): void {}
+  // Запрашивает текущую страницу (this.currentPage). Использует appendPostsPage, который должен возвращать Observable.
+  loadPosts(): void {
+    this.isLoading = true;
+    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username)
+      .subscribe({
+        next: (page) => {
+          if (!page || page.length === 0) {
+            this.noMorePosts = true;
+          }
+        },
+        error: () => {},
+        complete: () => {
+          this.isLoading = false;
+          this.cd.markForCheck();
+        }
+      });
+  }
+
   loadNextPage(): void {
     if (this.noMorePosts || this.isLoading) return;
-    this.currentPage++;
+    this.currentPage++; // инкрементируем индекс страницы (0-based)
     this.loadPosts();
   }
 
   openPostDetails(index: number) {
-    console.log(this.posts[index]);
     const dialogRef = this.dialog.open(PostInfoComponent, {
       data: {post: this.posts[index], index}
     });
 
-    dialogRef.afterClosed().subscribe(() => {
-      // Можно обновить что-то, если нужно
-    });
+    dialogRef.afterClosed().subscribe(() => {});
   }
-
-  @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
-  observers: IntersectionObserver[] = [];
 
   ngAfterViewInit() {
-    this.anchors.changes.subscribe(() => this.setUpObservers());
-    this.setUpObservers();
+    // пересоздаём observer, когда список anchor'ов обновляется
+    this.anchors.changes.subscribe(() => this.observeLastAnchor());
+    this.observeLastAnchor();
   }
 
-  setUpObservers() {
-    // Отключаем старые observers
-    this.observers.forEach(obs => obs.disconnect());
-    this.observers = [];
+  private observeLastAnchor(): void {
+    // отключаем старый observer
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = undefined;
+    }
 
-    this.anchors.forEach(anchor => {
-      const observer = new IntersectionObserver(entries => {
-        if (
-          entries[0].isIntersecting &&
-          !this.noMorePosts &&
-          !this.isLoading
-        ) {
-          this.loadNextPage();
-        }
-      }, { root: null, threshold: 0 });
-      observer.observe(anchor.nativeElement);
-      this.observers.push(observer);
-    });
+    const last = this.anchors && this.anchors.length ? this.anchors.last : null;
+    if (!last) return;
+
+    this.observer = new IntersectionObserver(entries => {
+      const entry = entries[0];
+      if (entry.isIntersecting && !this.noMorePosts && !this.isLoading) {
+        this.loadNextPage();
+      }
+    }, { root: null, threshold: 0.1 });
+
+    this.observer.observe(last.nativeElement);
   }
 
   ngOnDestroy() {
-    this.observers.forEach(obs => obs.disconnect());
+    if (this.observer) this.observer.disconnect();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private patchPost(index: number, patch: Partial<UiPost>): void {
@@ -166,12 +196,10 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     this.cd.markForCheck();
   }
 
-
   likePost(postId: number, i: number): void {
     const post = this.posts[i];
     const liked = post.isLiked;
 
-    /* оптимистичное обновление UI */
     this.patchPost(i, {
       isLiked: !liked,
       usersLiked: liked
@@ -181,13 +209,12 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
 
     this.postService.likePost(postId, this.user.username).pipe(
       catchError(err => {
-        /* откат при ошибке */
         this.patchPost(i, {isLiked: liked});
         return throwError(() => err);
       })
     ).subscribe();
-    if(!post.isLiked)
-      this.animateHeart();
+
+    if(!post.isLiked) this.animateHeart();
   }
 
   openLikesDialog(postIndex: number): void {
@@ -208,11 +235,9 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
     if (this.userImages[username]) {
       return this.userImages[username];
     }
-
-    // Ставим временный плейсхолдер, чтобы следующий вызов не делал новый запрос
     this.userImages[username] = 'assets/placeholder.jpg';
-
     this.imageService.getImageToUser(username)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: blob => {
           const preview = URL.createObjectURL(blob);
@@ -239,6 +264,6 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
         post.comments?.push(data);
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
-      })
+      });
   }
 }

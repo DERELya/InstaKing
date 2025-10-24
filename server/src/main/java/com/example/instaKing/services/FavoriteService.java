@@ -7,9 +7,12 @@ import com.example.instaKing.models.User;
 import com.example.instaKing.repositories.FavoriteRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,17 +45,24 @@ public class FavoriteService {
                 });
     }
 
-
-    public void removeFromFavorites(Long userId,Long postId) {
-        User user=userRepository.findById(userId).orElseThrow();
+    @Transactional
+    public void removeFromFavorites(Principal principal,Long postId) {
+        User user=getUserByPrincipal(principal);
         Post post=postRepository.findById(postId).orElseThrow();
         favoriteRepository.deleteByUserAndPost(user,post);
     }
+
 
     public List<Post> getFavorites(Long userId) {
         User user=userRepository.findById(userId).orElseThrow();
         return favoriteRepository.findByUser(user).stream()
                 .map(Favorite::getPost)
                 .collect(Collectors.toList());
+    }
+
+    private User getUserByPrincipal(Principal principal) {
+        String username = principal.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("username not found with username" + username));
     }
 }
