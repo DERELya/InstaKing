@@ -100,10 +100,19 @@ export class IndexComponent implements OnInit,AfterViewInit, OnDestroy {
 
   loadPosts(): void {
     this.isLoading = true;
-    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username);
-    // no manual concatenation; posts$ stream will emit
-    this.isLoading = false;
-    this.cd.markForCheck();
+    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username)
+      .subscribe({
+        next: (page) => {
+          if (!page || page.length === 0) {
+            this.noMorePosts = true;
+          }
+        },
+        error: () => {},
+        complete: () => {
+          this.isLoading = false;
+          this.cd.markForCheck();
+        }
+      });
   }
 
   private fetchCommentCounts(items: UiPost[]): void {}
