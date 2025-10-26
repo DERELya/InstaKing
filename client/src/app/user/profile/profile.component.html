@@ -66,49 +66,22 @@
 
   <!-- Instagram-style tabs -->
   <div class="profile-tabs">
-    <button
-      class="profile-tab-btn"
-      [class.active]="activeTab === 'posts'"
-      (click)="selectTab('posts')"
-    >
+    <button class="profile-tab-btn" [class.active]="activeTab === 'posts'" (click)="selectTab('posts')">
       <mat-icon>grid_on</mat-icon>
       <span>Публикации</span>
     </button>
-    <button
-      class="profile-tab-btn"
-      [class.active]="activeTab === 'saved'"
-      (click)="selectTab('saved')"
-      *ngIf="isCurrentUser"
-    >
+    <button class="profile-tab-btn" [class.active]="activeTab === 'saved'" *ngIf="isCurrentUser" (click)="selectTab('saved')">
       <mat-icon>bookmark_border</mat-icon>
       <span>Сохранённое</span>
     </button>
-    <button
-      class="profile-tab-btn"
-      [class.active]="activeTab === 'tagged'"
-      (click)="selectTab('tagged')"
-    >
+    <button class="profile-tab-btn" [class.active]="activeTab === 'tagged'" (click)="selectTab('tagged')">
       <mat-icon>person_pin</mat-icon>
       <span>Отметки</span>
     </button>
   </div>
 
+  <!-- Router Outlet для всех вкладок -->
   <div class="profile-tab-content">
-    <ng-container [ngSwitch]="activeTab">
-      <ng-container *ngSwitchCase="'posts'">
-        <router-outlet></router-outlet>
-      </ng-container>
-      <ng-container *ngSwitchCase="'saved'">
-        <div *ngIf="isCurrentUser; else notAllowed" class="empty-tab-msg">
-          Здесь будут ваши сохранённые публикации
-        </div>
-        <ng-template #notAllowed>
-          <div class="empty-tab-msg">Сохранённые посты недоступны</div>
-        </ng-template>
-      </ng-container>
-      <ng-container *ngSwitchCase="'tagged'">
-        <div class="empty-tab-msg">Здесь будут публикации, где вас отметили</div>
-      </ng-container>
-    </ng-container>
+    <router-outlet></router-outlet>
   </div>
 </div>

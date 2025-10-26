@@ -9,29 +9,31 @@ import {
   QueryList,
   ViewChildren
 } from '@angular/core';
-import {Post} from '../../models/Post';
-import {User} from '../../models/User';
-import {PostService} from '../../services/post.service';
-import {UserService} from '../../services/user.service';
-import {CommentService} from '../../services/comment.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {MatCardImage, MatCardModule} from '@angular/material/card';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {CommonModule, NgClass} from '@angular/common';
-import {MatButtonModule, MatIconButton} from '@angular/material/button';
-import {catchError, Subject, takeUntil, throwError} from 'rxjs';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {RouterLink} from '@angular/router';
-import {LikesPostComponent} from '../../user/likes-post/likes-post.component';
-import {MatDialog} from '@angular/material/dialog';
-import {PostInfoComponent} from '../../user/post-info/post-info.component';
+import { Post } from '../../models/Post';
+import { User } from '../../models/User';
+import { PostService } from '../../services/post.service';
+import { UserService } from '../../services/user.service';
+import { CommentService } from '../../services/comment.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { MatCardImage, MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { CommonModule, NgClass } from '@angular/common';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
+import { Subject, takeUntil } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { RouterLink } from '@angular/router';
+import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
+import { MatDialog } from '@angular/material/dialog';
+import { PostInfoComponent } from '../../user/post-info/post-info.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
+  isFavorited?: boolean;
   avatarUrl?: string;
   showAllComments?: boolean;
   commentCount?: number;
+  showHeart?: boolean;
 }
 
 @Component({
@@ -61,11 +63,10 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   isUserDataLoaded = false;
   userImages: { [key: string]: string } = {};
   private destroy$ = new Subject<void>();
-  currentPage = 0;       // 0-based page index
+  currentPage = 0;
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
-  showHeart = false;
 
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
@@ -80,49 +81,49 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Подписка на поток постов (источник истины)
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
         this.posts = posts;
         this.isPostsLoaded = true;
-        // isLoading будет сброшен в завершении конкретного запроса, но на всякий случай:
         this.isLoading = false;
         this.cd.markForCheck();
+
+        // Подгружаем избранные после получения постов
+        this.postService.getFavorites().subscribe(favorites => {
+          const favoriteIds = new Set(favorites.map(p => p.id));
+          this.posts = this.posts.map(post => ({
+            ...post,
+            isFavorited: favoriteIds.has(post.id)
+          }));
+          this.cd.markForCheck();
+        });
       });
 
-    // Подписка на totalPages — корректируем флаг noMorePosts
     this.postService.totalPages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(totalPages => {
         if (typeof totalPages === 'number' && totalPages > 0) {
-          // totalPages — количество страниц; последний индекс = totalPages - 1
           this.noMorePosts = this.currentPage >= (totalPages - 1);
-        } else {
-          // если сервер не дал метаданные — не меняем ничего здесь
-          // (компонент использует длину ответа как fallback)
         }
         this.cd.markForCheck();
       });
 
-    // Загрузка текущего пользователя и первой страницы
     this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
       this.resetPaging();
-      this.loadPosts(); // первая загрузка (page = 0)
+      this.loadPosts();
     });
   }
 
-  // Сброс пагинации (вызывать при смене пользователя или явном refresh)
   private resetPaging(): void {
     this.currentPage = 0;
     this.noMorePosts = false;
     this.isLoading = false;
-    this.postService.clearPosts?.(); // если реализовано в сервисе
+    this.postService.clearPosts?.();
   }
 
-  // Запрашивает текущую страницу (this.currentPage). Использует appendPostsPage, который должен возвращать Observable.
   loadPosts(): void {
     this.isLoading = true;
     this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username)
@@ -142,26 +143,38 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadNextPage(): void {
     if (this.noMorePosts || this.isLoading) return;
-    this.currentPage++; // инкрементируем индекс страницы (0-based)
+    this.currentPage++;
     this.loadPosts();
   }
 
   openPostDetails(index: number) {
     const dialogRef = this.dialog.open(PostInfoComponent, {
-      data: {post: this.posts[index], index}
+      data: { post: this.posts[index], index },
+      width: '700px',
     });
 
-    dialogRef.afterClosed().subscribe(() => {});
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+
+      if (result.deleted) {
+        this.posts.splice(index, 1);
+        this.cd.markForCheck();
+        return;
+      }
+
+      if (result && result.id === this.posts[index].id) {
+        this.posts[index] = { ...this.posts[index], ...result };
+        this.cd.markForCheck();
+      }
+    });
   }
 
   ngAfterViewInit() {
-    // пересоздаём observer, когда список anchor'ов обновляется
     this.anchors.changes.subscribe(() => this.observeLastAnchor());
     this.observeLastAnchor();
   }
 
   private observeLastAnchor(): void {
-    // отключаем старый observer
     if (this.observer) {
       this.observer.disconnect();
       this.observer = undefined;
@@ -186,35 +199,17 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private patchPost(index: number, patch: Partial<UiPost>): void {
-    const updated = {...this.posts[index], ...patch};
-    this.posts = [
-      ...this.posts.slice(0, index),
-      updated,
-      ...this.posts.slice(index + 1)
-    ];
-    this.cd.markForCheck();
-  }
-
   likePost(postId: number, i: number): void {
     const post = this.posts[i];
-    const liked = post.isLiked;
+    if (!post) return;
 
-    this.patchPost(i, {
-      isLiked: !liked,
-      usersLiked: liked
-        ? post.usersLiked!.filter(u => u !== this.user.username)
-        : [...(post.usersLiked ?? []), this.user.username]
-    });
+    this.postService.likePost(postId, this.user.username).subscribe();
 
-    this.postService.likePost(postId, this.user.username).pipe(
-      catchError(err => {
-        this.patchPost(i, {isLiked: liked});
-        return throwError(() => err);
-      })
-    ).subscribe();
-
-    if(!post.isLiked) this.animateHeart();
+    post.showHeart = true;
+    setTimeout(() => {
+      post.showHeart = false;
+      this.cd.markForCheck();
+    }, 800);
   }
 
   openLikesDialog(postIndex: number): void {
@@ -224,11 +219,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       data: post.usersLiked,
       width: '350px'
     });
-  }
-
-  animateHeart() {
-    this.showHeart = true;
-    setTimeout(() => this.showHeart = false, 800);
   }
 
   getUserImage(username: string): string {
@@ -266,4 +256,24 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         (event.target as HTMLFormElement).reset();
       });
   }
+
+  toggleFavorite(postId: number, i: number): void {
+    const post = this.posts[i];
+    if (!post) return;
+
+    const prevState = post.isFavorited;
+    post.isFavorited = !prevState;
+
+    this.postService.toggleFavorite(postId).subscribe({
+      next: res => {
+        post.isFavorited = res === 'added';
+        this.cd.markForCheck();
+      },
+      error: () => {
+        post.isFavorited = prevState;
+        this.cd.markForCheck();
+      }
+    });
+  }
+
 }

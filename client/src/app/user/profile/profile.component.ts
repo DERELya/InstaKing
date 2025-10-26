@@ -7,10 +7,10 @@ import { NotificationService } from '../../services/notification.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { UserService } from '../../services/user.service';
 import { EditUserComponent } from '../edit-user/edit-user.component';
-import {ActivatedRoute, RouterOutlet} from '@angular/router';
+import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import { AddPostComponent } from '../add-post/add-post.component';
 import { FollowingComponent } from '../following/following.component';
-import { forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
+import {filter, forkJoin, of, Subject, switchMap, takeUntil} from 'rxjs';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
 
@@ -42,7 +42,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   followersCount: number = 0;
   followingCount: number = 0;
   isFollow: boolean = false;
-  profileUsername!: string|null;
+  profileUsername!: string | null;
 
   constructor(
     private tokenService: TokenStorageService,
@@ -52,10 +52,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private imageService: ImageUploadService,
     protected userService: UserService,
     private cd: ChangeDetectorRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
+    // Слежение за параметрами маршрута
     this.route.paramMap
       .pipe(
         takeUntil(this.destroy$),
@@ -74,24 +76,30 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       });
 
-    // 1. Подписываемся на сигнал изменения счетчика постов (от PostService)
-    this.postService.postCountChanged$
-      .pipe(takeUntil(this.destroy$))
+    // Следим за изменением маршрута для синхронизации activeTab
+    this.router.events
+      .pipe(takeUntil(this.destroy$), filter(e => e instanceof NavigationEnd))
       .subscribe(() => {
-        // 2. Если пост удален/добавлен, перезагружаем данные профиля, чтобы обновить счетчики.
-        if (this.user?.username) {
-          this.refreshProfileData();
+        const child = this.route.firstChild?.snapshot.url[0]?.path;
+        if (child === 'saved' || child === 'tagged') {
+          this.activeTab = child;
+        } else {
+          this.activeTab = 'posts';
         }
       });
 
-    // 3. Подписываемся на сигнал обновления аватара (предполагаем, что он в UserService)
+    // Подписка на изменения постов
+    this.postService.postCountChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.user?.username) this.refreshProfileData();
+      });
+
+    // Подписка на обновление аватара
     this.userService.avatarUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Обновляем данные только если мы находимся на странице текущего пользователя
-        if (this.user?.username && this.isCurrentUser) {
-          this.refreshProfileData();
-        }
+        if (this.user?.username && this.isCurrentUser) this.refreshProfileData();
       });
   }
 
@@ -129,11 +137,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private updateProfileData(data: any) {
-    // Обработка аватарки
     if (data.avatar) {
-      if (this.userProfileImage) {
-        URL.revokeObjectURL(this.userProfileImage);
-      }
+      if (this.userProfileImage) URL.revokeObjectURL(this.userProfileImage);
       this.userProfileImage = URL.createObjectURL(data.avatar);
     } else {
       this.userProfileImage = 'assets/placeholder.jpg';
@@ -156,16 +161,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.cd.markForCheck();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
-      URL.revokeObjectURL(this.userProfileImage);
-    }
-    if (this.previewUrl) {
-      URL.revokeObjectURL(this.previewUrl);
-    }
-  }
 
   onFileSelected(evt: Event): void {
     const input = evt.target as HTMLInputElement;
@@ -228,8 +223,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.userProfileImage?.startsWith('blob:')) URL.revokeObjectURL(this.userProfileImage);
+    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+  }
+
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
     this.activeTab = tab;
+    this.router.navigate([tab], { relativeTo: this.route });
   }
 
   pluralize(count: number, one: string, few: string, many: string): string {
@@ -266,4 +270,5 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
     });
   }
+
 }

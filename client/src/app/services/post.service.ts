@@ -152,26 +152,45 @@ export class PostService {
    * Гибкий парсер ответа пагинации.
    * Возвращает объект { posts: UiPost[], totalPages: number, pageNumber?: number }
    */
-  loadPostsByPage(page: number, size: number, currentUsername?: string): Observable<{ posts: UiPost[], totalPages: number, pageNumber?: number }> {
-    return this.http.get<PostPageResponse>(`${this.api}posts?page=${page}&size=${size}`).pipe(
-      switchMap(resp => {
-        const posts = resp?.comments ?? [];
-        return posts.length === 0
-          ? of([])
-          : forkJoin(posts.map(post => this.processSinglePost(post)));
-      })
+  loadPostsByPage(
+    page: number,
+    size: number,
+    currentUsername?: string
+  ): Observable<{ posts: UiPost[]; totalPages: number; pageNumber: number }> {
+    return this.http
+      .get<PostPageResponse>(`${this.api}posts?page=${page}&size=${size}`)
+      .pipe(
+        switchMap((resp) => {
+          const posts = resp?.comments ?? [];
+
+          return (posts.length === 0
+              ? of([] as UiPost[])
+              : forkJoin(posts.map((post) => this.processSinglePost(post)))
+          ).pipe(
+            map((uiPosts) => ({
+              posts: uiPosts,
+              totalPages: resp.totalPages,
+              pageNumber: resp.pageNumber
+            }))
+          );
+        })
+      );
+  }
+
+  appendPostsPage(
+    page: number,
+    size: number,
+    currentUsername?: string
+  ): Observable<UiPost[]> {
+    return this.loadPostsByPage(page, size, currentUsername).pipe(
+      tap(({ posts, totalPages }) => {
+        this.mergeAndEmit(posts, false);
+        this.totalPagesSubject.next(totalPages);
+      }),
+      map(({ posts }) => posts)
     );
   }
 
-  /**
-   * Возвращает Observable с загруженными UiPost + totalPages, и внутри обновляет postsSubject/totalPagesSubject.
-   * Компонент должен подписаться и сам принять решение об увеличении page / установке noMorePosts.
-   */
-  appendPostsPage(page: number, size: number, currentUsername?: string): Observable<UiPost[]> {
-    return this.loadPostsByPage(page, size, currentUsername).pipe(
-      tap(uiPosts => this.mergeAndEmit(uiPosts, false))
-    );
-  }
 
   clearPosts(): void {
     this.postsSubject.next([]);
@@ -186,9 +205,6 @@ export class PostService {
     return this.http.get<Post[]>(this.api + 'favorite');
   }
 
-  toggleFavorite(postId: number): Observable<string> {
-    return this.http.post(this.api + postId, {}, { responseType: 'text' });
-  }
 
   deletePost(id: number): Observable<any> {
     return this.http.post(this.api + id + '/delete', null).pipe(
@@ -224,10 +240,21 @@ export class PostService {
           }
           return post;
         });
+
         this.postsSubject.next(updatedPosts);
       })
     );
   }
+  updatePostInCache(updatedPost: UiPost): void {
+    const current = this.postsSubject.getValue();
+    const index = current.findIndex(p => p.id === updatedPost.id);
+    if (index !== -1) {
+      current[index] = { ...current[index], ...updatedPost };
+      this.postsSubject.next([...current]);
+    }
+  }
+
+
 
   loadProfilePosts(profileUsername: string) {
     this.getPostForUser(profileUsername).pipe(
@@ -258,4 +285,15 @@ export class PostService {
       error: () => {}
     });
   }
+
+
+  getFavorites(): Observable<Post[]> {
+    return this.http.get<Post[]>(`${environment.apiHost}favorite`);
+  }
+
+  /** Добавить / удалить пост из избранного */
+  toggleFavorite(postId: number): Observable<string> {
+    return this.http.post(`${environment.apiHost}favorite/${postId}`, {}, { responseType: 'text' });
+  }
+
 }

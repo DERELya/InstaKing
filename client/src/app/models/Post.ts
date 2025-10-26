@@ -10,4 +10,6 @@ export interface Post{
   comments?: PostComment [];
   username?: string;
   createdAt?: string;
+  commentCount?: number;
+  isFavorited?: boolean;
 }

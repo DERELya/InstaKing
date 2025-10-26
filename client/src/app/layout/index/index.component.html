@@ -4,7 +4,7 @@
 
       @if (isPostsLoaded) {
         @for (post of posts; track post.id; let i = $index) {
-          <mat-card class="post-card mb-4" >
+          <mat-card class="post-card mb-4">
             <div *ngIf="i === posts.length - 1" #anchor class="anchor-sentinel"></div>
 
             <div class="d-flex align-items-center mb-2 post-header">
@@ -12,16 +12,20 @@
                    [src]="getUserImage(post!.username!)"
                    alt="avatar" class="avatar me-2">
               <span class="username" [routerLink]="['/profile/', post!.username]">{{ post!.username }}</span>
-
             </div>
-            <span class="title">{{post.title}}</span>
+
+            <span class="title">{{ post.title }}</span>
+
             <img mat-card-image
                  *ngIf="post.image"
                  [src]="post.image"
                  class="feed-image"
                  alt="post image"
-            (dblclick)="likePost(post.id!,i)"/>
-            <div *ngIf="showHeart" class="heart-overlay">❤</div>
+                 (dblclick)="likePost(post.id!, i)" />
+
+            <!-- ❤️ Анимация только для этого поста -->
+            <div *ngIf="post.showHeart" class="heart-overlay">❤</div>
+
             <div class="modal-info-block">
               <section class="actions">
                 <div class="actions-horizontal">
@@ -32,41 +36,47 @@
                     <mat-icon>chat_bubble_outline</mat-icon>
                   </button>
                 </div>
-                <button mat-icon-button>
-                  <mat-icon>bookmark_border</mat-icon>
+                <button mat-icon-button (click)="toggleFavorite(post.id!, i)">
+                  <mat-icon [ngClass]="{ liked: post!.isFavorited }">bookmark_border</mat-icon>
                 </button>
               </section>
+
               <section class="likes" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
-                   <span class="likes-avatars">
-                      <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index; trackBy: trackByUsername">
-                         <img
-                           [src]="getUserImage(username)"
-                           [style.z-index]="10 - idx"
-                           [style.margin-left.px]="idx > 0 ? -12 : 0"
-                           alt="avatar"
-                           class="ig-modal-avatar like-avatar"/>
-                      </ng-container>
-                   </span>
-                <span class="likes-label">Нравится <b>
-                         <a [routerLink]="['/profile', post.usersLiked![0]]"
-                            class="like-username">{{ post.usersLiked![0] }}</a>
-                             </b>
-                    <ng-container *ngIf="post.usersLiked!.length > 1">и ещё
-                      <b>
-                         <a class="like-username" (click)="openLikesDialog(i)"> {{ post.usersLiked!.length - 1 }} </a>
-                      </b>
-                   </ng-container>
-                          </span>
+                <span class="likes-avatars">
+                  <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index; trackBy: trackByUsername">
+                    <img
+                      [src]="getUserImage(username)"
+                      [style.z-index]="10 - idx"
+                      [style.margin-left.px]="idx > 0 ? -12 : 0"
+                      alt="avatar"
+                      class="ig-modal-avatar like-avatar" />
+                  </ng-container>
+                </span>
 
+                <span class="likes-label">
+                  Нравится <b>
+                    <a [routerLink]="['/profile', post.usersLiked![0]]" class="like-username">
+                      {{ post.usersLiked![0] }}
+                    </a>
+                  </b>
+                  <ng-container *ngIf="post.usersLiked!.length > 1">
+                    и ещё
+                    <b>
+                      <a class="like-username" (click)="openLikesDialog(i)">
+                        {{ post.usersLiked!.length - 1 }}
+                      </a>
+                    </b>
+                  </ng-container>
+                </span>
               </section>
-
-
             </div>
+
             <button mat-button type="button"
                     (click)="openPostDetails(i)"
                     style="padding:0 0 8px 0;text-transform:none;color:#888;font-size:13px;">
-                Показать все комментарии ({{post.commentCount}})
+              Показать все комментарии ({{ post.commentCount }})
             </button>
+
             <form class="add-comment-form d-flex align-items-center"
                   (submit)="postComment($event, commentInput.value, post.id!, i)">
               <input #commentInput
@@ -80,8 +90,8 @@
 
           </mat-card>
         }
-
       }
+
       <div style="text-align:center; margin: 18px 0;">
         <button class="btn"
                 color="primary"
@@ -93,8 +103,8 @@
         <div *ngIf="noMorePosts" style="margin-top:8px; color:#888;">
           Больше постов нет
         </div>
+      </div>
 
     </div>
   </div>
-</div>
 </div>

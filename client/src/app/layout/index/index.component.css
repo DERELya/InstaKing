@@ -36,6 +36,9 @@
   border: 2px solid var(--color-border);
   margin-right: 8px;
 }
+mat-icon.favorited {
+  color: gold;
+}
 .ig-modal-avatar {
   width: 22px;
   height: 22px;
