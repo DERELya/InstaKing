@@ -101,10 +101,7 @@ body, html {
 .mat-mdc-form-field:hover .mat-mdc-floating-label {
   color: var(--color-primary) !important;
 }
-.mat-mdc-form-field .mdc-text-field--focused .mdc-notched-outline,
-.mat-mdc-form-field .mdc-text-field:hover .mdc-notched-outline {
-  border-color: var(--color-primary) !important;
-}
+
 
 .mat-mdc-input-element {
   background: var(--color-bg-dark) !important;
@@ -152,3 +149,58 @@ body.dark-theme {
   --border-radius: 16px;
   --box-shadow: 0 6px 32px 0 #000a;
 }
+.dark-theme .mat-autocomplete-panel,
+.dark-theme .mat-option {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+.dark-theme .mat-option:hover {
+  background: var(--color-bg-dark) !important;
+  color: var(--color-primary) !important;
+}
+/* === Форсируем темизацию Angular Material Autocomplete === */
+
+/* Общая панель */
+.dark-theme .mat-mdc-autocomplete-panel,
+.dark-theme .mat-mdc-autocomplete-panel.mdc-menu-surface {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 8px 32px #000d !important;
+}
+
+/* Каждая опция */
+.dark-theme .mat-mdc-option,
+.dark-theme .mat-option {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+/* Hover/active состояние */
+.dark-theme .mat-mdc-option:hover,
+.dark-theme .mat-mdc-option.mat-mdc-option-active,
+.dark-theme .mat-option:hover,
+.dark-theme .mat-option.mat-active {
+  background-color: var(--color-bg-dark) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Аватар и текст */
+.dark-theme .mat-option .avatar {
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 6px #0003;
+}
+
+.dark-theme .mat-option .username {
+  color: var(--color-text);
+}
+
+.dark-theme .mat-option .fullname {
+  color: #aaa;
+}
+
+
+

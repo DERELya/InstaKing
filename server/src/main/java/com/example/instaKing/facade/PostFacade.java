@@ -2,10 +2,18 @@ package com.example.instaKing.facade;
 
 import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.models.Post;
+import com.example.instaKing.models.User;
+import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.stereotype.Component;
 
+@Component
 public class PostFacade {
-    public static PostDTO postToPostDTO(Post post) {
+    private final FavoriteRepository favoriteRepository;
+
+    public PostFacade(FavoriteRepository favoriteRepository) {
+        this.favoriteRepository = favoriteRepository;
+    }
+    public PostDTO postToPostDTO(Post post, User currentUser) {
         PostDTO postDTO = new PostDTO();
         postDTO.setId(post.getId());
         postDTO.setTitle(post.getTitle());
@@ -14,6 +22,8 @@ public class PostFacade {
         postDTO.setUsername(post.getUser().getUsername());
         postDTO.setUsersLiked(post.getLikedUser());
         postDTO.setLocation(post.getLocation());
+        boolean isFavorited = favoriteRepository.existsByUserAndPost(currentUser, post);
+        postDTO.setFavorited(isFavorited);
         return postDTO;
     }
 }

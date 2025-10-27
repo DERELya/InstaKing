@@ -56,7 +56,7 @@ export class UserPostsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.paramMap
+    this.route.parent?.paramMap
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         const username = params.get('username');

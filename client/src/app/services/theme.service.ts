@@ -1,11 +1,14 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
+import { OverlayContainer } from '@angular/cdk/overlay';
 
-
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class ThemeService {
+  constructor(private overlayContainer: OverlayContainer) {}
+
   setDarkTheme(): void {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       document.body.classList.add('dark-theme');
+      this.overlayContainer.getContainerElement().classList.add('dark-theme');
       window.localStorage.setItem('theme', 'dark');
     }
   }
@@ -13,6 +16,7 @@ export class ThemeService {
   setLightTheme(): void {
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       document.body.classList.remove('dark-theme');
+      this.overlayContainer.getContainerElement().classList.remove('dark-theme');
       window.localStorage.setItem('theme', 'light');
     }
   }

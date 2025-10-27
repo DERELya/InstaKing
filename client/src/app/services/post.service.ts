@@ -272,7 +272,7 @@ export class PostService {
   }
 
   loadProfileFavoritePosts() {
-    this.getFavoritePostForUser().pipe(
+    this.getFavorites().pipe(
       switchMap((posts: Post[]) =>
         posts.length === 0
           ? of([])

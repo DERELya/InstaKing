@@ -232,7 +232,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
-    this.activeTab = tab;
     this.router.navigate([tab], { relativeTo: this.route });
   }
 

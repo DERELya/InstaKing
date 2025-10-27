@@ -3,6 +3,7 @@ package com.example.instaKing.controllers;
 import com.example.instaKing.dto.FavoriteDTO;
 import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.facade.Facade;
+import com.example.instaKing.facade.PostFacade;
 import com.example.instaKing.models.Favorite;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
@@ -31,13 +32,15 @@ public class FavoriteControllers {
     private final FavoriteRepository favoriteRepository;
     private final PostService postService;
     private final PostRepository postRepository;
+    private final PostFacade postFacade;
 
-    public FavoriteControllers(UserService userService, FavoriteService favoriteService, FavoriteRepository favoriteRepository, PostService postService, PostRepository postRepository) {
+    public FavoriteControllers(UserService userService, FavoriteService favoriteService, FavoriteRepository favoriteRepository, PostService postService, PostRepository postRepository, PostFacade postFacade) {
         this.userService = userService;
         this.favoriteService = favoriteService;
         this.favoriteRepository = favoriteRepository;
         this.postService = postService;
         this.postRepository = postRepository;
+        this.postFacade = postFacade;
     }
 
     @GetMapping()
@@ -45,7 +48,7 @@ public class FavoriteControllers {
         User user = userService.getCurrentUser(principal);
         List<PostDTO> postDTO=favoriteService.getFavorites(user.getId())
                 .stream()
-                .map(Facade::postToPostDTO)
+                .map(post->postFacade.postToPostDTO(post,user))
                 .toList();
          return ResponseEntity.ok(postDTO);
     }

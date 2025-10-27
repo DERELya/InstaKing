@@ -4,6 +4,8 @@ import {RegisterComponent} from './auth/register/register.component';
 import {IndexComponent} from './layout/index/index.component';
 import {AuthGuard} from './helper/auth-guard';
 import {ProfileComponent} from './user/profile/profile.component';
+import {UserPostsComponent} from './user/user-posts/user-posts.component';
+import {UserFavoriteComponent} from './user/user-favorite/user-favorite.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -14,11 +16,9 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     component: ProfileComponent,
     children: [
-      // По умолчанию открываем 'posts'
       { path: '', redirectTo: 'posts', pathMatch: 'full' },
-
-      { path: 'posts', loadComponent: () => import('./user/user-posts/user-posts.component').then(m => m.UserPostsComponent) },
-      { path: 'saved', loadComponent: () => import('./user/user-favorite/user-favorite.component').then(m => m.UserFavoriteComponent) }
+      { path: 'posts', component: UserPostsComponent },
+      { path: 'saved', component: UserFavoriteComponent}
     ]
   },
   { path: '', redirectTo: 'main', pathMatch: 'full' }

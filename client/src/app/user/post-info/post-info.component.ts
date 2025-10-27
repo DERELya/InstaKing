@@ -83,6 +83,7 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
     this.loadComments(0);
+    console.log(this.data.post);
   }
 
   ngOnDestroy(): void {
@@ -247,8 +248,25 @@ export class PostInfoComponent implements OnInit, OnDestroy {
       width: '350px'
     });
   }
+  toggleFavorite(postId: number): void {
+    const post = this.data.post;
+    if (!post) return;
 
+    const prevState = post.favorited ?? false;
+    post.favorited = !prevState; // Оптимистично переключаем
 
-
+    this.postService.toggleFavorite(postId).subscribe({
+      next: (res) => {
+        // если сервер возвращает "added" или "removed"
+        post.favorited = res === 'added';
+        this.cd.markForCheck();
+      },
+      error: () => {
+        // откат при ошибке
+        post.favorited = prevState;
+        this.cd.markForCheck();
+      }
+    });
+  }
 
 }

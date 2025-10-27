@@ -37,7 +37,7 @@
                   </button>
                 </div>
                 <button mat-icon-button (click)="toggleFavorite(post.id!, i)">
-                  <mat-icon [ngClass]="{ liked: post!.isFavorited }">bookmark_border</mat-icon>
+                  <mat-icon [ngClass]="{ liked: post!.favorited }">bookmark_border</mat-icon>
                 </button>
               </section>
 

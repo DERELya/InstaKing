@@ -19,4 +19,5 @@ public class PostDTO {
     private Integer likes;
 
     private Set<String> usersLiked;
+    private boolean favorited;
 }

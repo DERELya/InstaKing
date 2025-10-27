@@ -164,10 +164,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.users = [];
   }
 
-  selectUser(user: User) {
-    this.query = user.username; // например вставляем username
-    this.users = [];
-  }
 
   loadAvatar(user: User) {
     this.imageService.getImageToUser(user.username).pipe(takeUntil(this.destroy$)).subscribe({
@@ -183,4 +179,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
   }
 
+  goToProfile(event: any, username: string) {
+    // срабатывает только при выборе (не при наведении)
+    if (event.isUserInput) {
+      this.router.navigate(['/profile', username]);
+    }
+  }
 }

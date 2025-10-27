@@ -29,7 +29,6 @@ import { PostInfoComponent } from '../../user/post-info/post-info.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
-  isFavorited?: boolean;
   avatarUrl?: string;
   showAllComments?: boolean;
   commentCount?: number;
@@ -94,7 +93,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
           const favoriteIds = new Set(favorites.map(p => p.id));
           this.posts = this.posts.map(post => ({
             ...post,
-            isFavorited: favoriteIds.has(post.id)
+            favorited: favoriteIds.has(post.id)
           }));
           this.cd.markForCheck();
         });
@@ -252,6 +251,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     this.commentService.addToCommentToPost(postId, message)
       .subscribe(data => {
         post.comments?.push(data);
+        post.commentCount = (post.commentCount || 0) + 1;
         this.cd.markForCheck();
         (event.target as HTMLFormElement).reset();
       });
@@ -261,16 +261,16 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     const post = this.posts[i];
     if (!post) return;
 
-    const prevState = post.isFavorited;
-    post.isFavorited = !prevState;
+    const prevState = post.favorited;
+    post.favorited = !prevState;
 
     this.postService.toggleFavorite(postId).subscribe({
       next: res => {
-        post.isFavorited = res === 'added';
+        post.favorited = res === 'added';
         this.cd.markForCheck();
       },
       error: () => {
-        post.isFavorited = prevState;
+        post.favorited = prevState;
         this.cd.markForCheck();
       }
     });

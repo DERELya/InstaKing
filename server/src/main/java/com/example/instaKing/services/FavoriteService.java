@@ -1,5 +1,6 @@
 package com.example.instaKing.services;
 
+import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.exceptions.PostNotFoundException;
 import com.example.instaKing.models.Favorite;
 import com.example.instaKing.models.Post;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +57,7 @@ public class FavoriteService {
 
     public List<Post> getFavorites(Long userId) {
         User user=userRepository.findById(userId).orElseThrow();
-        return favoriteRepository.findByUser(user).stream()
+        return favoriteRepository.findByUserOrderByAddedAtDesc(user).stream()
                 .map(Favorite::getPost)
                 .collect(Collectors.toList());
     }

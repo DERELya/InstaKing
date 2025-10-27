@@ -14,7 +14,7 @@
           <span class="username">{{ data.post.username }}</span>
         </div>
         <div class="ig-modal-actions">
-          <button *ngIf="data.post.username==meUsername" class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
+          <button *ngIf="data.post.username===meUsername" class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
             <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="4" cy="12" r="2" fill="currentColor"/>
               <circle cx="12" cy="12" r="2" fill="currentColor"/>
@@ -100,8 +100,8 @@
               <mat-icon>chat_bubble_outline</mat-icon>
             </button>
           </div>
-          <button mat-icon-button>
-            <mat-icon>bookmark_border</mat-icon>
+          <button mat-icon-button (click)="toggleFavorite(data.post.id!)">
+            <mat-icon [ngClass]="{ liked: data.post!.favorited }">bookmark_border</mat-icon>
           </button>
         </section>
         <section class="likes"

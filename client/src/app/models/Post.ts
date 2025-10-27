@@ -11,5 +11,5 @@ export interface Post{
   username?: string;
   createdAt?: string;
   commentCount?: number;
-  isFavorited?: boolean;
+  favorited?: boolean;
 }

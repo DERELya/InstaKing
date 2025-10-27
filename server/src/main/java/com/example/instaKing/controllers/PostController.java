@@ -6,9 +6,12 @@ import com.example.instaKing.facade.Facade;
 import com.example.instaKing.facade.PostFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.models.Post;
+import com.example.instaKing.models.User;
 import com.example.instaKing.payload.response.MessageResponse;
+import com.example.instaKing.services.CommentService;
 import com.example.instaKing.services.FavoriteService;
 import com.example.instaKing.services.PostService;
+import com.example.instaKing.services.UserService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +36,16 @@ public class PostController {
     private final ResponseErrorValidator responseErrorValidator;
     private final PostService postService;
     private final FavoriteService favoriteService;
+    private final UserService userService;
+    private final PostFacade postFacade;
 
     @Autowired
-    public PostController(PostService postService, ResponseErrorValidator responseErrorValidator, FavoriteService favoriteService) {
+    public PostController(PostService postService, ResponseErrorValidator responseErrorValidator, FavoriteService favoriteService, UserService userService, PostFacade postFacade) {
         this.postService = postService;
         this.responseErrorValidator = responseErrorValidator;
         this.favoriteService = favoriteService;
+        this.userService = userService;
+        this.postFacade = postFacade;
     }
 
     @PostMapping("/create")
@@ -47,18 +54,19 @@ public class PostController {
                                              Principal principal) {
         ResponseEntity<Object> errorResponse = responseErrorValidator.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
-
+        User user = userService.getCurrentUser(principal);
         Post post = postService.createPost(postDTO, principal);
-        PostDTO createdPost = PostFacade.postToPostDTO(post);
+        PostDTO createdPost = postFacade.postToPostDTO(post,user);
 
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<PostDTO>> getAllPosts() {
+    public ResponseEntity<List<PostDTO>> getAllPosts(Principal principal) {
+        User currentUser=userService.getCurrentUser(principal);
         List<PostDTO> postsDTO = postService.getAllPosts()
                 .stream()
-                .map(PostFacade::postToPostDTO)
+                .map(post->postFacade.postToPostDTO(post,currentUser))
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
@@ -85,17 +93,22 @@ public class PostController {
 
     @GetMapping("/user/posts")
     public ResponseEntity<List<PostDTO>> getAllPostsForCurrentUser(Principal principal) {
+        User currentUser = userService.getCurrentUser(principal);
         List<PostDTO> postsDTO = postService.getAllPostsForCurrentUser(principal)
                 .stream()
-                .map(PostFacade::postToPostDTO)
+                .map(post->postFacade.postToPostDTO(post,currentUser))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
     }
+
     @GetMapping("/user/{username}")
-    public ResponseEntity<List<PostDTO>> getAllPostsForUser(@PathVariable("username") String username) {
+    public ResponseEntity<List<PostDTO>> getAllPostsForUser(@PathVariable("username") String username,
+                                                            Principal principal) {
+        User currentUser = userService.getCurrentUser(principal);
+
         List<PostDTO> postsDTO = postService.getAllPostsForUser(username)
                 .stream()
-                .map(PostFacade::postToPostDTO)
+                .map(post -> postFacade.postToPostDTO(post, currentUser))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(postsDTO, HttpStatus.OK);
     }
@@ -103,9 +116,10 @@ public class PostController {
 
     @PostMapping("/{postId}/{username}/like")
     public ResponseEntity<PostDTO> likePost(@PathVariable("postId") String postId,
-                                            @PathVariable("username") String username) {
+                                            @PathVariable("username") String username, Principal principal) {
         Post post = postService.likePost(Long.parseLong(postId), username);
-        PostDTO postDTO = PostFacade.postToPostDTO(post);
+        User currentUser=userService.getCurrentUser(principal);
+        PostDTO postDTO = postFacade.postToPostDTO(post,currentUser);
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }

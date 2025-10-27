@@ -213,7 +213,7 @@ input:checked + .slider:before {
   border-color: var(--color-bg);
   align-items: center;
   border: none;
-  background: transparent !important;
+
 }
 /* Убираем эффект при наведении */
 .search-field:hover,
@@ -233,7 +233,6 @@ input:checked + .slider:before {
   border-color: var(--color-bg);
   align-items: center;
   border: none;
-  background: transparent;
 }
 
 .mat-form-field {
@@ -424,5 +423,28 @@ mat-list-item:hover {
   0% { opacity: 0; transform: translateY(-5px);}
   100% { opacity: 1; transform: translateY(0);}
 }
+.like-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 500;
+}
+
+
 
 

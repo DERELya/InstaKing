@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface FavoriteRepository extends JpaRepository<Favorite, Integer> {
 
     List<Favorite> findByUser(User user);
+    List<Favorite> findByUserOrderByAddedAtDesc(User user);
+    boolean existsByUserAndPost(User user,Post post);
     void  deleteByUserAndPost(User user, Post post);
     Optional<Favorite> findByUserAndPost(User user, Post post);
 }
