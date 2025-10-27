@@ -16,7 +16,7 @@ public class Favorite {
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private User user;
-
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
 

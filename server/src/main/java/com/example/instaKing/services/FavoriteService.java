@@ -1,13 +1,16 @@
 package com.example.instaKing.services;
 
+import com.example.instaKing.dto.FavoriteDTO;
 import com.example.instaKing.dto.PostDTO;
 import com.example.instaKing.exceptions.PostNotFoundException;
+import com.example.instaKing.facade.Facade;
 import com.example.instaKing.models.Favorite;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
 import com.example.instaKing.repositories.FavoriteRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,6 +28,7 @@ public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final Facade facade;
 
     public boolean toggleFavorite(Long userId, Long postId) {
         User user = userRepository.findById(userId)
@@ -61,6 +65,7 @@ public class FavoriteService {
                 .map(Favorite::getPost)
                 .collect(Collectors.toList());
     }
+
 
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();

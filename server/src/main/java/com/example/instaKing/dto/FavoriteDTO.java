@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class FavoriteDTO {
-    private User user;
-    private Post post;
+    private PostDTO post;
     private LocalDateTime addedAt;
 }

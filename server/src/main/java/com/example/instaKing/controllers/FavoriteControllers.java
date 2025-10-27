@@ -33,14 +33,16 @@ public class FavoriteControllers {
     private final PostService postService;
     private final PostRepository postRepository;
     private final PostFacade postFacade;
+    private final Facade facade;
 
-    public FavoriteControllers(UserService userService, FavoriteService favoriteService, FavoriteRepository favoriteRepository, PostService postService, PostRepository postRepository, PostFacade postFacade) {
+    public FavoriteControllers(UserService userService, FavoriteService favoriteService, FavoriteRepository favoriteRepository, PostService postService, PostRepository postRepository, PostFacade postFacade, Facade facade) {
         this.userService = userService;
         this.favoriteService = favoriteService;
         this.favoriteRepository = favoriteRepository;
         this.postService = postService;
         this.postRepository = postRepository;
         this.postFacade = postFacade;
+        this.facade = facade;
     }
 
     @GetMapping()
@@ -50,7 +52,7 @@ public class FavoriteControllers {
                 .stream()
                 .map(post->postFacade.postToPostDTO(post,user))
                 .toList();
-         return ResponseEntity.ok(postDTO);
+        return ResponseEntity.ok(postDTO);
     }
 
     @PostMapping("/{postId}")

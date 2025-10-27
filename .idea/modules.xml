@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/server/instaKing.iml" filepath="$PROJECT_DIR$/server/instaKing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/InstaKing.iml" filepath="$PROJECT_DIR$/.idea/InstaKing.iml" />
     </modules>
   </component>
 </project>

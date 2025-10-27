@@ -12,4 +12,5 @@ export interface Post{
   createdAt?: string;
   commentCount?: number;
   favorited?: boolean;
+  addedAt?: string;
 }

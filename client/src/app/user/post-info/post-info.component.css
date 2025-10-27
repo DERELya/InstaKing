@@ -465,6 +465,12 @@
   color: var(--color-text);
   margin-left: 17px;
 }
+.favoritetext{
+  color: var(--color-text);
+  margin-left: 17px;
+  margin-top: 5px;
+  font-size: 12px;
+}
 
 @media (max-width: 800px) {
   .fullscreen-content {

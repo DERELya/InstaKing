@@ -3,6 +3,7 @@ package com.example.instaKing.dto;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -20,4 +21,6 @@ public class PostDTO {
 
     private Set<String> usersLiked;
     private boolean favorited;
+    private LocalDateTime addedAt;
+
 }

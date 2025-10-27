@@ -45,6 +45,7 @@
         </div>
       </div>
       <span class="title" >{{data.post.title}}</span>
+      <span  *ngIf="data.post.favorited" class="favoritetext" >added to favorite {{data.post.addedAt | date:'dd.MM.yyyy'}} </span>
       <!-- ... -->
       <div class="comments-scrollable-block">
         <div *ngIf="comments.length > 0">

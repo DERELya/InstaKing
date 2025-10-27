@@ -201,10 +201,6 @@ export class PostService {
     return this.http.get<Post[]>(this.api + 'user/' + username);
   }
 
-  getFavoritePostForUser(): Observable<Post[]> {
-    return this.http.get<Post[]>(this.api + 'favorite');
-  }
-
 
   deletePost(id: number): Observable<any> {
     return this.http.post(this.api + id + '/delete', null).pipe(
