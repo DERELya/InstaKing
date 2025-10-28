@@ -1,33 +1,52 @@
 <div class="likes-dialog">
   <div class="likes-dialog-header">
-    <span *ngIf="this.data.followers">Подписчики</span>
-    <span *ngIf="!this.data.followers">Подписки</span>
+    <span *ngIf="data.followers">Подписчики</span>
+    <span *ngIf="!data.followers">Подписки</span>
     <button mat-icon-button (click)="close()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
+
   <div class="likes-dialog-list">
-    <ng-container *ngFor="let user of users$ |async ">
-      <div class="like-user-row">
-        <img class="avatar" [src]="getUserImage(user.username)" alt="avatar"/>
+    <ng-container *ngIf="users$ | async as users">
+      <div
+        class="like-user-row"
+        *ngFor="let user of users; trackBy: trackByUsername"
+      >
+        <img class="avatar" [src]="getUserImage(user.username)" alt="avatar" />
+
         <div class="user-info">
-          <div [routerLink]="['/profile', user.username]" (click)="close()" class="username">{{ user.username }}</div>
-          <div class="fullname" *ngIf="user.firstname">{{ user.firstname }} {{ user.lastname }}</div>
+          <a
+            [routerLink]="['/profile', user.username]"
+            (click)="close()"
+            class="username"
+          >{{ user.username }}</a
+          >
+          <div class="fullname" *ngIf="user.firstname">
+            {{ user.firstname }} {{ user.lastname }}
+          </div>
         </div>
-        <div *ngIf="user.username!=meUsername">
-          <button *ngIf="isFollowingMap[user.username]; else subscribeBtn"
-                  (click)="unfollow(user.username)" class="follow-btn">
-            Отписаться
-          </button>
 
-          <ng-template #subscribeBtn>
-            <button (click)="follow(user.username)" class="follow-btn">
-              Подписаться
+        <div *ngIf="user.username !== meUsername">
+          <ng-container *ngIf="isFollowingMap[user.username] !== undefined">
+            <button
+              *ngIf="isFollowingMap[user.username]; else subscribeBtn"
+              (click)="unfollow(user.username)"
+              class="follow-btn unfollow"
+            >
+              Отписаться
             </button>
-          </ng-template>
 
+            <ng-template #subscribeBtn>
+              <button
+                (click)="follow(user.username)"
+                class="follow-btn follow"
+              >
+                Подписаться
+              </button>
+            </ng-template>
+          </ng-container>
         </div>
-
       </div>
     </ng-container>
   </div>

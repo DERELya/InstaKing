@@ -126,11 +126,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
         this.isUserDataLoaded = true;
         return forkJoin({
-          avatar: this.imageService.getImageToUser(user.username),
-          followers: this.userService.getFollowers(user.username),
-          following: this.userService.getFollowing(user.username),
-          posts: this.postService.getPostForUser(user.username),
-          isFollow: this.userService.isFollow(user.username)
+          avatar: this.imageService.getImageToUser(profileUsername),
+          followers: this.userService.getFollowers(profileUsername),
+          following: this.userService.getFollowing(profileUsername),
+          posts: this.postService.getPostForUser(profileUsername),
+          isFollow: this.userService.isFollow(profileUsername)
         });
       })
     );

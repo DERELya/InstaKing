@@ -5,59 +5,55 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d03684f-2d52-4189-9545-a664944801cb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/models/Post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/models/Post.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/services/post.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/services/post.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/post-info/post-info.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/post-info/post-info.component.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/post-info/post-info.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/post-info/post-info.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/controllers/FavoriteControllers.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/controllers/FavoriteControllers.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/dto/FavoriteDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/dto/FavoriteDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/dto/PostDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/dto/PostDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/facade/Facade.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/facade/Facade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/facade/PostFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/facade/PostFacade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/Favorite.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/Favorite.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/repositories/FavoriteRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/repositories/FavoriteRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/services/FavoriteService.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/services/FavoriteService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/app/user/profile/profile.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/profile/profile.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/ImageModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/ImageModel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "DERELya"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;DERELya&quot;
   }
-}]]></component>
+}</component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/DERELya/InstaKing.git",
-    "accountId": "52903ea8-12b5-4541-bc76-58227661cf1b"
+    "accountId": "354f4cc7-367d-4f9e-974e-7994eac8fa6c"
   }
 }]]></component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 5
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="34esQwTElcxNsXXu1YN7CpsufTx" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -80,7 +76,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Users\\DERELya\\IdeaProjects\\InstaKing\\client\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "C:\\Users\\DERELya\\IdeaProjects\\instaKing\\client\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -96,8 +92,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
       </set>
     </attachedChunks>
   </component>
@@ -109,6 +105,7 @@
       <option name="presentableId" value="Default" />
       <updated>1761585361727</updated>
       <workItem from="1761585363460" duration="4963000" />
+      <workItem from="1761635374649" duration="7072000" />
     </task>
     <servers />
   </component>
