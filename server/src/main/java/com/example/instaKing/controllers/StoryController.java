@@ -60,9 +60,9 @@ public class StoryController {
     }
 
     @PostMapping("/{storyId}/view")
-    public String addView(@PathVariable Long storyId, Principal principal) {
+    public ResponseEntity<Object> addView(@PathVariable Long storyId, Principal principal) {
         storyService.addView(storyId, principal);
-        return "View added";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/{storyId}/views")

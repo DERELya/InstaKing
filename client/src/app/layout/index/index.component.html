@@ -1,3 +1,21 @@
+
+<div class="stories-bar" *ngIf="stories?.length">
+<div class="stories-scroll">
+  <div *ngFor="let story of stories; let i = index; trackBy: trackByStoryId" class="story-avatar">
+    <img
+      [src]="getUserImage(story.username)"
+      [class.viewed]="story.viewed"
+      (click)="openStoryViewer(i)"
+      alt="story avatar"
+    />
+    <span class="story-username">{{ story.username }}</span>
+  </div>
+
+</div>
+</div>
+
+
+
 <div class="container feed-container">
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">

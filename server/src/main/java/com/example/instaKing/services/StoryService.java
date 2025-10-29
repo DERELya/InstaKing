@@ -105,9 +105,6 @@ public class StoryService {
             story.setViews(story.getViewsDetails().size());
             storyRepository.save(story);
         }
-        else {
-            throw new RuntimeException("Story already viewed.");
-        }
     }
 
     public List<StoryViewDTO> getViews(Long storyId, Principal principal) {
@@ -145,7 +142,7 @@ public class StoryService {
         if (followings.isEmpty()) {
             return List.of();
         }
-        return storyRepository.getStoriesByUsers(followings)
+        return storyRepository.getActiveStoriesByUsers(followings,LocalDateTime.now())
                 .stream()
                 .map(facade::storyToStoryDTO)
                 .collect(Collectors.toList());
