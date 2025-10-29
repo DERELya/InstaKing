@@ -2,6 +2,9 @@ package com.example.instaKing.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +47,8 @@ public class Story {
     }
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<StoryView> viewsDetails = new HashSet<>();
 
     public void addView(User user) {

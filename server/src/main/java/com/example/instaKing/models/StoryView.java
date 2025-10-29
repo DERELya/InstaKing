@@ -2,6 +2,8 @@ package com.example.instaKing.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +17,8 @@ public class StoryView {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "story_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Story story;
 
     @ManyToOne(fetch = FetchType.LAZY)

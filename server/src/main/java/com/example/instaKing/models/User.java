@@ -13,7 +13,6 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 @Data
-
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
