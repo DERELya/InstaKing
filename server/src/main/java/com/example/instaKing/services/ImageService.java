@@ -44,27 +44,24 @@ public class ImageService {
     }
 
     public String saveImage(MultipartFile file) throws IOException {
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename(); // Уникальное имя
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(SecurityConstants.UPLOAD_DIR + fileName);
+        Files.createDirectories(filePath.getParent());
+        Files.write(filePath, file.getBytes());
 
-        Files.createDirectories(filePath.getParent()); // Создаём папку, если её нет
-        Files.write(filePath, file.getBytes()); // Записываем файл
-
-        return fileName; // Сохраняем имя в базе данных
+        return fileName;
     }
 
     public ImageModel uploadImageToUser(MultipartFile file, Principal principal) throws IOException {
         User user = getUserByPrincipal(principal);
 
-        // Удаление старого изображения пользователя, если оно есть
         ImageModel userProfileImage = imageRepository.findByUserId(user.getId()).orElse(null);
         if (!ObjectUtils.isEmpty(userProfileImage)) {
-            Files.deleteIfExists(Paths.get(UPLOAD_DIR + userProfileImage.getImagePath())); // Удаляем файл
+            Files.deleteIfExists(Paths.get(UPLOAD_DIR + userProfileImage.getImagePath()));
             imageRepository.delete(userProfileImage);
         }
-        // Создание нового файла
-        String fileName = saveImage(file);// Записываем файл
-        // Сохранение пути в БД
+        String fileName = saveImage(file);
+
         ImageModel imageModel = new ImageModel();
         imageModel.setUserId(user.getId());
         imageModel.setImagePath(fileName);
@@ -103,12 +100,12 @@ public class ImageService {
         ImageModel imageModel = imageRepository.findByUserId(user.getId()).orElseThrow(() -> new ImageNotFoundException("Image not found"));
 
         Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());
-        Resource resource = new UrlResource(filePath.toUri()); // Загружаем файл с диска
+        Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists() || !resource.isReadable()) {
             throw new FileNotFoundException("Image file not found: " + imageModel.getImagePath());
         }
-        return resource; // Возвращаем файл как ресурс
+        return resource;
     }
 
     public Resource getImageToPost(Long postId) throws IOException {
@@ -116,13 +113,13 @@ public class ImageService {
                 .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
 
         Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());
-        Resource resource = new UrlResource(filePath.toUri()); // Загружаем файл с диска
+        Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists() || !resource.isReadable()) {
             throw new FileNotFoundException("Image file not found: " + imageModel.getImagePath());
         }
 
-        return resource; // Возвращаем файл как ресурс
+        return resource;
     }
 
     public Resource getImageToUser(String username) throws IOException {
@@ -132,13 +129,13 @@ public class ImageService {
                 .orElseThrow(() -> new ImageNotFoundException("Cannot find image for PostService"));
 
         Path filePath = Paths.get(UPLOAD_DIR + imageModel.getImagePath());
-        Resource resource = new UrlResource(filePath.toUri()); // Загружаем файл с диска
+        Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists() || !resource.isReadable()) {
             throw new FileNotFoundException("Image file not found: " + imageModel.getImagePath());
         }
 
-        return resource; // Возвращаем файл как ресурс
+        return resource;
     }
 
     private User getUserByPrincipal(Principal principal) {

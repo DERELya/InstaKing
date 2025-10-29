@@ -14,22 +14,17 @@ public class Story {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Автор сторис
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Ссылка на изображение или видео
     private String mediaUrl;
 
-    // Количество просмотров
     private int views;
 
-    // Когда создана сторис
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // Когда истечёт срок действия сторис
     private LocalDateTime expiresAt;
 
     @PrePersist
@@ -38,7 +33,6 @@ public class Story {
         this.expiresAt = this.createdAt.plusHours(24);
     }
 
-    // Удобный метод для проверки
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
     }
