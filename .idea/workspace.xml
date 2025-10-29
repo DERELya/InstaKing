@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d03684f-2d52-4189-9545-a664944801cb" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/following/following.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/following/following.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/app/user/profile/profile.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/app/user/profile/profile.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/ImageModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/com/example/instaKing/models/ImageModel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +98,7 @@
       <option name="presentableId" value="Default" />
       <updated>1761585361727</updated>
       <workItem from="1761585363460" duration="4963000" />
-      <workItem from="1761635374649" duration="7072000" />
+      <workItem from="1761635374649" duration="7529000" />
     </task>
     <servers />
   </component>
