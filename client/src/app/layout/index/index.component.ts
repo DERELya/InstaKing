@@ -6,13 +6,14 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  QueryList,
+  QueryList, TrackByFunction,
   ViewChildren
 } from '@angular/core';
 import { Post } from '../../models/Post';
 import { User } from '../../models/User';
 import { PostService } from '../../services/post.service';
 import { UserService } from '../../services/user.service';
+import { StoryService, Story } from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { MatCardImage, MatCardModule } from '@angular/material/card';
@@ -24,8 +25,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
-import { MatDialog } from '@angular/material/dialog';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
+import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
+import {EditUserComponent} from '../../user/edit-user/edit-user.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -55,7 +58,7 @@ interface UiPost extends Post {
   styleUrls: ['./index.component.css']
 })
 export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
-
+  stories: Story[] = [];
   posts: UiPost[] = [];
   user!: User;
   isPostsLoaded = false;
@@ -76,7 +79,8 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     protected commentService: CommentService,
     private imageService: ImageUploadService,
     private cd: ChangeDetectorRef,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private storyService: StoryService
   ) {}
 
   ngOnInit(): void {
@@ -114,6 +118,28 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.resetPaging();
       this.loadPosts();
     });
+    this.storyService.loadFollowingStories().subscribe(stories => {
+      this.stories = stories.map(s => ({
+        id: s.id,
+        username: s.username,
+        imageUrl: s.mediaUrl,       // мапим с mediaUrl
+        views: s.views,
+        createdAt: s.createdAt,
+        expiresAt: s.expiresAt,
+        usersViewed: s.viewed,
+        viewed: false,              // пока никто не смотрел на фронте
+        avatarUrl: undefined        // будет загружено через getUserImage
+      }));
+
+      // Загружаем аватарки пользователей
+      this.stories.forEach(story => {
+        story.mediaUrl = this.getUserImage(story.username);
+      });
+
+      console.log(this.stories);
+      this.cd.markForCheck();
+    });
+
   }
 
   private resetPaging(): void {
@@ -220,26 +246,31 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getUserImage(username: string): string {
+  getUserImage(username?: string): string {
+    if (!username) return 'assets/placeholder.jpg';
+
     if (this.userImages[username]) {
       return this.userImages[username];
     }
+
     this.userImages[username] = 'assets/placeholder.jpg';
     this.imageService.getImageToUser(username)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: blob => {
           const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
+          this.userImages[username!] = preview;
           this.cd.markForCheck();
         },
         error: () => {
-          this.userImages[username] = 'assets/placeholder.jpg';
+          this.userImages[username!] = 'assets/placeholder.jpg';
           this.cd.markForCheck();
         }
       });
+
     return this.userImages[username];
   }
+
 
   trackByUsername(index: number, username: string): string {
     return username;
@@ -275,5 +306,21 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
+  trackByStoryId(index: number, story: Story): number {
+    return story.id!;
+  }
+
+  openStoryViewer(startIndex: number = 0): void {
+    if (!this.stories || this.stories.length === 0) return;
+
+    const dialogStoryViewerConfig = new MatDialogConfig();
+    dialogStoryViewerConfig.width = '400px';
+    dialogStoryViewerConfig.data = { stories: this.stories };
+    const dialogRef = this.dialog.open(StoryViewerComponent, dialogStoryViewerConfig);
+
+    dialogRef.afterClosed().subscribe(result => {
+    });
+  }
+
 
 }

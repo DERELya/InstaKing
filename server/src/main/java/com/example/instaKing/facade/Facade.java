@@ -2,9 +2,9 @@ package com.example.instaKing.facade;
 
 import com.example.instaKing.dto.FavoriteDTO;
 import com.example.instaKing.dto.PostDTO;
-import com.example.instaKing.models.Favorite;
-import com.example.instaKing.models.Post;
-import com.example.instaKing.models.User;
+import com.example.instaKing.dto.StoryDTO;
+import com.example.instaKing.dto.StoryViewDTO;
+import com.example.instaKing.models.*;
 import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,4 +47,16 @@ public class Facade {
         postDTO.setLocation(post.getLocation());
         return postDTO;
     }
+
+    public StoryDTO storyToStoryDTO(Story story) {
+        StoryDTO storyDTO=new StoryDTO();
+        storyDTO.setId(story.getId());
+        storyDTO.setViews(story.getViews());
+        storyDTO.setMediaUrl(story.getMediaUrl());
+        storyDTO.setCreatedAt(story.getCreatedAt());
+        storyDTO.setExpiresAt(story.getExpiresAt());
+        storyDTO.setUsername(story.getUser().getUsername());
+        return storyDTO;
+    }
+
 }

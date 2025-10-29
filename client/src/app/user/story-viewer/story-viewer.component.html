@@ -1,0 +1,22 @@
+<div class="story-viewer">
+  <div class="story-header">
+    <img [src]="stories[currentIndex]?.avatarUrl || 'assets/placeholder.jpg'" alt="avatar" class="avatar">
+    <span class="username">{{ stories[currentIndex]?.username }}</span>
+    <button class="close-btn" (click)="closeViewer()">✕</button>
+  </div>
+
+  <div class="story-content">
+    <div class="story-container">
+      <img *ngIf="stories[currentIndex]?.imageUrl" [src]="stories[currentIndex]?.imageUrl" class="story-media" />
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress" [style.width.%]="progress"></div>
+    </div>
+  </div>
+
+  <div class="story-controls">
+    <div class="prev" (click)="prevStory()"></div>
+    <div class="next" (click)="nextStory()"></div>
+  </div>
+</div>

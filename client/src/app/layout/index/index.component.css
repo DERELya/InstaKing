@@ -259,3 +259,55 @@ mat-icon.favorited {
     padding: 6px 6px 6px 8px;
   }
 }
+
+.stories-bar {
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.stories-scroll {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 0 10px;
+}
+
+.story-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.story-avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid #ff006e;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.story-avatar img.viewed {
+  border-color: var(--color-border);
+}
+
+.story-avatar img:hover {
+  transform: scale(1.05);
+}
+
+.story-username {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text);
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
