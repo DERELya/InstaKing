@@ -6,14 +6,14 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  QueryList, TrackByFunction,
+  QueryList,
   ViewChildren
 } from '@angular/core';
 import { Post } from '../../models/Post';
 import { User } from '../../models/User';
 import { PostService } from '../../services/post.service';
 import { UserService } from '../../services/user.service';
-import { StoryService, Story } from '../../services/story.service';
+import { StoryService} from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { MatCardImage, MatCardModule } from '@angular/material/card';
@@ -28,7 +28,7 @@ import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
 import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
-import {EditUserComponent} from '../../user/edit-user/edit-user.component';
+import {Story} from '../../models/Story';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -92,7 +92,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
         this.cd.markForCheck();
 
-        // Подгружаем избранные после получения постов
         this.postService.getFavorites().subscribe(favorites => {
           const favoriteIds = new Set(favorites.map(p => p.id));
           this.posts = this.posts.map(post => ({
@@ -119,26 +118,9 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadPosts();
     });
     this.storyService.loadFollowingStories().subscribe(stories => {
-      this.stories = stories.map(s => ({
-        id: s.id,
-        username: s.username,
-        imageUrl: s.mediaUrl,       // мапим с mediaUrl
-        views: s.views,
-        createdAt: s.createdAt,
-        expiresAt: s.expiresAt,
-        usersViewed: s.viewed,
-        viewed: false,              // пока никто не смотрел на фронте
-        avatarUrl: undefined        // будет загружено через getUserImage
-      }));
-
-      // Загружаем аватарки пользователей
-      this.stories.forEach(story => {
-        story.mediaUrl = this.getUserImage(story.username);
-      });
-
-      console.log(this.stories);
-      this.cd.markForCheck();
+      this.stories = stories;
     });
+
 
   }
 

@@ -9,7 +9,9 @@ import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.StoryService;
 import com.example.instaKing.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -45,16 +47,14 @@ public class StoryController {
         User user = userService.getCurrentUser(principal);
         Story story = storyService.createStory(storyDTO, principal, file);
         System.out.println(story.getUser().getUsername());
-        StoryDTO returnStoryDTO = facade.storyToStoryDTO(story);
+        StoryDTO returnStoryDTO = facade.storyToStoryDTO(story,user);
         return new ResponseEntity<>(returnStoryDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/getStoriesForUser/{username}")
-    public ResponseEntity<List<StoryDTO>> getStoriesForUser(@PathVariable String username) {
-        List<StoryDTO> storyDTOList = storyService.getStoriesForUser(username)
-                .stream()
-                .map(facade::storyToStoryDTO)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<StoryDTO>> getStoriesForUser(@PathVariable String username,Principal principal) {
+        List<StoryDTO> storyDTOList = storyService.getStoriesForUser(username,principal);
+
 
         return new ResponseEntity<>(storyDTOList, HttpStatus.OK);
     }
@@ -79,5 +79,14 @@ public class StoryController {
     @GetMapping("/storiesOfFollowing")
     public ResponseEntity<List<StoryDTO>> getStoriesOfFollowing(Principal principal) {
         return new ResponseEntity<>(storyService.getStoriesOfFollowing(principal), HttpStatus.OK);
+    }
+
+    @GetMapping("/content/{url}")
+    public ResponseEntity<Resource> getImageForUser(@PathVariable String url) throws IOException {
+        Resource content = storyService.getContent(url);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
+                .body(content);
     }
 }

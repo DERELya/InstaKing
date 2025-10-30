@@ -1,19 +1,10 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, switchMap, map, catchError, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { ImageUploadService } from './image-upload.service';
-import { TokenStorageService } from './token-storage.service';
-
-export interface Story {
-  id?: number;
-  mediaUrl?: string;
-  createdAt?: string;
-  expiresAt?: string;
-  username?: string;
-  views?: number;
-  viewed?: boolean;
-}
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {BehaviorSubject, catchError, forkJoin, map, Observable, of, shareReplay, switchMap, tap} from 'rxjs';
+import {environment} from '../../environments/environment';
+import {ImageUploadService} from './image-upload.service';
+import {TokenStorageService} from './token-storage.service';
+import {Story} from '../models/Story';
 
 @Injectable({
   providedIn: 'root',
@@ -30,19 +21,10 @@ export class StoryService {
     private tokenService: TokenStorageService
   ) {}
 
-  loadFollowingStories(): Observable<Story[]> {
-    return this.http.get<Story[]>(this.api + 'storiesOfFollowing').pipe(
-      tap((stories) => this.storiesSubject.next(stories)),
-      catchError((err) => {
-        console.error('Ошибка при получении сторис:', err);
-        return of([]);
-      })
-    );
-  }
-
   getStoryById(id: number): Observable<Story> {
     return this.http.get<Story>(this.api + id);
   }
+
 
 
   addView(storyId: number): Observable<void> {
@@ -88,4 +70,63 @@ export class StoryService {
       })
     );
   }
+
+  loadFollowingStories(): Observable<Story[]> {
+    return this.http.get<Story[]>(`${this.api}storiesOfFollowing`).pipe(
+      switchMap((stories) => {
+        if (!stories || stories.length === 0) return of([]);
+
+        // Подгружаем аватарки и контент (blob)
+        const withDetails$ = stories.map((story) =>
+          forkJoin({
+            avatarUrl: this.getUserImage(story.username!),
+            //blobUrl: this.getStoryBlobUrl(story.mediaUrl!),
+          }).pipe(
+            map((extra) => ({
+              ...story,
+              avatarUrl: extra.avatarUrl,
+             // blobUrl: extra.blobUrl,
+            }))
+          )
+        );
+
+        return forkJoin(withDetails$);
+      }),
+      tap((stories) => this.storiesSubject.next(stories)),
+      catchError((err) => {
+        console.error('Ошибка при получении сторис:', err);
+        return of([]);
+      })
+    );
+  }
+
+  /** 🔹 Получить контент (blob URL) для сторис */
+  private getStoryBlobUrl(mediaUrl: string): Observable<string> {
+    if (!mediaUrl) return of('');
+
+    return this.getContentForStory(mediaUrl).pipe(
+      map((blob) => URL.createObjectURL(blob)),
+      catchError((err) => {
+        console.error('Ошибка загрузки содержимого сторис:', err);
+        return of('');
+      })
+    );
+  }
+
+  /** 🔹 Получить изображение пользователя (аватар) */
+  private getUserImage(username: string): Observable<string> {
+    return this.imageService.getImageToUser(username).pipe(
+      map((blob) => URL.createObjectURL(blob)), // преобразуем Blob в URL
+      catchError(() => of('assets/placeholder.jpg'))
+    );
+  }
+
+
+  /** 🔹 Загрузить бинарные данные сторис (blob) */
+  getContentForStory(url: string): Observable<Blob> {
+    return this.http
+      .get(`${this.api}content/${url}`, { responseType: 'blob' })
+      .pipe(shareReplay(1));
+  }
+
 }

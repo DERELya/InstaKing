@@ -23,6 +23,6 @@ public class StoryDTO {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private Map<String,LocalDateTime> usersViewed;
-
+    private boolean viewed;
 
 }

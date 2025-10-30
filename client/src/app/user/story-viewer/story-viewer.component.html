@@ -1,22 +1,51 @@
 <div class="story-viewer">
+  <!-- HEADER -->
   <div class="story-header">
-    <img [src]="stories[currentIndex]?.avatarUrl || 'assets/placeholder.jpg'" alt="avatar" class="avatar">
+    <img [src]="getUserImage(stories[currentIndex].username) || 'assets/placeholder.jpg'" alt="avatar" class="avatar">
     <span class="username">{{ stories[currentIndex]?.username }}</span>
     <button class="close-btn" (click)="closeViewer()">✕</button>
   </div>
 
-  <div class="story-content">
-    <div class="story-container">
-      <img *ngIf="stories[currentIndex]?.imageUrl" [src]="stories[currentIndex]?.imageUrl" class="story-media" />
-    </div>
-
-    <div class="progress-bar">
-      <div class="progress" [style.width.%]="progress"></div>
+  <!-- PROGRESS BARS -->
+  <div class="progress-bars">
+    <div *ngFor="let story of stories; let i = index" class="progress-bar">
+      <div class="progress" [style.width.%]="i < currentIndex ? 100 : (i === currentIndex ? progress : 0)"></div>
     </div>
   </div>
 
+  <!-- STORY CONTENT -->
+  <div class="story-content">
+    <div class="story-container">
+      <img [src]="stories[currentIndex]?.blobUrl || stories[currentIndex]?.mediaUrl || 'assets/placeholder.jpg'" alt="story">
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
   <div class="story-controls">
     <div class="prev" (click)="prevStory()"></div>
     <div class="next" (click)="nextStory()"></div>
   </div>
+  <pre>{{ stories[currentIndex].usersViewed | json }}</pre>
+
+  <div class="story-views-summary"
+       *ngIf="getStoryUsersViewedDetailed(stories[currentIndex]).length"
+       (click)="openViewsList(stories[currentIndex])">
+    <div class="avatars">
+      <ng-container *ngFor="let user of getStoryUsersViewedDetailed(stories[currentIndex]).slice(0,3); let idx = index">
+        <img
+          [src]="getUserImage(user.username)"
+          [style.zIndex]="10 - idx"
+          [style.marginLeft.px]="idx > 0 ? -10 : 0"
+          class="view-avatar"
+          alt="{{user.username}}" />
+      </ng-container>
+    </div>
+    <span class="views-count">
+    {{ getStoryUsersViewedDetailed(stories[currentIndex]).length }} просмотр{{ getStoryUsersViewedDetailed(stories[currentIndex]).length === 1 ? '' : 'ов' }}
+  </span>
+  </div>
+
+
+
 </div>
+

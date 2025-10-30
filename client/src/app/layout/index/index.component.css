@@ -283,19 +283,23 @@ mat-icon.favorited {
   text-align: center;
   cursor: pointer;
 }
-
 .story-avatar img {
-  width: 64px;
-  height: 64px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 3px solid #ff006e;
-  object-fit: cover;
-  transition: transform 0.2s ease;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.story-avatar img.not-viewed {
+  border-color: var(--color-primary); /* синий (или любой цвет для новых сторис) */
 }
 
 .story-avatar img.viewed {
-  border-color: var(--color-border);
+  border-color: #b0b0b0; /* серый для просмотренных */
 }
+
 
 .story-avatar img:hover {
   transform: scale(1.05);

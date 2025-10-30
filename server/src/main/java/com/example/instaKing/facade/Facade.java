@@ -9,6 +9,10 @@ import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 public class Facade {
 
@@ -48,7 +52,7 @@ public class Facade {
         return postDTO;
     }
 
-    public StoryDTO storyToStoryDTO(Story story) {
+    public StoryDTO storyToStoryDTO(Story story, User currentUser) {
         StoryDTO storyDTO=new StoryDTO();
         storyDTO.setId(story.getId());
         storyDTO.setViews(story.getViews());
@@ -56,6 +60,17 @@ public class Facade {
         storyDTO.setCreatedAt(story.getCreatedAt());
         storyDTO.setExpiresAt(story.getExpiresAt());
         storyDTO.setUsername(story.getUser().getUsername());
+        Map<String, LocalDateTime> viewedMap = story.getViewsDetails()
+                .stream()
+                .collect(Collectors.toMap(
+                        view -> view.getUser().getUsername(),
+                        StoryView::getViewedAt
+                ));
+        storyDTO.setUsersViewed(viewedMap);
+
+        boolean viewed = story.getViewsDetails().stream()
+                .anyMatch(v -> v.getUser().getUsername().equals(currentUser.getUsername()));
+        storyDTO.setViewed(viewed);
         return storyDTO;
     }
 
