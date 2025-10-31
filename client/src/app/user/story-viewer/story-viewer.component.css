@@ -1,7 +1,7 @@
 .story-viewer {
   width: 100%;
   height: 100%;
-  background-color: #000;
+  background-color: var(--color-bg);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -19,31 +19,43 @@
   top: 10px;
   left: 0;
   z-index: 20;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .story-header .avatar {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-border);
   object-fit: cover;
   margin-right: 10px;
   background-color: #222;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.story-header .avatar:hover {
+  transform: scale(1.08);
 }
 
 .story-header .username {
   font-weight: 600;
   font-size: 16px;
+  cursor: pointer;
 }
 
 .story-header .close-btn {
   margin-left: auto;
   background: transparent;
   border: none;
-  color: #fff;
-  font-size: 24px;
+  color: var(--color-text);
+  font-size: 26px;
   cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.story-header .close-btn:hover {
+  opacity: 0.7;
 }
 
 /* PROGRESS BARS */
@@ -51,27 +63,40 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  padding: 0 10px;
-  box-sizing: border-box;
+  padding: 8px 10px;
   position: absolute;
   top: 0;
+  left: 0;
   z-index: 30;
 }
 
 .progress-bar {
   flex: 1;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.3);
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 2px;
-  margin: 0 2px;
+  margin: 0 3px;
   overflow: hidden;
+  position: relative;
 }
 
 .progress {
   height: 100%;
-  background: #fff;
+  background: linear-gradient(to right, var(--color-text), #f0f0f0);
   width: 0%;
   transition: width 0.1s linear;
+}
+
+/* Завершённые */
+.progress-bar.completed .progress {
+  width: 100%;
+  background: var(--color-bg);
+}
+
+/* Активная */
+.progress-bar.active .progress {
+  background: linear-gradient(to right, var(--color-text), #ddd);
+  animation: progress-fill 7s linear forwards;
 }
 
 /* STORY CONTENT */
@@ -89,36 +114,63 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #000;
+  background-color: var(--color-bg);
   overflow: hidden;
 }
 
 .story-container img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* сохраняем пропорции, без обрезки */
-  display: block;
-  border-radius: 6px;
+  object-fit: contain;
+  border-radius: 10px;
+  transition: opacity 0.3s ease;
 }
 
-/* NAVIGATION */
-.story-controls .prev,
-.story-controls .next {
+/* STORY CONTROLS */
+.story-controls {
   position: absolute;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  cursor: pointer;
-  z-index: 10;
-}
-
-.story-controls .prev {
+  top: 50%;
   left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  pointer-events: none;
+  padding: 0 20px;
+  z-index: 40;
 }
 
-.story-controls .next {
-  right: 0;
+.story-controls button {
+  pointer-events: all;
+  background: var(--color-bg);
+  border: none;
+  color: var(--color-text);
+  font-size: 2rem;
+  cursor: pointer;
+  height: 55px;
+  width: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, transform 0.15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
+
+.story-controls button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1);
+}
+
+.story-controls button.prev {
+  margin-right: auto;
+}
+
+.story-controls button.next {
+  margin-left: auto;
+}
+
+/* VIEWS SUMMARY */
 .story-views-summary {
   position: absolute;
   bottom: 20px;
@@ -126,7 +178,7 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: #fff;
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -139,17 +191,132 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-border);
   object-fit: cover;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .story-views-summary .view-avatar:hover {
   transform: scale(1.2);
+  opacity: 0.9;
 }
 
 .story-views-summary .views-count {
   font-weight: 500;
+  margin-left: 3px;
 }
 
+/* MODALS */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+}
 
+.views-modal {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg);
+  width: 90%;
+  max-width: 400px;
+  max-height: 60vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  animation: fadeInUp 0.3s ease;
+}
+
+.views-modal h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.viewer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.viewer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  cursor: pointer;
+  pointer-events: all;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.viewer-avatar:hover {
+  opacity: 0.85;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+.viewer-info span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.close-modal {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.close-modal:hover {
+  background: var(--color-primary);
+}
+
+/* ANIMATIONS */
+@keyframes progress-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.story-progress {
+  height: 4px;
+  flex: 1;
+  margin: 0 2px;
+  border-radius: 2px;
+}
+.progress-bars {
+  display: flex;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  padding: 0 10px;
+  z-index: 30;
+  gap: 4px;
+  color: var(--color-primary);
+}

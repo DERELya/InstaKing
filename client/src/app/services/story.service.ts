@@ -73,32 +73,44 @@ export class StoryService {
 
   loadFollowingStories(): Observable<Story[]> {
     return this.http.get<Story[]>(`${this.api}storiesOfFollowing`).pipe(
-      switchMap((stories) => {
-        if (!stories || stories.length === 0) return of([]);
+      map(stories =>
+        (stories || []).map(story => ({
+          ...story,
+          usersViewed: story.usersViewed
+            ? Object.entries(story.usersViewed).map(([username, viewedAt], idx) => ({
+              id: idx,
+              username,
+              viewedAt: viewedAt as unknown as string
+            }))
+            : []
+        }))
+      ),
+      switchMap(stories => {
+        if (stories.length === 0) return of([]);
 
-        // Подгружаем аватарки и контент (blob)
-        const withDetails$ = stories.map((story) =>
+        const withDetails$ = stories.map(story =>
           forkJoin({
-            avatarUrl: this.getUserImage(story.username!),
-            //blobUrl: this.getStoryBlobUrl(story.mediaUrl!),
+            avatarUrl: this.getUserImage(story.username)
+            // blobUrl: this.getStoryBlobUrl(story.mediaUrl) // если потом вернёшь
           }).pipe(
-            map((extra) => ({
+            map(extra => ({
               ...story,
-              avatarUrl: extra.avatarUrl,
-             // blobUrl: extra.blobUrl,
+              avatarUrl: extra.avatarUrl
+              // blobUrl: extra.blobUrl
             }))
           )
         );
 
         return forkJoin(withDetails$);
       }),
-      tap((stories) => this.storiesSubject.next(stories)),
-      catchError((err) => {
+      tap(stories => this.storiesSubject.next(stories)),
+      catchError(err => {
         console.error('Ошибка при получении сторис:', err);
         return of([]);
       })
     );
   }
+
 
   /** 🔹 Получить контент (blob URL) для сторис */
   private getStoryBlobUrl(mediaUrl: string): Observable<string> {

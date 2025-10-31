@@ -23,7 +23,7 @@ import { CommonModule, NgClass } from '@angular/common';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { RouterLink } from '@angular/router';
+import {RouterLink, RouterModule} from '@angular/router';
 import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
@@ -51,7 +51,8 @@ interface UiPost extends Post {
     MatButtonModule,
     CommonModule,
     MatIconButton,
-    RouterLink
+    RouterLink,
+    RouterModule
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './index.component.html',
@@ -69,6 +70,10 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
+  groupedStories: { username: string; stories: Story[] }[] = [];
+  currentUserIndex = 0;
+  currentStoryIndex = 0;
+
 
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
@@ -119,6 +124,20 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.storyService.loadFollowingStories().subscribe(stories => {
       this.stories = stories;
+
+      // Группируем истории по пользователю
+      const map = new Map<string, Story[]>();
+      stories.forEach(s => {
+        if (!map.has(s.username!)) map.set(s.username!, []);
+        map.get(s.username!)!.push(s);
+      });
+
+      this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
+
+      // Инициализируем индексы
+      this.currentUserIndex = 0;
+      this.currentStoryIndex = 0;
+      console.log(this.groupedStories);
     });
 
 
@@ -254,7 +273,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  trackByUsername(index: number, username: string): string {
+  trackByUsernamePost(index: number, username: string): string {
     return username;
   }
 
@@ -288,20 +307,28 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-  trackByStoryId(index: number, story: Story): number {
-    return story.id!;
-  }
 
   openStoryViewer(startIndex: number = 0): void {
-    if (!this.stories || this.stories.length === 0) return;
+    if (!this.groupedStories || this.groupedStories.length === 0) return;
 
     const dialogStoryViewerConfig = new MatDialogConfig();
     dialogStoryViewerConfig.width = '400px';
-    dialogStoryViewerConfig.data = { stories: this.stories };
+    dialogStoryViewerConfig.data = {
+      groupedStories: this.groupedStories,
+      startUserIndex: 0,
+      startStoryIndex: startIndex
+    };
     const dialogRef = this.dialog.open(StoryViewerComponent, dialogStoryViewerConfig);
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-    });
+  getStoriesView(username:string):boolean{
+    const userGroup = this.groupedStories.find(g => g.username === username)
+    if (!userGroup) return true;
+    return userGroup.stories.every(story => story.viewed);
+  }
+
+  trackByUsername(index: number, group: { username: string; stories: Story[] }): string {
+    return group.username;
   }
 
 

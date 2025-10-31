@@ -1,136 +1,232 @@
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {ChangeDetectorRef, Component, Inject, NgZone, OnDestroy, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Story} from '../../models/Story';
 import {StoryService} from '../../services/story.service';
-import {interval, of, Subject, Subscription, takeUntil, catchError, map} from 'rxjs';
 import {ImageUploadService} from '../../services/image-upload.service';
-import {AsyncPipe, JsonPipe, NgForOf, NgIf} from '@angular/common';
+import {Subject, takeUntil} from 'rxjs';
+import {DatePipe, NgForOf, NgIf} from '@angular/common';
+import {Router, RouterLink,RouterModule} from '@angular/router';
+import {MatProgressBar} from '@angular/material/progress-bar';
+import {UserService} from '../../services/user.service';
+import {User} from '../../models/User';
 
 @Component({
   selector: 'app-story-viewer',
   templateUrl: './story-viewer.component.html',
   styleUrls: ['./story-viewer.component.css'],
   standalone: true,
-  imports: [NgForOf, AsyncPipe, JsonPipe, NgIf]
+  imports: [NgForOf, NgIf, DatePipe, RouterLink, MatProgressBar],
 })
 export class StoryViewerComponent implements OnInit, OnDestroy {
-  stories: Story[] = [];
-  currentIndex = 0;
+
+  groupedStories: { username: string; stories: Story[] }[] = [];
+  currentUserIndex = 0;
+  currentStoryIndex = 0;
+
   progress = 0;
-  intervalSub?: Subscription;
-  storyDuration = 5000;
+  private storyPaused = false;
+  private progressStartTime = 0;
+  private rafId: number | null = null;
+  private elapsedBeforePause = 0;
   userImages: { [key: string]: string } = {};
-
   private destroy$ = new Subject<void>();
-  private contentCache = new Map<string, string>(); // mediaUrl → blobUrl
+  private user! : User;
 
+  showViewsModal = false;
   constructor(
     private dialogRef: MatDialogRef<StoryViewerComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { stories: Story[], startIndex: number },
+    @Inject(MAT_DIALOG_DATA) public data: { groupedStories: { username: string; stories: Story[] }[] },
     private storyService: StoryService,
     private imageService: ImageUploadService,
     private cd: ChangeDetectorRef,
+    private zone: NgZone,
+    private router: Router,
+    private userService: UserService,
   ) {
-    this.stories = data.stories;
-    this.currentIndex = data.startIndex || 0;
   }
 
   ngOnInit(): void {
+    this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(data => {
+      this.user = data;
+      this.cd.markForCheck();
+    });
+    this.progress = 0;
+    this.elapsedBeforePause = 0;
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    this.storyPaused = false;
+
+    const data = this.data as {
+      groupedStories: { username: string; stories: Story[] }[],
+      startUserIndex?: number,
+      startStoryIndex?: number
+    };
+
+    if (!data.groupedStories?.length) return;
+
+    this.groupedStories = data.groupedStories;
+    this.currentUserIndex = data.startUserIndex || 0;
+    this.currentStoryIndex = data.startStoryIndex || 0;
+
     this.loadCurrentStoryImage();
     this.markViewed();
-    console.log('Stories loaded:', this.stories);
     this.startProgress();
-    console.log(this.stories[this.currentIndex].usersViewed);
   }
 
-  ngOnDestroy() {
-    if (this.intervalSub) this.intervalSub.unsubscribe();
+  ngOnDestroy(): void {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
     this.destroy$.next();
     this.destroy$.complete();
-
-    // Освобождаем blob URLs
-    this.contentCache.forEach(url => URL.revokeObjectURL(url));
-    this.contentCache.clear();
   }
 
-  startProgress() {
-    this.progress = 0;
-    const step = 100 / (this.storyDuration / 100);
-    this.intervalSub = interval(100).subscribe(() => {
-      this.progress += step;
-      if (this.progress >= 100) {
+  get currentUserStories(): Story[] {
+    const group = this.groupedStories[this.currentUserIndex];
+    return group?.stories || [];
+  }
+
+
+  get currentStory(): Story | null {
+    const userGroup = this.groupedStories[this.currentUserIndex];
+    if (!userGroup?.stories?.length) return null;
+    return userGroup.stories[this.currentStoryIndex];
+  }
+
+  startProgress(): void {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+
+    this.progressStartTime = performance.now() - this.elapsedBeforePause;
+    const duration = 7000;
+
+    const step = (time: number) => {
+      const elapsed = time - this.progressStartTime;
+      const newProgress = Math.min((elapsed / duration) * 100, 100);
+
+      this.zone.run(() => {
+        this.progress = newProgress;
+        this.cd.markForCheck();
+      });
+
+      if (newProgress >= 100) {
+        this.elapsedBeforePause = 0;
         this.nextStory();
+        return;
       }
-    });
+
+      if (!this.storyPaused) {
+        this.rafId = requestAnimationFrame(step);
+      } else {
+        this.elapsedBeforePause = elapsed;
+      }
+    };
+
+    this.zone.runOutsideAngular(() => this.rafId = requestAnimationFrame(step));
   }
+
+
+  pauseStory() {
+    this.storyPaused = true;
+  }
+
+  resumeStory() {
+    this.storyPaused = false;
+    this.startProgress();
+  }
+
 
   resetProgress() {
     this.progress = 0;
-    this.intervalSub?.unsubscribe();
+    this.elapsedBeforePause = 0;
     this.startProgress();
   }
 
-  markViewed() {
-    const story = this.stories[this.currentIndex];
-    if (!story.viewed) {
-      this.storyService.addView(story.id).subscribe();
-      story.viewed = true;
-    }
-  }
 
-  nextStory() {
-    if (this.currentIndex < this.stories.length - 1) {
-      this.currentIndex++;
-      this.loadCurrentStoryImage();
-      this.markViewed();
-      this.resetProgress();
+  nextStory(): void {
+    const group = this.groupedStories[this.currentUserIndex];
+    if (!group) return;
+
+    if (this.currentStoryIndex < group.stories.length - 1) {
+      this.currentStoryIndex++;
+    } else if (this.currentUserIndex < this.groupedStories.length - 1) {
+      this.currentUserIndex++;
+      this.currentStoryIndex = 0;
     } else {
       this.closeViewer();
+      return;
     }
+
+    this.loadCurrentStoryImage();
+    this.markViewed();
+    this.resetProgress();
   }
 
-  prevStory() {
-    if (this.currentIndex > 0) {
-      this.currentIndex--;
-      this.loadCurrentStoryImage();
-      this.resetProgress();
+  prevStory(): void {
+    if (this.currentStoryIndex > 0) {
+      this.currentStoryIndex--;
+    } else if (this.currentUserIndex > 0) {
+      this.currentUserIndex--;
+      const prevGroup = this.groupedStories[this.currentUserIndex];
+      this.currentStoryIndex = prevGroup.stories.length - 1;
     }
+    this.loadCurrentStoryImage();
+    this.resetProgress();
   }
 
-  closeViewer() {
-    if (this.intervalSub) this.intervalSub.unsubscribe();
+  closeViewer(): void {
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
     this.dialogRef.close();
   }
 
-
-
-  /** Загружает картинку только один раз и кэширует её */
-  loadCurrentStoryImage() {
-    const story = this.stories[this.currentIndex];
-
-    // если blob уже есть, не загружаем снова
+  loadCurrentStoryImage(): void {
+    const story = this.currentStory;
+    if (!story) return;
     if (story.blobUrl) return;
-
-    // если mediaUrl уже blob, не нужно идти на сервер
     if (story.mediaUrl?.startsWith('blob:')) {
       story.blobUrl = story.mediaUrl;
       return;
     }
 
     this.storyService.getContentForStory(story.mediaUrl).subscribe({
-      next: (blob) => {
+      next: blob => {
         story.blobUrl = URL.createObjectURL(blob);
         this.cd.detectChanges();
       },
       error: () => {
         story.blobUrl = 'assets/placeholder.jpg';
         this.cd.detectChanges();
-      }
+      },
     });
-    console.log(story);
   }
 
-  /** Загрузка аватарок пользователей */
+  markViewed(): void {
+    const story = this.currentStory;
+    if (!story) return;
+
+    if (!story.viewed) {
+      this.storyService.addView(story.id).subscribe({
+        next: () => {
+          story.viewed = true;
+
+          // Добавляем текущего пользователя в usersViewed локально
+          if (!story.usersViewed) story.usersViewed = [];
+          story.usersViewed.push({
+            id: Date.now(), // или другой уникальный id
+            username: this.user.username, // надо получить текущего пользователя
+            viewedAt: new Date().toISOString()
+          });
+
+          this.cd.markForCheck(); // обновляем UI
+        },
+        error: (err) => console.error('Ошибка при добавлении просмотра', err)
+      });
+    }
+  }
+
+
   getUserImage(username?: string): string {
     if (!username) return 'assets/placeholder.jpg';
     if (this.userImages[username]) return this.userImages[username];
@@ -140,47 +236,44 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
+          this.userImages[username] = URL.createObjectURL(blob);
           this.cd.markForCheck();
         },
         error: () => {
           this.userImages[username] = 'assets/placeholder.jpg';
           this.cd.markForCheck();
-        }
+        },
       });
 
     return this.userImages[username];
   }
 
-  getStoryUsersViewedDetailed(story: Story): { username: string; viewedAt: string }[] {
-    if (!story.usersViewed) return [];
-    return Object.entries(story.usersViewed).map(([username, viewedAt]) => ({
-      username,
-      viewedAt: typeof viewedAt === 'string' ? viewedAt : String(viewedAt)
-    }));
+  openViewsList(): void {
+    if (!this.currentStory?.usersViewed?.length) return;
+    this.pauseStory();
+    this.showViewsModal = true;
   }
 
-
-  openViewsList(story: Story) {
-    const viewers = this.getStoryUsersViewedDetailed(story);
-
-    if (viewers.length === 0) {
-      alert('Пока никто не посмотрел эту сторис 👀');
-      return;
-    }
-
-    const formatted = viewers
-      .map(v => `${v.username} — ${new Date(v.viewedAt).toLocaleString()}`)
-      .join('\n');
-
-    alert(`Просмотрели:\n\n${formatted}`);
+  closeViewsList(): void {
+    this.showViewsModal = false;
+    this.resumeStory();
   }
 
+  get isFirstStory(): boolean {
+    return this.currentUserIndex === 0 && this.currentStoryIndex === 0;
+  }
+
+  get isLastStory(): boolean {
+    const userGroup = this.groupedStories[this.currentUserIndex];
+    const lastStoryIndex = userGroup.stories.length - 1;
+    const lastUserIndex = this.groupedStories.length - 1;
+    return this.currentUserIndex === lastUserIndex && this.currentStoryIndex === lastStoryIndex;
+  }
+
+  goToProfile() {
+    this.closeViewer();
+    this.closeViewsList();
 
 
-
-  trackByUsername(index: number, username: string): string {
-    return username;
   }
 }

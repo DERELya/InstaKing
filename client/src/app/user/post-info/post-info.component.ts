@@ -83,7 +83,6 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
     this.loadComments(0);
-    console.log(this.data.post);
   }
 
   ngOnDestroy(): void {

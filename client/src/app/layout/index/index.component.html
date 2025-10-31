@@ -1,17 +1,24 @@
 
-<div class="stories-bar" *ngIf="stories?.length">
+<div class="stories-bar" *ngIf="groupedStories?.length">
 <div class="stories-scroll">
+  <div  class="add-story-custom-btn" >
+    <div class="circle" >
+      <span class="plus-sign">+</span>
+    </div>
+    <div class="add-label">Добавить</div>
+  </div>
   <div
-    *ngFor="let story of stories; let i = index; trackBy: trackByStoryId"
+    *ngFor="let userStories of groupedStories; let i = index; trackBy: trackByUsername"
     class="story-avatar"
   >
-    <img
-      [src]="getUserImage(story.username)"
-      [ngClass]="{ 'viewed': story.viewed, 'not-viewed': !story.viewed }"
+
+  <img
+      [src]="getUserImage(userStories.username)"
+      [ngClass]="{ 'viewed': getStoriesView(userStories.username), 'not-viewed': !getStoriesView(userStories.username) }"
       (click)="openStoryViewer(i)"
       alt="story avatar"
     />
-    <span class="story-username">{{ story.username }}</span>
+    <span class="story-username">{{ userStories.username }}</span>
   </div>
 
 
@@ -65,7 +72,7 @@
 
               <section class="likes" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
                 <span class="likes-avatars">
-                  <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index; trackBy: trackByUsername">
+                  <ng-container *ngFor="let username of post.usersLiked!.slice(0, 3); let idx = index; trackBy: trackByUsernamePost">
                     <img
                       [src]="getUserImage(username)"
                       [style.z-index]="10 - idx"

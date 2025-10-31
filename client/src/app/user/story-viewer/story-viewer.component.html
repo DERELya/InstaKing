@@ -1,51 +1,76 @@
 <div class="story-viewer">
   <!-- HEADER -->
-  <div class="story-header">
-    <img [src]="getUserImage(stories[currentIndex].username) || 'assets/placeholder.jpg'" alt="avatar" class="avatar">
-    <span class="username">{{ stories[currentIndex]?.username }}</span>
+  <div class="story-header" >
+    <div [routerLink]="['/profile', currentStory?.username]" (click)="goToProfile()">
+      <img [src]="getUserImage(currentStory?.username) || 'assets/placeholder.jpg'" alt="avatar" class="avatar" >
+      <span class="username">{{ currentStory?.username }}</span>
+    </div>
+
     <button class="close-btn" (click)="closeViewer()">✕</button>
   </div>
 
   <!-- PROGRESS BARS -->
-  <div class="progress-bars">
-    <div *ngFor="let story of stories; let i = index" class="progress-bar">
-      <div class="progress" [style.width.%]="i < currentIndex ? 100 : (i === currentIndex ? progress : 0)"></div>
-    </div>
+  <div class="progress-bars" *ngIf="currentUserStories">
+    <mat-progress-bar
+      *ngFor="let story of currentUserStories; let i = index"
+      [mode]="'determinate'"
+      [value]="i < currentStoryIndex ? 100 : (i === currentStoryIndex ? progress : 0)"
+      color="accent"
+      class="story-progress">
+    </mat-progress-bar>
   </div>
+
+
 
   <!-- STORY CONTENT -->
   <div class="story-content">
-    <div class="story-container">
-      <img [src]="stories[currentIndex]?.blobUrl || stories[currentIndex]?.mediaUrl || 'assets/placeholder.jpg'" alt="story">
+    <div class="story-container" *ngIf="currentStory">
+      <img [src]="currentStory.blobUrl || currentStory.mediaUrl || 'assets/placeholder.jpg'" alt="story">
     </div>
   </div>
 
   <!-- NAVIGATION -->
   <div class="story-controls">
-    <div class="prev" (click)="prevStory()"></div>
-    <div class="next" (click)="nextStory()"></div>
-  </div>
-  <pre>{{ stories[currentIndex].usersViewed | json }}</pre>
+    <!-- Стрелка влево -->
+    <button *ngIf="!isFirstStory" class="prev" (click)="prevStory()">
+      &#10094;
+    </button>
 
-  <div class="story-views-summary"
-       *ngIf="getStoryUsersViewedDetailed(stories[currentIndex]).length"
-       (click)="openViewsList(stories[currentIndex])">
+    <!-- Стрелка вправо -->
+    <button *ngIf="!isLastStory" class="next" (click)="nextStory()">
+      &#10095;
+    </button>
+  </div>
+
+
+
+  <!-- VIEWS -->
+  <div class="story-views-summary" *ngIf="currentStory?.usersViewed?.length" (click)="openViewsList()">
     <div class="avatars">
-      <ng-container *ngFor="let user of getStoryUsersViewedDetailed(stories[currentIndex]).slice(0,3); let idx = index">
-        <img
-          [src]="getUserImage(user.username)"
-          [style.zIndex]="10 - idx"
-          [style.marginLeft.px]="idx > 0 ? -10 : 0"
-          class="view-avatar"
-          alt="{{user.username}}" />
+      <ng-container *ngFor="let user of currentStory?.usersViewed?.slice(0,3); let idx = index">
+        <img [src]="getUserImage(user.username)" [style.zIndex]="10 - idx" [style.marginLeft.px]="idx > 0 ? -10 : 0"
+             class="view-avatar" alt="{{ user.username }}">
       </ng-container>
+      <span class="views-count">
+        {{ currentStory?.usersViewed?.length }} просмотр{{ currentStory?.usersViewed?.length === 1 ? '' : 'ов' }}
+      </span>
     </div>
-    <span class="views-count">
-    {{ getStoryUsersViewedDetailed(stories[currentIndex]).length }} просмотр{{ getStoryUsersViewedDetailed(stories[currentIndex]).length === 1 ? '' : 'ов' }}
-  </span>
   </div>
-
-
-
 </div>
 
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="showViewsModal" (click)="closeViewsList()"></div>
+<div class="views-modal" *ngIf="showViewsModal">
+  <h3>Просмотрели сторис</h3>
+  <div class="viewer" *ngFor="let v of currentStory?.usersViewed">
+    <div class="viewer" [routerLink]="['/profile', v.username]" (click)="goToProfile()">
+      <img [src]="getUserImage(v.username)" class="viewer-avatar" alt="{{ v.username }}">
+      <div class="viewer-info">
+        <strong class="username">{{ v.username }}</strong>
+        <span class="username">    {{ v.viewedAt | date:'dd.MM.yyyy HH:mm' }}</span>
+      </div>
+    </div>
+
+  </div>
+  <button class="close-modal" (click)="closeViewsList()">Закрыть</button>
+</div>

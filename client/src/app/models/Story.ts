@@ -1,3 +1,4 @@
+import {StoryUser} from './StoryUser';
 
 export interface Story {
   id: number;
@@ -6,7 +7,7 @@ export interface Story {
   views: number;
   createdAt: string;
   expiresAt: string;
-  usersViewed?: { username: string, viewedAt: string }[] | null;
+  usersViewed: StoryUser[] | null;
   viewed?: boolean;
   avatarUrl?: string;
   blobUrl?: string;
