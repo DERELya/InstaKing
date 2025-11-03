@@ -14,6 +14,24 @@
           <span class="username">{{ data.post.username }}</span>
         </div>
         <div class="ig-modal-actions">
+          <button matIconButton [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>
+              </mat-icon>
+              <span>Redial</span>
+            </button>
+            <button mat-menu-item disabled>
+              <mat-icon>voicemail</mat-icon>
+              <span>Check voice mail</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>notifications_off</mat-icon>
+              <span>Disable alerts</span>
+            </button>
+          </mat-menu>
           <button *ngIf="data.post.username===meUsername" class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
             <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="4" cy="12" r="2" fill="currentColor"/>

@@ -211,15 +211,14 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
         next: () => {
           story.viewed = true;
 
-          // Добавляем текущего пользователя в usersViewed локально
           if (!story.usersViewed) story.usersViewed = [];
           story.usersViewed.push({
-            id: Date.now(), // или другой уникальный id
-            username: this.user.username, // надо получить текущего пользователя
+            id: Date.now(),
+            username: this.user.username,
             viewedAt: new Date().toISOString()
           });
 
-          this.cd.markForCheck(); // обновляем UI
+          this.cd.markForCheck();
         },
         error: (err) => console.error('Ошибка при добавлении просмотра', err)
       });
@@ -273,7 +272,5 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
   goToProfile() {
     this.closeViewer();
     this.closeViewsList();
-
-
   }
 }
