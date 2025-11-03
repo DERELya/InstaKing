@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import static com.example.instaKing.security.SecurityConstants.UPLOAD_DIR;
+import static com.example.instaKing.security.SecurityConstants.UPLOAD_DIR_FOR_STORIES;
 import static com.example.instaKing.security.SecurityConstants.UPLOAD_DIR_FOR_POSTS;
 
 @Service

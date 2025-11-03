@@ -6,14 +6,14 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  QueryList, TrackByFunction,
+  QueryList,
   ViewChildren
 } from '@angular/core';
 import { Post } from '../../models/Post';
 import { User } from '../../models/User';
 import { PostService } from '../../services/post.service';
 import { UserService } from '../../services/user.service';
-import { StoryService, Story } from '../../services/story.service';
+import { StoryService} from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { MatCardImage, MatCardModule } from '@angular/material/card';
@@ -23,12 +23,12 @@ import { CommonModule, NgClass } from '@angular/common';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { RouterLink } from '@angular/router';
+import {RouterLink, RouterModule} from '@angular/router';
 import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
 import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
-import {EditUserComponent} from '../../user/edit-user/edit-user.component';
+import {Story} from '../../models/Story';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -51,7 +51,8 @@ interface UiPost extends Post {
     MatButtonModule,
     CommonModule,
     MatIconButton,
-    RouterLink
+    RouterLink,
+    RouterModule
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './index.component.html',
@@ -69,6 +70,10 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
+  groupedStories: { username: string; stories: Story[] }[] = [];
+  currentUserIndex = 0;
+  currentStoryIndex = 0;
+
 
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
@@ -92,7 +97,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
         this.cd.markForCheck();
 
-        // Подгружаем избранные после получения постов
         this.postService.getFavorites().subscribe(favorites => {
           const favoriteIds = new Set(favorites.map(p => p.id));
           this.posts = this.posts.map(post => ({
@@ -119,26 +123,23 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadPosts();
     });
     this.storyService.loadFollowingStories().subscribe(stories => {
-      this.stories = stories.map(s => ({
-        id: s.id,
-        username: s.username,
-        imageUrl: s.mediaUrl,       // мапим с mediaUrl
-        views: s.views,
-        createdAt: s.createdAt,
-        expiresAt: s.expiresAt,
-        usersViewed: s.viewed,
-        viewed: false,              // пока никто не смотрел на фронте
-        avatarUrl: undefined        // будет загружено через getUserImage
-      }));
+      this.stories = stories;
 
-      // Загружаем аватарки пользователей
-      this.stories.forEach(story => {
-        story.mediaUrl = this.getUserImage(story.username);
+      // Группируем истории по пользователю
+      const map = new Map<string, Story[]>();
+      stories.forEach(s => {
+        if (!map.has(s.username!)) map.set(s.username!, []);
+        map.get(s.username!)!.push(s);
       });
 
-      console.log(this.stories);
-      this.cd.markForCheck();
+      this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
+
+      // Инициализируем индексы
+      this.currentUserIndex = 0;
+      this.currentStoryIndex = 0;
+      console.log(this.groupedStories);
     });
+
 
   }
 
@@ -272,7 +273,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  trackByUsername(index: number, username: string): string {
+  trackByUsernamePost(index: number, username: string): string {
     return username;
   }
 
@@ -306,20 +307,28 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-  trackByStoryId(index: number, story: Story): number {
-    return story.id!;
-  }
 
   openStoryViewer(startIndex: number = 0): void {
-    if (!this.stories || this.stories.length === 0) return;
+    if (!this.groupedStories || this.groupedStories.length === 0) return;
 
     const dialogStoryViewerConfig = new MatDialogConfig();
     dialogStoryViewerConfig.width = '400px';
-    dialogStoryViewerConfig.data = { stories: this.stories };
+    dialogStoryViewerConfig.data = {
+      groupedStories: this.groupedStories,
+      startUserIndex: 0,
+      startStoryIndex: startIndex
+    };
     const dialogRef = this.dialog.open(StoryViewerComponent, dialogStoryViewerConfig);
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-    });
+  getStoriesView(username:string):boolean{
+    const userGroup = this.groupedStories.find(g => g.username === username)
+    if (!userGroup) return true;
+    return userGroup.stories.every(story => story.viewed);
+  }
+
+  trackByUsername(index: number, group: { username: string; stories: Story[] }): string {
+    return group.username;
   }
 
 

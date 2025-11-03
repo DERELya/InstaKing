@@ -12,11 +12,15 @@ import com.example.instaKing.repositories.UserRepository;
 import com.example.instaKing.security.SecurityConstants;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -77,9 +81,14 @@ public class StoryService {
         return fileName;
     }
 
-    public List<Story> getStoriesForUser(String username) {
+    public List<StoryDTO> getStoriesForUser(String username,Principal principal) {
+        User currnetUser = getUserByPrincipal(principal);
         User user=userRepository.findByUsername(username).orElse(null);
-        return storyRepository.getStoriesByUser(user);
+        List<StoryDTO> stories =storyRepository.getStoriesByUser(user)
+                .stream()
+                .map(story -> facade.storyToStoryDTO(story,currnetUser))
+                .collect(Collectors.toList());
+        return stories;
     }
 
     private User getUserByPrincipal(Principal principal) {
@@ -144,8 +153,18 @@ public class StoryService {
         }
         return storyRepository.getActiveStoriesByUsers(followings,LocalDateTime.now())
                 .stream()
-                .map(facade::storyToStoryDTO)
+                .map(story -> facade.storyToStoryDTO(story, user))
                 .collect(Collectors.toList());
+    }
+
+    public Resource getContent(String url) throws IOException {
+        Path filePath = Paths.get(UPLOAD_DIR_FOR_STORIES + url);
+        Resource resource = new UrlResource(filePath.toUri());
+        System.out.println(resource);
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new FileNotFoundException("Image file not found: " + url);
+        }
+        return resource;
     }
 }
 

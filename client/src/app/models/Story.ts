@@ -1,14 +1,16 @@
+import {StoryUser} from './StoryUser';
 
 export interface Story {
   id: number;
   username: string;
-  imageUrl: string;        // мапим с mediaUrl
+  mediaUrl: string;
   views: number;
   createdAt: string;
   expiresAt: string;
-  usersViewed: { username: string, viewedAt: string }[] | null;
+  usersViewed: StoryUser[] | null;
   viewed?: boolean;
   avatarUrl?: string;
+  blobUrl?: string;
 }
 
 

@@ -14,6 +14,7 @@ import {LikesPostComponent} from '../likes-post/likes-post.component';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {Subject, takeUntil} from 'rxjs';
 import {TimeAgoPipe} from '../../helper/time-ago.pipe';
+import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -49,7 +50,10 @@ export interface CommentPageResponse {
     NgIf,
     CommonModule,
     RouterLink,
-    TimeAgoPipe
+    TimeAgoPipe,
+    MatMenu,
+    MatMenuTrigger,
+    MatMenuItem
   ],
   templateUrl: './post-info.component.html',
   styleUrl: './post-info.component.css'
@@ -83,7 +87,6 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
     this.loadComments(0);
-    console.log(this.data.post);
   }
 
   ngOnDestroy(): void {

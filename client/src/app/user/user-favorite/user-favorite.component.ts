@@ -64,7 +64,6 @@ export class UserFavoriteComponent implements OnInit,OnDestroy{
 
     this.posts$ = this.postService.posts$ as Observable<UiPost[]>;
     this.isUserPostsLoaded = true;
-    console.log(this.posts$);
     this.cd.markForCheck();
   }
 
