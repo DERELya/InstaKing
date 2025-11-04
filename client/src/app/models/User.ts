@@ -4,6 +4,6 @@ export interface User{
   username: string;
   firstname: string;
   lastname: string;
-  bio?: string;
+  bio?: string| undefined;
   avatarUrl?: string;
 }

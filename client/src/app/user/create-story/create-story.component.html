@@ -1,0 +1,35 @@
+<div class="story-create-wrapper">
+  <!-- Левая часть: превью истории -->
+  <div class="story-preview" (click)="fileInput.click()">
+    <div class="story-header-on-image">
+      <img [src]="getUserImage(username) || 'assets/placeholder.jpg'" class="avatar" alt="User avatar" />
+      <span class="username">{{username }}</span>
+    </div>
+
+    <ng-container *ngIf="!previewImgURL; else imagePreview">
+      <div class="placeholder">
+        <mat-icon>add_photo</mat-icon>
+        <p>Нажми, чтобы выбрать фото</p>
+      </div>
+    </ng-container>
+
+    <ng-template #imagePreview>
+      <img [src]="previewImgURL" alt="Story preview" class="story-image" />
+    </ng-template>
+
+    <input type="file" hidden #fileInput (change)="onFileSelected($event)" accept="image/*" />
+  </div>
+
+  <!-- Правая часть: описание и кнопки -->
+  <div class="story-side-panel">
+    <mat-form-field appearance="outline" class="caption-input">
+      <mat-label>Описание</mat-label>
+      <textarea matInput [(ngModel)]="description" rows="4"></textarea>
+    </mat-form-field>
+
+    <div class="story-actions">
+      <button mat-flat-button color="primary" (click)="submit()">Добавить</button>
+      <button mat-stroked-button color="warn" (click)="close()">Отмена</button>
+    </div>
+  </div>
+</div>

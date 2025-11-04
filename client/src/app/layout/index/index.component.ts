@@ -29,6 +29,8 @@ import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
 import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
 import {Story} from '../../models/Story';
+import {AddPostComponent} from '../../user/add-post/add-post.component';
+import {CreateStoryComponent} from '../../user/create-story/create-story.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -74,7 +76,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUserIndex = 0;
   currentStoryIndex = 0;
 
-
+  usersWithStories: Set<string> = new Set();
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
 
@@ -89,6 +91,13 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.storyService.getUsersWithActiveStories().subscribe(usernames => {
+      this.groupedStories = usernames.map(username => ({
+        username,
+        loaded: false
+      }));
+      this.cd.markForCheck();
+    });
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
@@ -125,7 +134,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     this.storyService.loadFollowingStories().subscribe(stories => {
       this.stories = stories;
 
-      // Группируем истории по пользователю
       const map = new Map<string, Story[]>();
       stories.forEach(s => {
         if (!map.has(s.username!)) map.set(s.username!, []);
@@ -134,7 +142,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
 
-      // Инициализируем индексы
       this.currentUserIndex = 0;
       this.currentStoryIndex = 0;
       console.log(this.groupedStories);
@@ -308,18 +315,56 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  openStoryViewer(startIndex: number = 0): void {
-    if (!this.groupedStories || this.groupedStories.length === 0) return;
+  openStoryViewer(username: string, startStoryIndex: number = 0): void {
+    const startUserIndex = this.groupedStories.findIndex(g => g.username === username);
+    if (startUserIndex === -1) return;
 
-    const dialogStoryViewerConfig = new MatDialogConfig();
-    dialogStoryViewerConfig.width = '400px';
-    dialogStoryViewerConfig.data = {
-      groupedStories: this.groupedStories,
-      startUserIndex: 0,
-      startStoryIndex: startIndex
-    };
-    const dialogRef = this.dialog.open(StoryViewerComponent, dialogStoryViewerConfig);
+    const userGroup = this.groupedStories[startUserIndex];
+
+    if (!userGroup.loaded) {
+      this.storyService.getActiveStoriesForUser(username).subscribe(stories => {
+        userGroup.stories = stories;
+        userGroup.loaded = true;
+        this.openViewer(startUserIndex, startStoryIndex);
+      });
+    } else {
+      this.openViewer(startUserIndex, startStoryIndex);
+    }
   }
+  private openViewer(startUserIndex: number, startStoryIndex: number) {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width = '400px';
+    dialogConfig.data = {
+      groupedStories: this.groupedStories,
+      startUserIndex,
+      startStoryIndex
+    };
+
+    const dialogRef = this.dialog.open(StoryViewerComponent, dialogConfig);
+
+    // Подгружаем соседние пользователи заранее
+    this.preloadNeighborStories(startUserIndex);
+
+    // Подписка на перелистывание внутри StoryViewerComponent
+    dialogRef.componentInstance.userChanged?.subscribe((newIndex: number) => {
+      this.preloadNeighborStories(newIndex);
+    });
+  }
+
+  private preloadNeighborStories(index: number) {
+    const neighbors = [index - 1, index + 1];
+    for (const i of neighbors) {
+      if (i < 0 || i >= this.groupedStories.length) continue;
+      const user = this.groupedStories[i];
+      if (!user.loaded) {
+        this.storyService.getActiveStoriesForUser(user.username).subscribe(stories => {
+          user.stories = stories;
+          user.loaded = true;
+        });
+      }
+    }
+  }
+
 
   getStoriesView(username:string):boolean{
     const userGroup = this.groupedStories.find(g => g.username === username)
@@ -330,6 +375,20 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   trackByUsername(index: number, group: { username: string; stories: Story[] }): string {
     return group.username;
   }
+  trackByUsernameStory(index: number, group: { username: string;}): string {
+    return group.username;
+  }
 
 
+  openCreateStoryDialog() {
+      const dialogRef=this.dialog.open(CreateStoryComponent, {
+        maxWidth: '95vw',
+        maxHeight: '90vh'
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if ( this.user?.username) {
+          // Обновление счетчика постов происходит через подписку на postCountChanged$ в ngOnInit.
+        }
+      });
+  }
 }

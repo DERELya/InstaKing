@@ -7,6 +7,8 @@ import {User} from '../../models/User';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {ImageUploadService} from '../../services/image-upload.service';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-edit-user',
@@ -18,6 +20,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     MatInputModule,
     MatButtonModule,
     MatDialogModule,
+    NgIf,
 
   ],
   changeDetection: ChangeDetectionStrategy.Default,
@@ -27,12 +30,16 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 export class EditUserComponent implements OnInit {
 
   profileEditForm!: FormGroup;
+  previewImgURL: any;
+  selectedFile?: File;
+  userProfileImage?: string;
 
   constructor(private dialogRef: MatDialogRef<EditUserComponent>,
               private fb: FormBuilder,
               private notificationService: NotificationService,
               @Inject(MAT_DIALOG_DATA) public data: { user: User },
               private userService: UserService,
+              protected imageService: ImageUploadService,
               private cd: ChangeDetectorRef
   ) {
   }
@@ -54,6 +61,22 @@ export class EditUserComponent implements OnInit {
       this.profileEditForm.markAllAsTouched();
       return;
     }
+    if (this.selectedFile){
+      this.imageService.uploadImageToUser(this.selectedFile).subscribe({
+        next: () => {
+          if (this.previewImgURL) {
+            URL.revokeObjectURL(this.previewImgURL);
+            this.previewImgURL = undefined;
+          }
+          this.selectedFile = undefined;
+          this.notificationService.showSnackBar('Profile image updated successfully');
+        },
+        error: () => {
+          this.notificationService.showSnackBar('Upload failed');
+        }
+      });
+    }
+
     const dto = this.formToUser();
     this.userService.updateUser(dto).subscribe({
       next: () => {
@@ -70,6 +93,40 @@ export class EditUserComponent implements OnInit {
     const {firstname, lastname, bio} = this.profileEditForm.value;
     this.cd.markForCheck();
     return {...this.data.user, firstname, lastname, bio};
+  }
+  onFileSelected(evt: Event): void {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) {
+      return;
+    }
+
+    const file = input.files[0];
+    this.selectedFile = file;
+    /* создаём превью */
+    this.previewImgURL = URL.createObjectURL(file);
+    console.log('test:' + this.previewImgURL);
+  }
+
+  onUpload(): void {
+    if (!this.selectedFile) return;
+  }
+
+  getUserImage(username: string): string {
+
+    this.userProfileImage = 'assets/placeholder.jpg';
+    this.imageService.getImageToUser(username)
+      .subscribe({
+        next: blob => {
+          const preview = URL.createObjectURL(blob);
+          this.userProfileImage = preview;
+          this.cd.markForCheck();
+        },
+        error: () => {
+          this.userProfileImage = 'assets/placeholder.jpg';
+          this.cd.markForCheck();
+        }
+      });
+    return this.userProfileImage;
   }
 
   closeDialog() {

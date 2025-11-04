@@ -112,18 +112,7 @@ export class StoryService {
   }
 
 
-  /** 🔹 Получить контент (blob URL) для сторис */
-  private getStoryBlobUrl(mediaUrl: string): Observable<string> {
-    if (!mediaUrl) return of('');
 
-    return this.getContentForStory(mediaUrl).pipe(
-      map((blob) => URL.createObjectURL(blob)),
-      catchError((err) => {
-        console.error('Ошибка загрузки содержимого сторис:', err);
-        return of('');
-      })
-    );
-  }
 
   /** 🔹 Получить изображение пользователя (аватар) */
   private getUserImage(username: string): Observable<string> {
@@ -141,4 +130,51 @@ export class StoryService {
       .pipe(shareReplay(1));
   }
 
+  getActiveStoriesForUser(username: string): Observable<Story[]>
+  {
+    return this.http.get<Story[]>(`${this.api}getActiveStoriesForUser/${username}`).pipe(
+      map(stories =>
+        (stories || []).map(story => ({
+          ...story,
+          usersViewed: story.usersViewed
+            ? Object.entries(story.usersViewed).map(([username, viewedAt], idx) => ({
+              id: idx,
+              username,
+              viewedAt: viewedAt as unknown as string
+            }))
+            : []
+        }))
+      ),
+      switchMap(stories => {
+        if (stories.length === 0) return of([]);
+
+        const withDetails$ = stories.map(story =>
+          forkJoin({
+            avatarUrl: this.getUserImage(story.username)
+            // blobUrl: this.getStoryBlobUrl(story.mediaUrl) // если потом вернёшь
+          }).pipe(
+            map(extra => ({
+              ...story,
+              avatarUrl: extra.avatarUrl
+              // blobUrl: extra.blobUrl
+            }))
+          )
+        );
+
+        return forkJoin(withDetails$);
+      }),
+      tap(stories => this.storiesSubject.next(stories)),
+      catchError(err => {
+        console.error('Ошибка при получении сторис:', err);
+        return of([]);
+      })
+    );
+  }
+
+  hasActiveStoriesForUser(username: string): Observable<boolean>{
+    return this.http.get<boolean>(`${this.api}hasActiveStoriesForUser/${username}`);
+  }
+  getUsersWithActiveStories() {
+    return this.http.get<string[]>(`${this.api}getUsernameActiveStoriesForMe`);
+  }
 }

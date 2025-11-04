@@ -1,26 +1,25 @@
 
-<div class="stories-bar" *ngIf="groupedStories?.length">
-<div class="stories-scroll">
+<div class="stories-bar" >
   <div  class="add-story-custom-btn" >
-    <div class="circle" >
+    <div class="circle" (click)="openCreateStoryDialog()" >
       <span class="plus-sign">+</span>
     </div>
-    <div class="add-label">Добавить</div>
+    <div class="add-label">История</div>
   </div>
+<div class="stories-scroll">
+
   <div
-    *ngFor="let userStories of groupedStories; let i = index; trackBy: trackByUsername"
-    class="story-avatar"
-  >
+    *ngFor="let userS of usersWithStories; let i = index"
+    class="story-avatar">
 
   <img
-      [src]="getUserImage(userStories.username)"
-      [ngClass]="{ 'viewed': getStoriesView(userStories.username), 'not-viewed': !getStoriesView(userStories.username) }"
-      (click)="openStoryViewer(i)"
+      [src]="getUserImage(userS)"
+      [ngClass]="{ 'viewed': getStoriesView(userS), 'not-viewed': !getStoriesView(userS) }"
+      (click)="openStoryViewer(userS)"
       alt="story avatar"
     />
-    <span class="story-username">{{ userStories.username }}</span>
+    <span class="story-username">{{ userS }}</span>
   </div>
-
 
 </div>
 </div>

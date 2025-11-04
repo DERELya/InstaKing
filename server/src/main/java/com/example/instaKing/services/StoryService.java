@@ -90,6 +90,41 @@ public class StoryService {
                 .collect(Collectors.toList());
         return stories;
     }
+    public List<StoryDTO> getActiveStoriesForUser(String username,Principal principal) {
+        User currnetUser = getUserByPrincipal(principal);
+        User user=userRepository.findByUsername(username).orElse(null);
+        List<StoryDTO> stories =storyRepository.getActiveStoryByUser(user,LocalDateTime.now())
+                .stream()
+                .map(story -> facade.storyToStoryDTO(story,currnetUser))
+                .collect(Collectors.toList());
+        return stories;
+    }
+    public boolean hasActiveStory(String username) {
+        User user=userRepository.findByUsername(username).orElse(null);
+        List<Story> stories=storyRepository.getActiveStoryByUser(user,LocalDateTime.now());
+        if(stories.size()>0){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public List<String> getUsersStories(Principal principal) {
+        User user=getUserByPrincipal(principal);
+        List<User> followings=List.copyOf(user.getFollowing());
+        if (followings.isEmpty()) {
+            return List.of();
+        }
+        List<StoryDTO> stories =storyRepository.getActiveStoriesByUsers(followings,LocalDateTime.now())
+                .stream()
+                .map(story -> facade.storyToStoryDTO(story, user))
+                .collect(Collectors.toList());
+        List<String> userStories = stories.stream()
+                .map(s->s.getUsername())
+                .collect(Collectors.toList());
+        return userStories;
+    }
 
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();

@@ -49,7 +49,6 @@ export class AddPostComponent implements OnInit {
     if (!this.username) {
       this.username = this.tokenService.getUsernameFromToken();
     }
-    console.log(this.username);
     this.postForm = this.createPostForm();
   }
 

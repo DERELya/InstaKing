@@ -18,4 +18,7 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
 
     @Query("SELECT s FROM Story s WHERE s.user IN :users AND s.expiresAt > :now")
     List<Story> getActiveStoriesByUsers(List<User> users, LocalDateTime now);
+
+    @Query("SELECT s FROM Story s WHERE s.user=:user AND s.expiresAt > :now")
+    List<Story> getActiveStoryByUser(User user, LocalDateTime now);
 }

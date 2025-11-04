@@ -59,7 +59,7 @@ export class ImageUploadService {
     }
     const req = this.http.get(IMAGE_API+'profileImage/'+username,{responseType: 'blob'}).pipe(shareReplay(1));
     this.userImageCache.set(username, req);
-    return req;
+    return req || 'assets/default-avatar.jpg';
   }
 
   clearUserImageCache(username?: string) {

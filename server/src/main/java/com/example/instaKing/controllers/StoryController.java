@@ -2,6 +2,7 @@ package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.StoryDTO;
 import com.example.instaKing.dto.StoryViewDTO;
+import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.facade.Facade;
 import com.example.instaKing.models.Story;
 import com.example.instaKing.models.User;
@@ -54,10 +55,23 @@ public class StoryController {
     @GetMapping("/getStoriesForUser/{username}")
     public ResponseEntity<List<StoryDTO>> getStoriesForUser(@PathVariable String username,Principal principal) {
         List<StoryDTO> storyDTOList = storyService.getStoriesForUser(username,principal);
-
-
         return new ResponseEntity<>(storyDTOList, HttpStatus.OK);
     }
+
+    @GetMapping("/getActiveStoriesForUser/{username}")
+    public ResponseEntity<List<StoryDTO>> getActiveStoriesForUser(@PathVariable String username,Principal principal) {
+        List<StoryDTO> storyDTOList = storyService.getActiveStoriesForUser(username,principal);
+        return new ResponseEntity<>(storyDTOList, HttpStatus.OK);
+    }
+    @GetMapping("/hasActiveStoriesForUser/{username}")
+    public ResponseEntity<Boolean> hasActiveStoriesForUser(@PathVariable String username) {
+        return new ResponseEntity<>(storyService.hasActiveStory(username), HttpStatus.OK);
+    }
+    @GetMapping("/getUsernameActiveStoriesForMe")
+    public ResponseEntity<List<String>> getActiveUsernameStoriesForMe(Principal principal) {
+        return new ResponseEntity<>(storyService.getUsersStories(principal), HttpStatus.OK);
+    }
+
 
     @PostMapping("/{storyId}/view")
     public ResponseEntity<Object> addView(@PathVariable Long storyId, Principal principal) {

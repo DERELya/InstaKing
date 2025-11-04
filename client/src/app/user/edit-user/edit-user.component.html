@@ -2,7 +2,23 @@
 
 <form [formGroup]="profileEditForm" (ngSubmit)="submit()">
   <mat-dialog-content>
-
+    <div class="profile-avatar-block">
+      <label class="profile-avatar-upload-label" >
+        <img [src]="previewImgURL || getUserImage(data.user.username) || 'assets/placeholder.jpg'"
+             alt="avatar"
+             class="profile-avatar"
+             >
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          hidden
+        />
+        <div  class="avatar-overlay">
+          <span class="avatar-overlay-text">Изменить фото</span>
+        </div>
+      </label>
+    </div>
     <mat-form-field appearance="outline" class="w-100">
       <mat-label>First name</mat-label>
       <input matInput formControlName="firstname"autocomplete="off" />

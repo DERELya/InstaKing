@@ -13,6 +13,10 @@ import { FollowingComponent } from '../following/following.component';
 import {filter, forkJoin, of, Subject, switchMap, takeUntil} from 'rxjs';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
+import {Story} from '../../models/Story';
+import {StoryService} from '../../services/story.service';
+import {hash} from 'crypto';
+import {StoryViewerComponent} from '../story-viewer/story-viewer.component';
 
 @Component({
   selector: 'app-profile',
@@ -43,6 +47,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   followingCount: number = 0;
   isFollow: boolean = false;
   profileUsername!: string | null;
+  stories: Story[] = [];
+  groupedStories: { username: string; stories: Story[] }[] = [];
+  currentUserIndex = 0;
+  currentStoryIndex = 0;
+  hasStory: boolean = false;
 
   constructor(
     private tokenService: TokenStorageService,
@@ -53,7 +62,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     protected userService: UserService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private storyService:StoryService
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +111,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.user?.username && this.isCurrentUser) this.refreshProfileData();
       });
+
   }
 
   // Создаем отдельный метод для обновления данных профиля, чтобы избежать дублирования кода.
@@ -125,6 +136,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.user = user;
         this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
         this.isUserDataLoaded = true;
+        this.checkHasStory(user.username);
         return forkJoin({
           avatar: this.imageService.getImageToUser(profileUsername),
           followers: this.userService.getFollowers(profileUsername),
@@ -147,6 +159,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.followingCount = data.following?.length ?? 0;
     this.postsCount = Array.isArray(data.posts) ? data.posts.length : 0;
     this.isFollow = data.isFollow ?? false;
+
   }
 
   setDefaultState() {
@@ -159,38 +172,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.followingCount = 0;
     this.isFollow = false;
     this.cd.markForCheck();
-  }
-
-
-  onFileSelected(evt: Event): void {
-    const input = evt.target as HTMLInputElement;
-    if (!input.files?.length) {
-      return;
-    }
-    const file = input.files[0];
-    this.selectedFile = file;
-    if (this.previewUrl) {
-      URL.revokeObjectURL(this.previewUrl);
-    }
-    this.previewUrl = URL.createObjectURL(file);
-  }
-
-  onUpload(): void {
-    if (!this.selectedFile) return;
-
-    this.imageService.uploadImageToUser(this.selectedFile).subscribe({
-      next: () => {
-        if (this.previewUrl) {
-          URL.revokeObjectURL(this.previewUrl);
-          this.previewUrl = undefined;
-        }
-        this.selectedFile = undefined;
-        this.notificationService.showSnackBar('Profile image updated successfully');
-      },
-      error: () => {
-        this.notificationService.showSnackBar('Upload failed');
-      }
-    });
   }
 
   openEditDialog(): void {
@@ -223,7 +204,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -254,6 +234,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadActiveStories(username:string){
+  this.storyService.getActiveStoriesForUser(username).subscribe(stories => {
+    this.stories = stories;
+    const map = new Map<string, Story[]>();
+    stories.forEach(s => {
+      if (!map.has(s.username!)) map.set(s.username!, []);
+      map.get(s.username!)!.push(s);
+    });
+    this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
+
+    this.currentUserIndex = 0;
+    this.currentStoryIndex = 0;
+    this.cd.markForCheck();
+    console.log(this.groupedStories);
+  });
+}
+
   follow(username: string) {
     this.userService.follow(username).subscribe(() => {
       if (this.user?.username) {
@@ -270,4 +267,40 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
+  checkHasStory(username: string) {
+    this.storyService.hasActiveStoriesForUser(username)
+      .subscribe(result => {
+        this.hasStory = result;
+        this.cd.markForCheck();
+      });
+  }
+
+  isLoadingStories = false;
+
+  openStoryViewer(startIndex: number = 0): void {
+    this.isLoadingStories = true;
+    this.cd.markForCheck();
+
+    this.storyService.getActiveStoriesForUser(this.user!.username).subscribe(stories => {
+      this.isLoadingStories = false;
+      this.cd.markForCheck();
+
+      const map = new Map<string, Story[]>();
+      stories.forEach(s => {
+        if (!map.has(s.username!)) map.set(s.username!, []);
+        map.get(s.username!)!.push(s);
+      });
+      this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
+
+      const dialogStoryViewerConfig = new MatDialogConfig();
+      dialogStoryViewerConfig.width = '400px';
+      dialogStoryViewerConfig.data = {
+        groupedStories: this.groupedStories,
+        startUserIndex: 0,
+        startStoryIndex: startIndex
+      };
+
+      this.dialog.open(StoryViewerComponent, dialogStoryViewerConfig);
+    });
+  }
 }
