@@ -87,6 +87,8 @@ export class CreateStoryComponent implements OnInit {
     }
     const formData = new FormData();
     formData.append('file', this.selectedFile);
+    formData.append('storyDTO', this.description);
+    console.log(this.description);
     this.storyService.createStory(formData)
       .pipe(
         takeUntil(this.destroy$),

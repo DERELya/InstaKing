@@ -1,5 +1,6 @@
 package com.example.instaKing.controllers;
 
+import com.example.instaKing.dto.ResponseForStoryMain;
 import com.example.instaKing.dto.StoryDTO;
 import com.example.instaKing.dto.StoryViewDTO;
 import com.example.instaKing.dto.UserDTO;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @CrossOrigin
@@ -68,7 +70,7 @@ public class StoryController {
         return new ResponseEntity<>(storyService.hasActiveStory(username), HttpStatus.OK);
     }
     @GetMapping("/getUsernameActiveStoriesForMe")
-    public ResponseEntity<List<String>> getActiveUsernameStoriesForMe(Principal principal) {
+    public ResponseEntity<Map<String,Boolean>> getActiveUsernameStoriesForMe(Principal principal) {
         return new ResponseEntity<>(storyService.getUsersStories(principal), HttpStatus.OK);
     }
 

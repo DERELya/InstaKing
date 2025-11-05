@@ -1,9 +1,6 @@
 package com.example.instaKing.facade;
 
-import com.example.instaKing.dto.FavoriteDTO;
-import com.example.instaKing.dto.PostDTO;
-import com.example.instaKing.dto.StoryDTO;
-import com.example.instaKing.dto.StoryViewDTO;
+import com.example.instaKing.dto.*;
 import com.example.instaKing.models.*;
 import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +57,7 @@ public class Facade {
         storyDTO.setCreatedAt(story.getCreatedAt());
         storyDTO.setExpiresAt(story.getExpiresAt());
         storyDTO.setUsername(story.getUser().getUsername());
+        storyDTO.setDescription(story.getDescription());
         Map<String, LocalDateTime> viewedMap = story.getViewsDetails()
                 .stream()
                 .collect(Collectors.toMap(
@@ -72,6 +70,13 @@ public class Facade {
                 .anyMatch(v -> v.getUser().getUsername().equals(currentUser.getUsername()));
         storyDTO.setViewed(viewed);
         return storyDTO;
+    }
+
+    public ResponseForStoryMain storyDTOToResponse(StoryDTO storydto ) {
+        ResponseForStoryMain result= new ResponseForStoryMain();
+        result.setUsername(storydto.getUsername());
+        result.setViewed(storydto.isViewed());
+        return result;
     }
 
 }

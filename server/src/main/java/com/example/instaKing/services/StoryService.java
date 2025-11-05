@@ -1,5 +1,6 @@
 package com.example.instaKing.services;
 
+import com.example.instaKing.dto.ResponseForStoryMain;
 import com.example.instaKing.dto.StoryDTO;
 import com.example.instaKing.dto.StoryViewDTO;
 import com.example.instaKing.facade.Facade;
@@ -20,15 +21,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.instaKing.security.SecurityConstants.UPLOAD_DIR_FOR_POSTS;
@@ -57,6 +57,7 @@ public class StoryService {
         story.setUser(user);
         story.setViews(0);
         story.setMediaUrl(mediaUrl);
+        story.setDescription(storyDTO.getDescription());
 
         return storyRepository.save(story);
     }
@@ -110,21 +111,28 @@ public class StoryService {
         }
     }
 
-    public List<String> getUsersStories(Principal principal) {
-        User user=getUserByPrincipal(principal);
-        List<User> followings=List.copyOf(user.getFollowing());
+    public Map<String,Boolean> getUsersStories(Principal principal) {
+        User currentUser = getUserByPrincipal(principal);
+        List<User> followings = List.copyOf(currentUser.getSubscribedBy());
         if (followings.isEmpty()) {
-            return List.of();
+            return Map.of();
         }
-        List<StoryDTO> stories =storyRepository.getActiveStoriesByUsers(followings,LocalDateTime.now())
-                .stream()
-                .map(story -> facade.storyToStoryDTO(story, user))
-                .collect(Collectors.toList());
-        List<String> userStories = stories.stream()
-                .map(s->s.getUsername())
-                .collect(Collectors.toList());
-        return userStories;
+        List<Story> stories = storyRepository.getActiveStoriesByUsers(followings, LocalDateTime.now());
+
+        Map<User, List<Story>> storiesByUser = stories.stream()
+                .collect(Collectors.groupingBy(Story::getUser));
+
+        return storiesByUser.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().getUsername(),
+                        entry -> entry.getValue().stream().allMatch(story ->
+                                story.getViewsDetails().stream()
+                                        .anyMatch(view -> view.getUser().getUsername().equals(currentUser.getUsername()))
+                        )
+                ));
     }
+
+
 
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();

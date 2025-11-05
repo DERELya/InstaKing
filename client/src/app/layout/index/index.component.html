@@ -9,16 +9,19 @@
 <div class="stories-scroll">
 
   <div
-    *ngFor="let userS of usersWithStories; let i = index"
-    class="story-avatar">
-
+    *ngFor="let entry of usersWithStories | keyvalue: keepOrder; trackBy: trackByUsername"
+    class="story-avatar"
+  >
   <img
-      [src]="getUserImage(userS)"
-      [ngClass]="{ 'viewed': getStoriesView(userS), 'not-viewed': !getStoriesView(userS) }"
-      (click)="openStoryViewer(userS)"
+      [src]="getUserImage(entry.key)"
+      [ngClass]="{
+        'viewed': entry.value,
+        'not-viewed': !entry.value
+      }"
+      (click)="openStoryViewer(entry.key)"
       alt="story avatar"
     />
-    <span class="story-username">{{ userS }}</span>
+    <span class="story-username">{{ entry.key }}</span>
   </div>
 
 </div>

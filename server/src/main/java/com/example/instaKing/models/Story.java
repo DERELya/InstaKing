@@ -25,6 +25,8 @@ public class Story {
 
     private int views;
 
+    private String description;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

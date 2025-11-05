@@ -11,6 +11,7 @@ export interface Story {
   viewed?: boolean;
   avatarUrl?: string;
   blobUrl?: string;
+  description?: string;
 }
 
 

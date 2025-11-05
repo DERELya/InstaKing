@@ -29,7 +29,6 @@ import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../user/post-info/post-info.component';
 import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
 import {Story} from '../../models/Story';
-import {AddPostComponent} from '../../user/add-post/add-post.component';
 import {CreateStoryComponent} from '../../user/create-story/create-story.component';
 
 interface UiPost extends Post {
@@ -72,11 +71,11 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 2;
   isLoading = false;
   noMorePosts = false;
-  groupedStories: { username: string; stories: Story[] }[] = [];
+  groupedStories: { username: string; stories: Story[]; loaded?: boolean }[] = [];
   currentUserIndex = 0;
   currentStoryIndex = 0;
 
-  usersWithStories: Set<string> = new Set();
+  usersWithStories: Record<string, boolean> = {};
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
 
@@ -91,13 +90,19 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.storyService.getUsersWithActiveStories().subscribe(usernames => {
-      this.groupedStories = usernames.map(username => ({
-        username,
-        loaded: false
-      }));
-      this.cd.markForCheck();
-    });
+    this.storyService.getUsersWithActiveStories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response: Record<string, boolean>) => {
+        this.usersWithStories = response;
+        console.log(response);
+        this.groupedStories = Object.keys(response).map(u => ({
+          username: u,
+          stories: [],
+          loaded: false
+        }));
+        this.cd.markForCheck();
+      });
+
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
@@ -131,22 +136,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.resetPaging();
       this.loadPosts();
     });
-    this.storyService.loadFollowingStories().subscribe(stories => {
-      this.stories = stories;
-
-      const map = new Map<string, Story[]>();
-      stories.forEach(s => {
-        if (!map.has(s.username!)) map.set(s.username!, []);
-        map.get(s.username!)!.push(s);
-      });
-
-      this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
-
-      this.currentUserIndex = 0;
-      this.currentStoryIndex = 0;
-      console.log(this.groupedStories);
-    });
-
 
   }
 
@@ -316,21 +305,72 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openStoryViewer(username: string, startStoryIndex: number = 0): void {
-    const startUserIndex = this.groupedStories.findIndex(g => g.username === username);
-    if (startUserIndex === -1) return;
+    const userGroup = this.groupedStories.find(g => g.username === username);
+    if (!userGroup) return;
 
-    const userGroup = this.groupedStories[startUserIndex];
+    const startUserIndex = this.groupedStories.indexOf(userGroup);
+
+    const openDialog = () => {
+      const dialogRef = this.dialog.open(StoryViewerComponent, {
+        width: '400px',
+        data: {
+          groupedStories: this.groupedStories,
+          startUserIndex,
+          startStoryIndex
+        }
+      });
+
+      // Подгружаем соседние сторис для плавного пролистывания
+      this.preloadNeighborStories(startUserIndex);
+
+      // Подписка на смену пользователя
+      dialogRef.componentInstance.userChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((newIndex: number) => {
+          this.preloadNeighborStories(newIndex);
+        });
+
+      // После закрытия диалога обновляем статус просмотра
+      dialogRef.afterClosed().subscribe(() => {
+        this.storyService.getUsersWithActiveStories()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(response => {
+            this.usersWithStories = response; // теперь Record<string, boolean>
+            this.cd.markForCheck();
+          });
+      });
+    }
 
     if (!userGroup.loaded) {
-      this.storyService.getActiveStoriesForUser(username).subscribe(stories => {
-        userGroup.stories = stories;
-        userGroup.loaded = true;
-        this.openViewer(startUserIndex, startStoryIndex);
-      });
+      this.storyService.getActiveStoriesForUser(username)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(stories => {
+          userGroup.stories = stories;
+          userGroup.loaded = true;
+          openDialog();
+        });
     } else {
-      this.openViewer(startUserIndex, startStoryIndex);
+      openDialog();
     }
   }
+
+
+  private preloadNeighborStories(index: number) {
+    const neighbors = [index - 1, index + 1];
+    for (const i of neighbors) {
+      if (i < 0 || i >= this.groupedStories.length) continue;
+      const group = this.groupedStories[i];
+      if (!group.loaded) {
+        this.storyService.getActiveStoriesForUser(group.username)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(stories => {
+            group.stories = stories;
+            group.loaded = true;
+          });
+      }
+    }
+  }
+
   private openViewer(startUserIndex: number, startStoryIndex: number) {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.width = '400px';
@@ -345,24 +385,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     // Подгружаем соседние пользователи заранее
     this.preloadNeighborStories(startUserIndex);
 
-    // Подписка на перелистывание внутри StoryViewerComponent
-    dialogRef.componentInstance.userChanged?.subscribe((newIndex: number) => {
-      this.preloadNeighborStories(newIndex);
-    });
-  }
-
-  private preloadNeighborStories(index: number) {
-    const neighbors = [index - 1, index + 1];
-    for (const i of neighbors) {
-      if (i < 0 || i >= this.groupedStories.length) continue;
-      const user = this.groupedStories[i];
-      if (!user.loaded) {
-        this.storyService.getActiveStoriesForUser(user.username).subscribe(stories => {
-          user.stories = stories;
-          user.loaded = true;
-        });
-      }
-    }
   }
 
 
@@ -372,11 +394,13 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     return userGroup.stories.every(story => story.viewed);
   }
 
-  trackByUsername(index: number, group: { username: string; stories: Story[] }): string {
-    return group.username;
+  trackByUsername(index: number, entry: { key: string; value: boolean }): string {
+    return entry.key;
   }
-  trackByUsernameStory(index: number, group: { username: string;}): string {
-    return group.username;
+
+  keepOrder = () => 0;
+  trackByUsernameStory(index: number, entry: any): string {
+    return entry.key;
   }
 
 

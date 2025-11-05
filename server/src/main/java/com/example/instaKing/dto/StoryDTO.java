@@ -5,6 +5,7 @@ import com.example.instaKing.models.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,5 +25,7 @@ public class StoryDTO {
     private LocalDateTime expiresAt;
     private Map<String,LocalDateTime> usersViewed;
     private boolean viewed;
+    private String description;
+
 
 }

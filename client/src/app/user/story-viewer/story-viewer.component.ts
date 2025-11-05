@@ -9,6 +9,7 @@ import {Router, RouterLink,RouterModule} from '@angular/router';
 import {MatProgressBar} from '@angular/material/progress-bar';
 import {UserService} from '../../services/user.service';
 import {User} from '../../models/User';
+import { EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-story-viewer',
@@ -18,6 +19,7 @@ import {User} from '../../models/User';
   imports: [NgForOf, NgIf, DatePipe, RouterLink, MatProgressBar],
 })
 export class StoryViewerComponent implements OnInit, OnDestroy {
+  @Output() userChanged = new EventEmitter<number>();
 
   groupedStories: { username: string; stories: Story[] }[] = [];
   currentUserIndex = 0;
@@ -151,6 +153,7 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
     } else if (this.currentUserIndex < this.groupedStories.length - 1) {
       this.currentUserIndex++;
       this.currentStoryIndex = 0;
+      this.userChanged.emit(this.currentUserIndex); // вот это добавляем
     } else {
       this.closeViewer();
       return;
@@ -168,10 +171,12 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
       this.currentUserIndex--;
       const prevGroup = this.groupedStories[this.currentUserIndex];
       this.currentStoryIndex = prevGroup.stories.length - 1;
+      this.userChanged.emit(this.currentUserIndex); // и это тоже
     }
     this.loadCurrentStoryImage();
     this.resetProgress();
   }
+
 
   closeViewer(): void {
     if (this.rafId) {

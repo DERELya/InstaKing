@@ -50,7 +50,6 @@ public class User implements UserDetails {
     )
     private Set<User> following = new HashSet<>();
 
-    // Пользователи, которые подписаны на меня
     @ManyToMany(mappedBy = "following")
     private Set<User> followers = new HashSet<>();
 
@@ -76,12 +75,6 @@ public class User implements UserDetails {
     protected void onCreate() {
         this.createdDate = LocalDateTime.now();
     }
-
-
-
-    /**
-     * SECURITY
-     */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -128,5 +121,15 @@ public class User implements UserDetails {
     public int hashCode() {
         return Objects.hash(username);
     }
+
+    //получение подписчиков
+    public Set<User> getSubscribedTo() {
+        return following;
+    }
+    //получение подписок
+    public Set<User> getSubscribedBy() {
+        return followers;
+    }
+
 }
 

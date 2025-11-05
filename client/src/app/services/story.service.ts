@@ -174,7 +174,7 @@ export class StoryService {
   hasActiveStoriesForUser(username: string): Observable<boolean>{
     return this.http.get<boolean>(`${this.api}hasActiveStoriesForUser/${username}`);
   }
-  getUsersWithActiveStories() {
-    return this.http.get<string[]>(`${this.api}getUsernameActiveStoriesForMe`);
+  getUsersWithActiveStories():Observable<Record<string,boolean>> {
+    return this.http.get<Record<string, boolean>>(`${this.api}getUsernameActiveStoriesForMe`);
   }
 }
