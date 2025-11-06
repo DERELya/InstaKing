@@ -1,5 +1,6 @@
 package com.example.instaKing.models;
 
+import com.example.instaKing.models.enums.StoryVisibility;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,6 +27,10 @@ public class Story {
     private int views;
 
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    private StoryVisibility visibility = StoryVisibility.PUBLIC;
+
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

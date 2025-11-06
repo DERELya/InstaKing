@@ -56,6 +56,16 @@ public class User implements UserDetails {
     @Transient
     private Collection<? extends GrantedAuthority> authorities;
 
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_close_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private Set<User> closeFriends = new HashSet<>();
+
+
     public User() {
     }
 

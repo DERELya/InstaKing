@@ -7,6 +7,7 @@ import com.example.instaKing.facade.Facade;
 import com.example.instaKing.models.Story;
 import com.example.instaKing.models.StoryView;
 import com.example.instaKing.models.User;
+import com.example.instaKing.models.enums.StoryVisibility;
 import com.example.instaKing.repositories.StoryRepository;
 import com.example.instaKing.repositories.StoryViewRepository;
 import com.example.instaKing.repositories.UserRepository;
@@ -49,15 +50,15 @@ public class StoryService {
         this.facade = facade;
     }
 
-    public Story createStory(StoryDTO storyDTO, Principal principal, MultipartFile file) throws IOException {
-        String mediaUrl = uploadContent(file);
+    public Story createStory(StoryDTO storyDTO, Principal principal) throws IOException {
+        String mediaUrl = uploadContent(storyDTO.getFile());
         User user = getUserByPrincipal(principal);
-        System.out.println("service"+user.getUsername());
         Story story = new Story();
         story.setUser(user);
         story.setViews(0);
         story.setMediaUrl(mediaUrl);
         story.setDescription(storyDTO.getDescription());
+        story.setVisibility(storyDTO.getVisibility());
 
         return storyRepository.save(story);
     }
@@ -91,35 +92,81 @@ public class StoryService {
                 .collect(Collectors.toList());
         return stories;
     }
-    public List<StoryDTO> getActiveStoriesForUser(String username,Principal principal) {
-        User currnetUser = getUserByPrincipal(principal);
-        User user=userRepository.findByUsername(username).orElse(null);
-        List<StoryDTO> stories =storyRepository.getActiveStoryByUser(user,LocalDateTime.now())
-                .stream()
-                .map(story -> facade.storyToStoryDTO(story,currnetUser))
+    public List<StoryDTO> getActiveStoriesForUser(String username, Principal principal) {
+        User currentUser = getUserByPrincipal(principal);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        List<Story> stories = storyRepository.getActiveStoryByUser(user, LocalDateTime.now());
+        if (currentUser==user){
+            return stories.stream()
+                    .map(s->facade.storyToStoryDTO(s,currentUser))
+                    .collect(Collectors.toList());
+        }
+        List<Story> visibleStories = stories.stream()
+                .filter(story -> {
+                    StoryVisibility visibility = story.getVisibility();
+
+                    if (visibility == null) {
+                        return true;
+                    }
+
+                    switch (visibility) {
+                        case PUBLIC:
+                            return true;
+
+                        case FOLLOWERS_ONLY:
+                            return user.getFollowers().contains(currentUser);
+
+                        case FRIENDS:
+                            return user.getFollowers().contains(currentUser)
+                                    && user.getFollowing().contains(currentUser);
+
+                        default:
+                            return false;
+                    }
+                })
                 .collect(Collectors.toList());
-        return stories;
+
+        // Преобразуем в DTO
+        return visibleStories.stream()
+                .map(story -> facade.storyToStoryDTO(story, currentUser))
+                .collect(Collectors.toList());
     }
+
     public boolean hasActiveStory(String username) {
         User user=userRepository.findByUsername(username).orElse(null);
         List<Story> stories=storyRepository.getActiveStoryByUser(user,LocalDateTime.now());
-        if(stories.size()>0){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return !stories.isEmpty();
     }
 
-    public Map<String,Boolean> getUsersStories(Principal principal) {
+    public Map<String, Boolean> getUsersStories(Principal principal) {
         User currentUser = getUserByPrincipal(principal);
         List<User> followings = List.copyOf(currentUser.getSubscribedBy());
         if (followings.isEmpty()) {
             return Map.of();
         }
+
         List<Story> stories = storyRepository.getActiveStoriesByUsers(followings, LocalDateTime.now());
 
-        Map<User, List<Story>> storiesByUser = stories.stream()
+        List<Story> visibleStories = stories.stream()
+                .filter(story -> {
+                    User owner = story.getUser();
+                    StoryVisibility visibility = story.getVisibility();
+
+                    if (visibility == StoryVisibility.PUBLIC) {
+                        return true;
+                    } else if (visibility == StoryVisibility.FOLLOWERS_ONLY) {
+                        return owner.getSubscribedBy().contains(currentUser);
+                    } else if (visibility == StoryVisibility.FRIENDS) {
+                        return owner.getSubscribedBy().contains(currentUser)
+                                && owner.getSubscribedTo().contains(currentUser);
+                    }
+                    return false;
+                })
+                .toList();
+
+        Map<User, List<Story>> storiesByUser = visibleStories.stream()
                 .collect(Collectors.groupingBy(Story::getUser));
 
         return storiesByUser.entrySet().stream()
@@ -131,6 +178,17 @@ public class StoryService {
                         )
                 ));
     }
+
+    private boolean isStoryVisibleToUser(Story story, User viewer) {
+        User owner = story.getUser();
+
+        return switch (story.getVisibility()) {
+            case PUBLIC -> true;
+            case FOLLOWERS_ONLY -> owner.getSubscribedBy().contains(viewer);
+            case FRIENDS -> owner.getCloseFriends().contains(viewer);
+        };
+    }
+
 
 
 

@@ -26,6 +26,15 @@
       <mat-label>Описание</mat-label>
       <textarea matInput [(ngModel)]="description" rows="4"></textarea>
     </mat-form-field>
+    <mat-form-field appearance="outline" class="caption-input">
+      <mat-label>Кто может видеть сторис</mat-label>
+      <mat-select [(ngModel)]="visibility" name="visibility">
+        <mat-option [value]="StoryVisibility.PUBLIC">Все</mat-option>
+        <mat-option [value]="StoryVisibility.FOLLOWERS_ONLY">Только подписчики</mat-option>
+        <mat-option [value]="StoryVisibility.FRIENDS">Близкие друзья</mat-option>
+      </mat-select>
+    </mat-form-field>
+
 
     <div class="story-actions">
       <button mat-flat-button color="primary" (click)="submit()">Добавить</button>

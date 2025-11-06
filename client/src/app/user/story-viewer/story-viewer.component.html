@@ -4,6 +4,7 @@
     <div [routerLink]="['/profile', currentStory?.username]" (click)="goToProfile()">
       <img [src]="getUserImage(currentStory?.username) || 'assets/placeholder.jpg'" alt="avatar" class="avatar" >
       <span class="username">{{ currentStory?.username }}</span>
+
     </div>
 
     <button class="close-btn" (click)="closeViewer()">✕</button>
@@ -24,8 +25,13 @@
   <div class="story-content">
     <div class="story-container" *ngIf="currentStory">
       <img [src]="currentStory.blobUrl || currentStory.mediaUrl || 'assets/placeholder.jpg'" alt="story">
+      <div class="story-description-overlay" *ngIf="currentStory?.description">
+        {{ currentStory.description }}
+      </div>
     </div>
+
   </div>
+
 
   <!-- NAVIGATION -->
   <div class="story-controls">
@@ -40,8 +46,7 @@
     </button>
   </div>
 
-
-
+  <!-- Описание -->
   <!-- VIEWS -->
   <div class="story-views-summary" *ngIf="currentStory?.usersViewed?.length" (click)="openViewsList()">
     <div class="avatars">

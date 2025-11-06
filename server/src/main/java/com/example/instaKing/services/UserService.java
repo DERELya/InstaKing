@@ -136,4 +136,31 @@ public class UserService {
                                 .anyMatch(u -> u.getUsername().equals(username))
                 ));
     }
+
+    public void addCloseFriend(String username, String friendUsername) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User friend = userRepository.findByUsername(friendUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
+
+        user.getCloseFriends().add(friend);
+        userRepository.save(user);
+    }
+
+    public void removeCloseFriend(String username, String friendUsername) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User friend = userRepository.findByUsername(friendUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
+
+        user.getCloseFriends().remove(friend);
+        userRepository.save(user);
+    }
+
+    public Set<User> getCloseFriends(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return user.getCloseFriends();
+    }
+
 }

@@ -11,6 +11,10 @@ import {MatIcon} from '@angular/material/icon';
 import {NgIf} from '@angular/common';
 import {StoryService} from '../../services/story.service';
 import {catchError, of, Subject, takeUntil, tap} from 'rxjs';
+import {MatSelect} from '@angular/material/select';
+import {MatOption} from '@angular/material/autocomplete';
+import {StoryVisibility} from '../../models/StoryVisibility';
+
 
 @Component({
   selector: 'app-create-story.component',
@@ -24,11 +28,14 @@ import {catchError, of, Subject, takeUntil, tap} from 'rxjs';
     MatIcon,
     NgIf,
     FormsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSelect,
+    MatOption
   ],
   templateUrl: './create-story.component.html',
   styleUrl: './create-story.component.css'
 })
+
 export class CreateStoryComponent implements OnInit {
   storyForm!: FormGroup;
   userImages: { [key: string]: string } = {};
@@ -37,6 +44,8 @@ export class CreateStoryComponent implements OnInit {
   username: string = ' ';
   description: string = '';
   private destroy$ = new Subject<void>();
+  visibility: StoryVisibility = StoryVisibility.PUBLIC;
+
 
 
   constructor(
@@ -87,8 +96,8 @@ export class CreateStoryComponent implements OnInit {
     }
     const formData = new FormData();
     formData.append('file', this.selectedFile);
-    formData.append('storyDTO', this.description);
-    console.log(this.description);
+    formData.append('description', this.description);
+    formData.append('visibility', this.visibility);
     this.storyService.createStory(formData)
       .pipe(
         takeUntil(this.destroy$),
@@ -136,4 +145,5 @@ export class CreateStoryComponent implements OnInit {
     return this.userImages[username];
   }
 
+  protected readonly StoryVisibility = StoryVisibility;
 }

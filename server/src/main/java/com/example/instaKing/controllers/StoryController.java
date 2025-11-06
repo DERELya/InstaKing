@@ -41,15 +41,16 @@ public class StoryController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createStory(@Valid @ModelAttribute StoryDTO storyDTO,
-                                              @RequestParam("file") MultipartFile file,
                                               BindingResult bindingResult,
                                               Principal principal) throws IOException {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body("Validation error");
         }
+        System.out.println("Получено описание: " + storyDTO.getDescription());
+        System.out.println("Файл: " + storyDTO.getFile().getOriginalFilename());
+
         User user = userService.getCurrentUser(principal);
-        Story story = storyService.createStory(storyDTO, principal, file);
-        System.out.println(story.getUser().getUsername());
+        Story story = storyService.createStory(storyDTO, principal);
         StoryDTO returnStoryDTO = facade.storyToStoryDTO(story,user);
         return new ResponseEntity<>(returnStoryDTO, HttpStatus.CREATED);
     }
@@ -102,7 +103,7 @@ public class StoryController {
         Resource content = storyService.getContent(url);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
+                .contentType(MediaType.IMAGE_JPEG)
                 .body(content);
     }
 }

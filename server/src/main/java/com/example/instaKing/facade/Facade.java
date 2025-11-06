@@ -57,6 +57,7 @@ public class Facade {
         storyDTO.setCreatedAt(story.getCreatedAt());
         storyDTO.setExpiresAt(story.getExpiresAt());
         storyDTO.setUsername(story.getUser().getUsername());
+        storyDTO.setVisibility(story.getVisibility());
         storyDTO.setDescription(story.getDescription());
         Map<String, LocalDateTime> viewedMap = story.getViewsDetails()
                 .stream()
@@ -76,6 +77,7 @@ public class Facade {
         ResponseForStoryMain result= new ResponseForStoryMain();
         result.setUsername(storydto.getUsername());
         result.setViewed(storydto.isViewed());
+        result.setVisibility(storydto.getVisibility());
         return result;
     }
 
