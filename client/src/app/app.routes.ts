@@ -6,6 +6,7 @@ import {AuthGuard} from './helper/auth-guard';
 import {ProfileComponent} from './user/profile/profile.component';
 import {UserPostsComponent} from './user/user-posts/user-posts.component';
 import {UserFavoriteComponent} from './user/user-favorite/user-favorite.component';
+import {SettingComponent} from './user/setting/setting.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,6 +22,7 @@ export const routes: Routes = [
       { path: 'saved', component: UserFavoriteComponent}
     ]
   },
+  {path:'settings',canActivate: [AuthGuard], component: SettingComponent},
   { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 

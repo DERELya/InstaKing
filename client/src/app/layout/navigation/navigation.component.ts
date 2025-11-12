@@ -77,10 +77,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       });
 
-      // Инициализируем загрузку аватара
       this.loadProfileImage();
-
-      // ПОДПИСКА: Реакция на сигнал обновления аватара
       this.userService.avatarUpdated$
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => {
@@ -180,9 +177,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   goToProfile(event: any, username: string) {
-    // срабатывает только при выборе (не при наведении)
     if (event.isUserInput) {
       this.router.navigate(['/profile', username]);
     }
+  }
+
+  openSetting() {
+      console.log("gg");
+      this.router.navigate(['/settings']);
   }
 }

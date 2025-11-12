@@ -81,19 +81,12 @@ public class UserController {
 
     @GetMapping("{username}/followers")
     public ResponseEntity<Object> followersUser(@PathVariable("username") String username) {
-
-        List<UserDTO> followersDTO = userService.getFollowersUser(username)
-                .stream()
-                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
-        return new ResponseEntity<>(followersDTO, HttpStatus.OK);
+        return new ResponseEntity<>(userService.getFollowersUser(username), HttpStatus.OK);
     }
 
     @GetMapping("{username}/following")
     public ResponseEntity<Object> followingUser(@PathVariable("username") String username) {
-        List<UserDTO> followingsDTO = userService.getFollowingUsers(username)
-                .stream()
-                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
-        return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
+        return new ResponseEntity<>(userService.getFollowingUsers(username), HttpStatus.OK);
     }
     @GetMapping("{username}/isFollow")
     public ResponseEntity<Boolean> foll(Principal principal, @PathVariable String username) {

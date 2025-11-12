@@ -3,6 +3,7 @@ package com.example.instaKing.services;
 import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.exceptions.UserExistException;
 import com.example.instaKing.exceptions.UserNotFoundException;
+import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.ERole;
 import com.example.instaKing.payload.request.SignUpRequest;
@@ -84,12 +85,18 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("username not found with userid" + username));
     }
 
-    public List<User> getFollowersUser(String username) {
-        return userRepository.findAllByFollowers_Username(username);
+    public List<UserDTO> getFollowersUser(String username) {
+        return userRepository.findAllByFollowers_Username(username)
+                .stream()
+                .map(UserFacade::userToUserDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<User> getFollowingUsers(String username) {
-        return userRepository.findAllByFollowing_Username(username);
+    public List<UserDTO> getFollowingUsers(String username) {
+        return userRepository.findAllByFollowing_Username(username)
+                .stream()
+                .map(UserFacade::userToUserDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -157,10 +164,13 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Set<User> getCloseFriends(String username) {
+    public Set<UserDTO> getCloseFriends(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return user.getCloseFriends();
+        return user.getCloseFriends()
+                .stream()
+                .map(UserFacade::userToUserDTO)
+                .collect(Collectors.toSet());
     }
 
 }

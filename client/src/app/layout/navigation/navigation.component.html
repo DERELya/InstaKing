@@ -44,6 +44,12 @@
              class="avatar-icon">
       </button>
     </ng-container>
+    <div *ngIf="router.url.startsWith('/profile/'+user?.username)">
+      <button mat-icon-button (click)="openSetting()">
+        <mat-icon>settings_applications</mat-icon>
+      </button>
+    </div>
+
 
     <mat-menu #menu="matMenu" class="my-custom-menu">
       <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">Profile</button>
