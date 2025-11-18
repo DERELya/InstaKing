@@ -13,7 +13,6 @@ export class UserService {
   private avatarUpdated = new Subject<void>();
   public avatarUpdated$ = this.avatarUpdated.asObservable();
 
-  // 2. Метод для оповещения об изменении
   public notifyAvatarUpdated(): void {
     this.avatarUpdated.next();
   }
@@ -31,26 +30,14 @@ export class UserService {
   updateUser(user: any): Observable<any> {
     return this.http.post(USER_API + 'update', user)
   }
-  setCurrentUser(user: User) {
-    this.currentUserSubject.next(user);
-  }
-  getCurrentUserValue(): User | null {
-    return this.currentUserSubject.value;
-  }
-  getCurrentUserObservable(): Observable<User | null> {
-    return this.currentUserSubject.asObservable();
-  }
   getUserByUsername(username: string | null): Observable<User> {
-    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
     return this.http.get<User>(USER_API+'getUser/'+username);
   }
 
   getFollowers(username: string | null): Observable<User[]> {
-    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
     return this.http.get<User[]>(USER_API+username+'/followers');
   }
   getFollowing(username: string | null): Observable<User[]> {
-    // Предположим, что у тебя эндпоинт типа /api/users/by-username/{username}
     return this.http.get<User[]>(USER_API+username+'/following');
   }
 

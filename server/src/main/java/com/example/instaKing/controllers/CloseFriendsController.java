@@ -12,7 +12,7 @@ import java.security.Principal;
 @CrossOrigin
 public class CloseFriendsController {
     private final UserService userService;
-
+    
     public CloseFriendsController(UserService userService) {
         this.userService = userService;
     }
@@ -32,4 +32,10 @@ public class CloseFriendsController {
     public ResponseEntity<?> getCloseFriends(Principal principal) {
         return ResponseEntity.ok(userService.getCloseFriends(principal.getName()));
     }
+
+    @GetMapping
+    public ResponseEntity<Boolean> getUserContainInFriends(Principal principal,@PathVariable String friendUsername) {
+        return ResponseEntity.ok(userService.getUserContainInFriends(principal.getName(),friendUsername));
+    }
+
 }

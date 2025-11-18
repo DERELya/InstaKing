@@ -173,4 +173,16 @@ public class UserService {
                 .collect(Collectors.toSet());
     }
 
+    public Boolean getUserContainInFriends(String username, String friendUsername) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Set<UserDTO> friends=user.getCloseFriends()
+                .stream()
+                .map(UserFacade::userToUserDTO)
+                .collect(Collectors.toSet());
+        User friend=userRepository.findByUsername(friendUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
+        return friends.contains(friend);
+    }
 }

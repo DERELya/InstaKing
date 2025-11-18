@@ -1,0 +1,111 @@
+.likes-dialog {
+  width: 400px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+.likes-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.likes-dialog-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.like-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  transition: background 0.2s;
+}
+
+.like-user-row:hover {
+  background: var(--color-bg);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.user-info {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.username:hover {
+  text-decoration: underline;
+}
+
+.fullname {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* === КНОПКИ ПОДПИСКИ === */
+
+.follow-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+/* Подписаться — синяя кнопка */
+.follow-btn.follow {
+  background-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.follow-btn.follow:hover {
+  background-color: #007acc;
+}
+
+/* Отписаться — серый контур */
+.follow-btn.unfollow {
+  background-color: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.follow-btn.unfollow:hover {
+  background-color: var(--color-bg);
+}
+
+/* Скрываем полосу прокрутки */
+.likes-dialog-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.likes-dialog-list::-webkit-scrollbar-thumb {
+  background-color: var(--color-bg);
+  border-radius: 4px;
+}

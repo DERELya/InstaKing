@@ -1,10 +1,16 @@
-<label class="theme-switch-icon">
-  <input
-    type="checkbox"
-    [checked]="isDarkTheme()"
-    (change)="toggleTheme()"/>
-  <span class="slider">
-       <span class="icon sun"><mat-icon>wb_sunny</mat-icon></span>
-    <span class="icon moon"><mat-icon>bedtime</mat-icon></span>
+<div>
+  <label class="theme-switch-icon">
+    <input
+      type="checkbox"
+      [checked]="isDarkTheme()"
+      (change)="toggleTheme()"/>
+    <span class="slider">
+        <span class="icon sun">☀️</span>
+        <span class="icon moon">🌙</span>
       </span>
-</label>
+  </label>
+  <button matFab aria-label="Example icon button with a delete icon" (click)="openFollowingDialog()">
+    <mat-icon>group</mat-icon>
+  </button>
+</div>
+

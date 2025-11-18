@@ -1,0 +1,33 @@
+<div class="likes-dialog">
+  <div class="likes-dialog-header">
+    <span >Подписчики</span>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="likes-dialog-list">
+    <ng-container *ngIf="users$ | async as users">
+      <div
+        class="like-user-row"
+        *ngFor="let user of users; trackBy: trackByUsername"
+      >
+        <img class="avatar" [src]="getUserImage(user.username)" alt="avatar" />
+
+        <div class="user-info">
+          <a
+            [routerLink]="['/settings', user.username]"
+            (click)="close()"
+            class="username"
+          >{{ user.username }}</a
+          >
+          <div class="fullname" *ngIf="user.firstname">
+            {{ user.firstname }} {{ user.lastname }}
+          </div>
+        </div>
+        <mat-checkbox></mat-checkbox>
+
+      </div>
+    </ng-container>
+  </div>
+</div>
