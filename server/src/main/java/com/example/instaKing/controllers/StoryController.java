@@ -1,9 +1,7 @@
 package com.example.instaKing.controllers;
 
-import com.example.instaKing.dto.ResponseForStoryMain;
 import com.example.instaKing.dto.StoryDTO;
 import com.example.instaKing.dto.StoryViewDTO;
-import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.facade.Facade;
 import com.example.instaKing.models.Story;
 import com.example.instaKing.models.User;
@@ -17,13 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController

@@ -1,7 +1,7 @@
 package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.CommentDTO;
-import com.example.instaKing.dto.CommentPageResponse;
+import com.example.instaKing.payload.response.CommentPageResponse;
 import com.example.instaKing.facade.CommentFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.payload.response.MessageResponse;
@@ -16,7 +16,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;

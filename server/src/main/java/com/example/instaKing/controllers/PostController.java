@@ -1,14 +1,12 @@
 package com.example.instaKing.controllers;
 
 import com.example.instaKing.dto.PostDTO;
-import com.example.instaKing.dto.PostPageResponse;
+import com.example.instaKing.payload.response.PostPageResponse;
 import com.example.instaKing.facade.Facade;
 import com.example.instaKing.facade.PostFacade;
-import com.example.instaKing.models.Comment;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
 import com.example.instaKing.payload.response.MessageResponse;
-import com.example.instaKing.services.CommentService;
 import com.example.instaKing.services.FavoriteService;
 import com.example.instaKing.services.PostService;
 import com.example.instaKing.services.UserService;
@@ -16,8 +14,6 @@ import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;

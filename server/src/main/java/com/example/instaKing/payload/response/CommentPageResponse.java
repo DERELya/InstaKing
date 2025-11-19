@@ -1,4 +1,4 @@
-package com.example.instaKing.dto;
+package com.example.instaKing.payload.response;
 
 import com.example.instaKing.dto.CommentDTO;
 import lombok.AllArgsConstructor;

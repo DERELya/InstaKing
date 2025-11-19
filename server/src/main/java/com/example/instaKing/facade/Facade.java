@@ -1,6 +1,7 @@
 package com.example.instaKing.facade;
 
 import com.example.instaKing.dto.*;
+import com.example.instaKing.payload.response.ResponseForStoryMain;
 import com.example.instaKing.models.*;
 import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
