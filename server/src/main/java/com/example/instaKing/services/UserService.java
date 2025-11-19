@@ -164,13 +164,14 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Set<UserDTO> getCloseFriends(String username) {
-        User user = userRepository.findByUsername(username)
+    public Set<String> getCloseFriends(String username) {
+        User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return user.getCloseFriends()
+        Set<String> friendUsernames = currentUser.getCloseFriends()
                 .stream()
-                .map(UserFacade::userToUserDTO)
+                .map(User::getUsername) // Извлекаем имя пользователя
                 .collect(Collectors.toSet());
+        return friendUsernames;
     }
 
     public Boolean getUserContainInFriends(String username, String friendUsername) {
@@ -183,6 +184,6 @@ public class UserService {
                 .collect(Collectors.toSet());
         User friend=userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
-        return friends.contains(friend);
+        return friends.contains(UserFacade.userToUserDTO(friend));
     }
 }

@@ -50,6 +50,14 @@ public class User implements UserDetails {
     )
     private Set<User> following = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private Set<User> closeFriends = new HashSet<>();
+
     @ManyToMany(mappedBy = "following")
     private Set<User> followers = new HashSet<>();
 
@@ -57,13 +65,7 @@ public class User implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_close_friends",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id")
-    )
-    private Set<User> closeFriends = new HashSet<>();
+
 
 
     public User() {

@@ -33,7 +33,7 @@ public class CloseFriendsController {
         return ResponseEntity.ok(userService.getCloseFriends(principal.getName()));
     }
 
-    @GetMapping
+    @GetMapping("/userContain/{friendUsername}")
     public ResponseEntity<Boolean> getUserContainInFriends(Principal principal,@PathVariable String friendUsername) {
         return ResponseEntity.ok(userService.getUserContainInFriends(principal.getName(),friendUsername));
     }

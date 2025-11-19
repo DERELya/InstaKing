@@ -2,16 +2,6 @@
   <!-- Левая часть: лого и переключатель темы -->
   <div class="toolbar-section left">
     <span class="logo" routerLink="/main">InstaKing</span>
-    <label class="theme-switch-icon">
-      <input
-        type="checkbox"
-        [checked]="isDarkTheme()"
-        (change)="toggleTheme()"/>
-      <span class="slider">
-        <span class="icon sun">☀️</span>
-        <span class="icon moon">🌙</span>
-      </span>
-    </label>
   </div>
 
   <div class="toolbar-section center">

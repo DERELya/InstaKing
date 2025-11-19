@@ -4,7 +4,7 @@
       <label class="profile-avatar-upload-label" >
         <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'" alt="avatar" class="profile-avatar"
              [ngClass]="{ 'story': hasStory }"
-        (click)="openStoryViewer()">
+             (click)="hasStory &&openStoryViewer()">
       </label>
     </div>
     <div class="profile-info-block">

@@ -25,7 +25,9 @@
             {{ user.firstname }} {{ user.lastname }}
           </div>
         </div>
-        <mat-checkbox></mat-checkbox>
+        <mat-checkbox [checked]="user.isCloseFriend"
+                      (change)="onCheckboxChange(user, $event)"
+        ></mat-checkbox>
 
       </div>
     </ng-container>
