@@ -1,16 +1,16 @@
 import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {AsyncPipe, NgForOf, NgIf} from "@angular/common";
 import {MatIconButton} from "@angular/material/button";
-import {User} from '../../models/User';
+import {User} from '../../../models/User';
 import {forkJoin, map, Observable, of, Subject, switchMap, takeUntil} from 'rxjs';
-import {UserService} from '../../services/user.service';
+import {UserService} from '../../../services/user.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 import {MatIcon} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
 import {MatCheckbox, MatCheckboxChange} from '@angular/material/checkbox';
-import {FriendsService} from '../../services/friends.service';
+import {FriendsService} from '../../../services/friends.service';
 
 interface UiUser extends User {
   isCloseFriend?: boolean;

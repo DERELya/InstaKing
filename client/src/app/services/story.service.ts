@@ -57,7 +57,7 @@ export class StoryService {
     );
   }
 
-  /** Удаление своей сторис */
+
   deleteStory(id: number): Observable<void> {
     return this.http.post<void>(`${this.api}${id}/delete`, null).pipe(
       tap(() => {
@@ -69,6 +69,9 @@ export class StoryService {
         throw err;
       })
     );
+  }
+  getStoriesForUser(username: string): Observable<Story[]>{
+    return this.http.get<Story[]>(`${this.api}getStoriesForUser/${username}`);
   }
 
   loadFollowingStories(): Observable<Story[]> {
@@ -114,7 +117,7 @@ export class StoryService {
 
 
 
-  /** 🔹 Получить изображение пользователя (аватар) */
+
   private getUserImage(username: string): Observable<string> {
     return this.imageService.getImageToUser(username).pipe(
       map((blob) => URL.createObjectURL(blob)), // преобразуем Blob в URL
@@ -123,7 +126,7 @@ export class StoryService {
   }
 
 
-  /** 🔹 Загрузить бинарные данные сторис (blob) */
+
   getContentForStory(url: string): Observable<Blob> {
     return this.http
       .get(`${this.api}content/${url}`, { responseType: 'blob' })

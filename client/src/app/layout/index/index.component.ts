@@ -24,12 +24,12 @@ import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {RouterLink, RouterModule} from '@angular/router';
-import { LikesPostComponent } from '../../user/likes-post/likes-post.component';
+import { LikesPostComponent } from '../../pages/post/likes-post/likes-post.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
-import { PostInfoComponent } from '../../user/post-info/post-info.component';
-import {StoryViewerComponent} from '../../user/story-viewer/story-viewer.component';
+import { PostInfoComponent } from '../../pages/post/post-info/post-info.component';
+import {StoryViewerComponent} from '../../pages/story/story-viewer/story-viewer.component';
 import {Story} from '../../models/Story';
-import {CreateStoryComponent} from '../../user/create-story/create-story.component';
+import {CreateStoryComponent} from '../../pages/story/create-story/create-story.component';
 
 interface UiPost extends Post {
   isLiked: boolean;

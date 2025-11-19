@@ -2,13 +2,13 @@ import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
-import {UserService} from '../../services/user.service';
-import {User} from '../../models/User';
+import {UserService} from '../../../services/user.service';
+import {User} from '../../../models/User';
 import {MatButtonModule} from '@angular/material/button';
 import {forkJoin} from 'rxjs';
-import {ImageUploadService} from '../../services/image-upload.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
 import {Router, RouterLink} from '@angular/router';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 
 @Component({
   selector: 'app-likes-post',

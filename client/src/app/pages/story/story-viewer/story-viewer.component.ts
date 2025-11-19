@@ -1,14 +1,14 @@
 import {ChangeDetectorRef, Component, Inject, NgZone, OnDestroy, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {Story} from '../../models/Story';
-import {StoryService} from '../../services/story.service';
-import {ImageUploadService} from '../../services/image-upload.service';
+import {Story} from '../../../models/Story';
+import {StoryService} from '../../../services/story.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
 import {Subject, takeUntil} from 'rxjs';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
 import {Router, RouterLink,RouterModule} from '@angular/router';
 import {MatProgressBar} from '@angular/material/progress-bar';
-import {UserService} from '../../services/user.service';
-import {User} from '../../models/User';
+import {UserService} from '../../../services/user.service';
+import {User} from '../../../models/User';
 import { EventEmitter, Output } from '@angular/core';
 
 @Component({

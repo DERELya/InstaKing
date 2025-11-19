@@ -3,13 +3,13 @@ import {Subject, takeUntil, switchMap, of} from 'rxjs';
 import {MatIconButton} from "@angular/material/button";
 import {CommonModule, NgForOf, NgIf} from "@angular/common";
 import {MatIcon} from '@angular/material/icon';
-import {User} from '../../models/User';
-import {UserService} from '../../services/user.service';
+import {User} from '../../../models/User';
+import {UserService} from '../../../services/user.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {RouterLink} from '@angular/router';
 import {Observable} from 'rxjs';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 
 @Component({
   selector: 'app-following.component',

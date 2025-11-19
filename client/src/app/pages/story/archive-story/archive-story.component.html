@@ -1,0 +1,38 @@
+<div class="dialog-container">
+
+  <div class="dialog-header">
+    <h3>Архив историй</h3>
+    <button class="close-btn" (click)="closeDialog()">✕</button>
+  </div>
+
+  <div class="dialog-content">
+
+    <ng-container *ngIf="story$ | async as stories; else loadingOrError">
+
+      <div class="stories-grid" *ngIf="stories.length > 0; else emptyState">
+        <div class="story-item" *ngFor="let story of stories" (click)="openFullStory(story)">
+
+          <img [src]="story.blobUrl|| 'assets/placeholder.jpg'" alt="story" class="story-img">
+          <div class="story-date-badge">
+            {{ story.createdAt | date:'d MMM' }}
+          </div>
+
+        </div>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty-state">
+          <div class="empty-icon">history</div>
+          <p>В архиве пока нет историй</p>
+        </div>
+      </ng-template>
+
+    </ng-container>
+
+    <ng-template #loadingOrError>
+      <div class="loading-state" *ngIf="!isUserStoryLoaded">
+        <div class="spinner"></div>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -42,22 +42,22 @@
   font-weight: 500;
 }
 
-/* --- Стили для переключателя темы --- */
+
 .theme-switch-icon {
   position: relative;
   display: inline-block;
-  width: 60px; /* Общая ширина переключателя */
-  height: 34px; /* Общая высота переключателя */
+  width: 60px;
+  height: 34px;
 }
 
-/* Скрыть стандартный чекбокс */
+
 .theme-switch-icon input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-/* Капсула (Slider) */
+
 .slider {
   position: absolute;
   cursor: pointer;
@@ -65,7 +65,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc; /* Светлый режим: серый */
+  background-color: #ccc;
   transition: 0.4s;
   border-radius: 34px;
   display: flex;
@@ -74,7 +74,7 @@
   padding: 0 4px;
 }
 
-/* Круглый индикатор внутри */
+
 .slider:before {
   position: absolute;
   content: "";
@@ -88,36 +88,36 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Стили иконок */
+
 .icon {
   position: absolute;
   line-height: 1;
-  font-size: 18px; /* Размер иконки */
+  font-size: 16px;
   transition: opacity 0.4s, transform 0.4s;
 }
 
 .sun {
   left: 8px;
-  opacity: 1; /* Видимо в светлом режиме */
+  opacity: 1;
 }
 
 .moon {
   right: 8px;
-  opacity: 0; /* Невидимо в светлом режиме */
+  opacity: 0;
 }
 
-/* Состояние CHECKED (Темная тема) */
+
 input:checked + .slider {
-  background-color: #2c3e50; /* Темный режим: темно-синий/серый */
+  background-color: #2c3e50;
 }
 
-/* Передвижение индикатора */
+
 input:checked + .slider:before {
-  transform: translateX(26px); /* 60px - 34px = 26px смещение */
-  background-color: #f1c40f; /* Цвет индикатора в темном режиме */
+  transform: translateX(26px);
+  background-color: #f1c40f;
 }
 
-/* Смена видимости иконок */
+
 input:checked + .slider .sun {
   opacity: 0;
 }
@@ -126,9 +126,9 @@ input:checked + .slider .moon {
   opacity: 1;
 }
 
-/* --- Стили для кнопки MatFab --- */
+
 .following-button {
-  background-color: var(--color-primary); /* Яркий синий цвет */
+  background-color: var(--color-primary);
   color: white;
   box-shadow: 0 4px 10px rgba(30, 136, 229, 0.4);
   transition: background-color 0.3s, transform 0.1s;
@@ -137,7 +137,7 @@ input:checked + .slider .moon {
 }
 
 .following-button:hover {
-  background-color: #1565c0; /* Темнее при наведении */
+  background-color: #1565c0;
 }
 
 .following-button mat-icon {

@@ -1,10 +1,10 @@
 <div class="settings-container">
   <h2 class="settings-header">Настройки</h2>
 
-  <!-- Группа элементов -->
+
   <div class="settings-group">
 
-    <!-- 1. Переключатель темы (Стильный вид) -->
+
     <div class="setting-row">
       <span class="setting-label">Темная тема</span>
       <label class="theme-switch-icon">
@@ -19,10 +19,9 @@
       </label>
     </div>
 
-    <!-- 2. Кнопка с иконкой для диалога -->
     <div class="setting-row">
       <span class="setting-label">Управление подписками</span>
-      <button mat-fab class="following-button" aria-label="Open following dialog" (click)="openFollowingDialog()">
+      <button mat-fab class="following-button" aria-label="Open following dialog" (click)="openFriendsWindow()">
         <mat-icon>group</mat-icon>
       </button>
     </div>
@@ -30,6 +29,13 @@
     <div class="setting-row">
       <span class="setting-label">Скрывать избранные</span>
       <mat-checkbox class="checkbox"></mat-checkbox>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">Архив историй</span>
+      <button mat-fab class="following-button" aria-label="Open following dialog" (click)="openArchiveStory()">
+        <mat-icon>books_movies_and_music</mat-icon>
+      </button>
     </div>
   </div>
 </div>

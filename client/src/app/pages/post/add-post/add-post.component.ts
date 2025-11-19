@@ -1,14 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Post} from '../../models/Post';
-import {PostService} from '../../services/post.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {NotificationService} from '../../services/notification.service';
+import {Post} from '../../../models/Post';
+import {PostService} from '../../../services/post.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
+import {NotificationService} from '../../../services/notification.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {MatButton} from '@angular/material/button';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {Subject, switchMap, takeUntil, tap, catchError, of} from 'rxjs';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({

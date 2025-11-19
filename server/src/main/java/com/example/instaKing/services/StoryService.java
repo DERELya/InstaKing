@@ -79,15 +79,22 @@ public class StoryService {
         return fileName;
     }
 
-    public List<StoryDTO> getStoriesForUser(String username,Principal principal) {
-        User currnetUser = getUserByPrincipal(principal);
-        User user=userRepository.findByUsername(username).orElse(null);
-        List<StoryDTO> stories =storyRepository.getStoriesByUser(user)
-                .stream()
-                .map(story -> facade.storyToStoryDTO(story,currnetUser))
+    public List<StoryDTO> getStoriesForUser(String username, Principal principal) {
+        User currentUser = getUserByPrincipal(principal);
+
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        List<Story> stories = storyRepository.getStoriesByUser(targetUser);
+
+        if (stories == null || stories.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return stories.stream()
+                .map(story -> facade.storyToStoryDTO(story, currentUser))
                 .collect(Collectors.toList());
-        return stories;
     }
+
     public List<StoryDTO> getActiveStoriesForUser(String username, Principal principal) {
         User currentUser = getUserByPrincipal(principal);
         User user = userRepository.findByUsername(username)

@@ -2,18 +2,18 @@ import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/
 import {CommonModule, DatePipe, NgForOf, NgIf} from '@angular/common';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatInput} from '@angular/material/input';
-import {PostService} from '../../services/post.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {NotificationService} from '../../services/notification.service';
-import {CommentService} from '../../services/comment.service';
+import {PostService} from '../../../services/post.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
+import {NotificationService} from '../../../services/notification.service';
+import {CommentService} from '../../../services/comment.service';
 import {RouterLink} from '@angular/router';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {Post} from '../../models/Post';
+import {Post} from '../../../models/Post';
 import {MatIcon} from '@angular/material/icon';
 import {LikesPostComponent} from '../likes-post/likes-post.component';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 import {Subject, takeUntil} from 'rxjs';
-import {TimeAgoPipe} from '../../helper/time-ago.pipe';
+import {TimeAgoPipe} from '../../../helper/time-ago.pipe';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 
 interface UiPost extends Post {

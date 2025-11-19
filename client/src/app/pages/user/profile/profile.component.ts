@@ -1,22 +1,22 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { User } from '../../models/User';
-import { TokenStorageService } from '../../services/token-storage.service';
-import { PostService } from '../../services/post.service';
+import { User } from '../../../models/User';
+import { TokenStorageService } from '../../../services/token-storage.service';
+import { PostService } from '../../../services/post.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { NotificationService } from '../../services/notification.service';
-import { ImageUploadService } from '../../services/image-upload.service';
-import { UserService } from '../../services/user.service';
+import { NotificationService } from '../../../services/notification.service';
+import { ImageUploadService } from '../../../services/image-upload.service';
+import { UserService } from '../../../services/user.service';
 import { EditUserComponent } from '../edit-user/edit-user.component';
 import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
-import { AddPostComponent } from '../add-post/add-post.component';
+import { AddPostComponent } from '../../post/add-post/add-post.component';
 import { FollowingComponent } from '../following/following.component';
 import {filter, forkJoin, of, Subject, switchMap, takeUntil} from 'rxjs';
 import {MatIconModule} from '@angular/material/icon';
 import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
-import {Story} from '../../models/Story';
-import {StoryService} from '../../services/story.service';
+import {Story} from '../../../models/Story';
+import {StoryService} from '../../../services/story.service';
 import {hash} from 'crypto';
-import {StoryViewerComponent} from '../story-viewer/story-viewer.component';
+import {StoryViewerComponent} from '../../story/story-viewer/story-viewer.component';
 
 @Component({
   selector: 'app-profile',
@@ -39,7 +39,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   selectedFile?: File;
   userProfileImage?: string;
   previewUrl?: string;
-  activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
+  activeTab: 'posts' | 'saved' | 'tagged'  = 'posts';
   isCurrentUser: boolean = false;
   private destroy$ = new Subject<void>();
   postsCount: number = 0;
@@ -114,7 +114,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   }
 
-  // Создаем отдельный метод для обновления данных профиля, чтобы избежать дублирования кода.
   private refreshProfileData(): void {
     if (this.user?.username) {
       this.loadProfile(this.user.username).subscribe(profileResult => {
@@ -182,7 +181,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (this.user?.username) {
-        // Перезагружаем профиль после редактирования
         this.refreshProfileData();
       }
     });
@@ -198,7 +196,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const dialogRef=this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.user?.username) {
-        // Перезагружаем профиль после редактирования
         this.refreshProfileData();
       }
     });

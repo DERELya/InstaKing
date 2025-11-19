@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {CommentPageResponse} from '../user/post-info/post-info.component';
+import {CommentPageResponse} from '../pages/post/post-info/post-info.component';
 
 const COMMENT_API = 'http://localhost:8080/api/comment/';
 

@@ -2,18 +2,18 @@ import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {MatButton} from '@angular/material/button';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {NotificationService} from '../../services/notification.service';
+import {ImageUploadService} from '../../../services/image-upload.service';
+import {NotificationService} from '../../../services/notification.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {TokenStorageService} from '../../services/token-storage.service';
+import {TokenStorageService} from '../../../services/token-storage.service';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';
 import {NgIf} from '@angular/common';
-import {StoryService} from '../../services/story.service';
+import {StoryService} from '../../../services/story.service';
 import {catchError, of, Subject, takeUntil, tap} from 'rxjs';
 import {MatSelect} from '@angular/material/select';
 import {MatOption} from '@angular/material/autocomplete';
-import {StoryVisibility} from '../../models/StoryVisibility';
+import {StoryVisibility} from '../../../models/StoryVisibility';
 
 
 @Component({

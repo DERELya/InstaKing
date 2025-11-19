@@ -1,21 +1,16 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Observable, Subject, takeUntil} from 'rxjs';
-import {PostService} from '../../services/post.service';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {UserService} from '../../services/user.service';
-import {NotificationService} from '../../services/notification.service';
-import {CommentService} from '../../services/comment.service';
-import {Post} from '../../models/Post';
-
-import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {MatCardModule} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
+import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {Observable, Subject, takeUntil} from 'rxjs';
+import {PostService} from '../../../services/post.service';
+import {ActivatedRoute} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
-import {PostInfoComponent} from '../post-info/post-info.component';
+import {Post} from '../../../models/Post';
+import {PostInfoComponent} from '../../post/post-info/post-info.component';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -24,9 +19,9 @@ interface UiPost extends Post {
 }
 
 @Component({
-  selector: 'app-posts',
-  templateUrl: './user-posts.component.html',
-  styleUrls: ['./user-posts.component.css'],
+  selector: 'app-user-favorite',
+  templateUrl: './user-favorite.component.html',
+  styleUrl: './user-favorite.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -40,7 +35,7 @@ interface UiPost extends Post {
     MatButtonModule
   ]
 })
-export class UserPostsComponent implements OnInit, OnDestroy {
+export class UserFavoriteComponent implements OnInit,OnDestroy{
   posts$!: Observable<UiPost[]>;
   isUserPostsLoaded = false;
   meUsername!: string;
@@ -61,7 +56,7 @@ export class UserPostsComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const username = params.get('username');
         if (username) {
-          this.postService.loadProfilePosts(username);
+          this.postService.loadProfileFavoritePosts();
           this.meUsername = username;
           this.cd.markForCheck();
         }
@@ -83,9 +78,10 @@ export class UserPostsComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      // Можно обновить что-то, если нужно
+      this.postService.loadProfileFavoritePosts();
     });
   }
+
 
 
   @HostListener('document:click', ['$event'])
@@ -99,5 +95,4 @@ export class UserPostsComponent implements OnInit, OnDestroy {
   trackById(index: number, post: UiPost) {
     return post.id ?? index;
   }
-
 }

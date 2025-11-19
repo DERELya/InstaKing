@@ -6,8 +6,9 @@ import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {UserService} from '../../services/user.service';
-import {FriendsComponent} from '../friends/friends.component';
+import {FriendsComponent} from '../user/friends/friends.component';
 import {MatCheckbox} from '@angular/material/checkbox';
+import {ArchiveStoryComponent} from '../story/archive-story/archive-story.component';
 
 @Component({
   selector: 'app-setting.component',
@@ -42,13 +43,26 @@ export class SettingComponent implements OnInit {
     return this.themeService.isDarkTheme();
   }
 
-  openFollowingDialog(): void {
-    const dialogUserFollowingConfig = new MatDialogConfig();
-    dialogUserFollowingConfig.width = '400px';
-    dialogUserFollowingConfig.data = {
+  openFriendsWindow(): void {
+    const friendsWindow = new MatDialogConfig();
+    friendsWindow.width = '400px';
+    friendsWindow.data = {
       username: this.meUsername
     };
-    const dialogRef = this.dialog.open(FriendsComponent, dialogUserFollowingConfig);
+    const dialogRef = this.dialog.open(FriendsComponent, friendsWindow);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.user?.username) {
+      }
+    });
+  }
+
+  protected openArchiveStory() {
+    const ArchiveStory = new MatDialogConfig();
+    ArchiveStory.width = '400px';
+    ArchiveStory.data = {
+      username: this.meUsername
+    };
+    const dialogRef = this.dialog.open(ArchiveStoryComponent, ArchiveStory);
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.user?.username) {
       }
