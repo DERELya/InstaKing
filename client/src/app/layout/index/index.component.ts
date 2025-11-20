@@ -320,22 +320,18 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       });
 
-      // Подгружаем соседние сторис для плавного пролистывания
       this.preloadNeighborStories(startUserIndex);
 
-      // Подписка на смену пользователя
       dialogRef.componentInstance.userChanged
         .pipe(takeUntil(this.destroy$))
         .subscribe((newIndex: number) => {
           this.preloadNeighborStories(newIndex);
         });
-
-      // После закрытия диалога обновляем статус просмотра
       dialogRef.afterClosed().subscribe(() => {
         this.storyService.getUsersWithActiveStories()
           .pipe(takeUntil(this.destroy$))
           .subscribe(response => {
-            this.usersWithStories = response; // теперь Record<string, boolean>
+            this.usersWithStories = response;
             this.cd.markForCheck();
           });
       });
@@ -371,37 +367,11 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private openViewer(startUserIndex: number, startStoryIndex: number) {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.width = '400px';
-    dialogConfig.data = {
-      groupedStories: this.groupedStories,
-      startUserIndex,
-      startStoryIndex
-    };
-
-    const dialogRef = this.dialog.open(StoryViewerComponent, dialogConfig);
-
-    // Подгружаем соседние пользователи заранее
-    this.preloadNeighborStories(startUserIndex);
-
-  }
-
-
-  getStoriesView(username:string):boolean{
-    const userGroup = this.groupedStories.find(g => g.username === username)
-    if (!userGroup) return true;
-    return userGroup.stories.every(story => story.viewed);
-  }
-
   trackByUsername(index: number, entry: { key: string; value: boolean }): string {
     return entry.key;
   }
 
   keepOrder = () => 0;
-  trackByUsernameStory(index: number, entry: any): string {
-    return entry.key;
-  }
 
 
   openCreateStoryDialog() {
@@ -411,7 +381,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       dialogRef.afterClosed().subscribe(result => {
         if ( this.user?.username) {
-          // Обновление счетчика постов происходит через подписку на postCountChanged$ в ngOnInit.
         }
       });
   }

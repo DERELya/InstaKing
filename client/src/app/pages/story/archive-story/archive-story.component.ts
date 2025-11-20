@@ -1,12 +1,13 @@
 import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
 import {StoryService} from '../../../services/story.service';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {Story} from '../../../models/Story';
 import {catchError, Observable, of, tap} from 'rxjs';
 import {AsyncPipe, DatePipe, NgForOf, NgIf} from '@angular/common';
 import {MatCard} from '@angular/material/card';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatIcon} from '@angular/material/icon';
+import {StoryViewerComponent} from '../story-viewer/story-viewer.component';
 
 @Component({
   selector: 'app-archive-story',
@@ -25,11 +26,13 @@ import {MatIcon} from '@angular/material/icon';
 export class ArchiveStoryComponent implements OnInit {
   public isUserStoryLoaded: boolean = false;
   public story$: Observable<Story[]> | null = null;
-
+  public stories: Story[] = [];
+  groupedStories: { username: string; stories: Story[]; loaded?: boolean }[] = [];
   constructor(
     private cd: ChangeDetectorRef,
     private storyService: StoryService,
     private dialogRef: MatDialogRef<ArchiveStoryComponent>,
+    private dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data: { username: string },
 
   ) {
@@ -45,6 +48,7 @@ export class ArchiveStoryComponent implements OnInit {
 
     this.story$ = this.storyService.getStoriesForUser(this.data.username).pipe(
       tap((stories) => {
+        this.stories = stories;
         this.isUserStoryLoaded = true;
         stories.forEach(story => {
           this.loadCurrentStoryImage(story);
@@ -81,7 +85,34 @@ export class ArchiveStoryComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  openFullStory(story: Story): void {
-    console.log('Открыть историю на весь экран:', story);
+  openFullStory(clickedStory: Story): void {
+    const startStoryIndex = this.stories.findIndex(s => s.id === clickedStory.id);
+
+    if (startStoryIndex === -1) {
+      console.error("Кликнутая история не найдена в списке.");
+      return;
+    }
+
+
+    const groupedStoriesForViewer = [
+      {
+        username: this.data.username,
+        stories: this.stories
+      }
+    ];
+
+
+    const startUserIndex = 0;
+
+
+    const dialogRef = this.dialog.open(StoryViewerComponent, {
+      width: '400px',
+      data: {
+        groupedStories: groupedStoriesForViewer,
+        startUserIndex: startUserIndex,
+        startStoryIndex: startStoryIndex
+      }
+    });
+
   }
 }

@@ -71,7 +71,13 @@ export class StoryService {
     );
   }
   getStoriesForUser(username: string): Observable<Story[]>{
-    return this.http.get<Story[]>(`${this.api}getStoriesForUser/${username}`);
+    return this.http.get<Story[]>(`${this.api}getStoriesForUser/${username}`).pipe(
+      map(stories => this.transformStoriesFromApi(stories)),
+      catchError(err => {
+        console.error('Ошибка при получении архивных сторис:', err);
+        return of([]);
+      })
+    );
   }
 
   loadFollowingStories(): Observable<Story[]> {
@@ -136,30 +142,17 @@ export class StoryService {
   getActiveStoriesForUser(username: string): Observable<Story[]>
   {
     return this.http.get<Story[]>(`${this.api}getActiveStoriesForUser/${username}`).pipe(
-      map(stories =>
-        (stories || []).map(story => ({
-          ...story,
-          usersViewed: story.usersViewed
-            ? Object.entries(story.usersViewed).map(([username, viewedAt], idx) => ({
-              id: idx,
-              username,
-              viewedAt: viewedAt as unknown as string
-            }))
-            : []
-        }))
-      ),
+      map(stories => this.transformStoriesFromApi(stories)),
       switchMap(stories => {
         if (stories.length === 0) return of([]);
 
         const withDetails$ = stories.map(story =>
           forkJoin({
             avatarUrl: this.getUserImage(story.username)
-            // blobUrl: this.getStoryBlobUrl(story.mediaUrl) // если потом вернёшь
           }).pipe(
             map(extra => ({
               ...story,
               avatarUrl: extra.avatarUrl
-              // blobUrl: extra.blobUrl
             }))
           )
         );
@@ -179,5 +172,27 @@ export class StoryService {
   }
   getUsersWithActiveStories():Observable<Record<string,boolean>> {
     return this.http.get<Record<string, boolean>>(`${this.api}getUsernameActiveStoriesForMe`);
+  }
+  transformStoriesFromApi(stories: Story[]): Story[] {
+    return (stories || []).map((story) => {
+      const usersViewedMap = story.usersViewed as unknown as Record<string, string> | undefined;
+
+      const transformedUsersViewed = usersViewedMap
+        ? Object.entries(usersViewedMap).map(([username, viewedAt], idx) => ({
+          id: idx,
+          username,
+          viewedAt: viewedAt as string,
+        } as any))
+        : [];
+
+      return {
+        ...story,
+
+        usersViewed: transformedUsersViewed,
+
+        createdAt: new Date(story.createdAt as string) as any,
+        expiresAt: new Date(story.expiresAt as string) as any,
+      } as Story;
+    });
   }
 }

@@ -97,7 +97,7 @@ export class StoryViewerComponent implements OnInit, OnDestroy {
 
   startProgress(): void {
     if (this.rafId) cancelAnimationFrame(this.rafId);
-
+    console.log(this.data.groupedStories);
     this.progressStartTime = performance.now() - this.elapsedBeforePause;
     const duration = 7000;
 
