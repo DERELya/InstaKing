@@ -17,6 +17,7 @@ import {Story} from '../../../models/Story';
 import {StoryService} from '../../../services/story.service';
 import {hash} from 'crypto';
 import {StoryViewerComponent} from '../../story/story-viewer/story-viewer.component';
+import {MatIconButton} from '@angular/material/button';
 
 @Component({
   selector: 'app-profile',
@@ -29,7 +30,8 @@ import {StoryViewerComponent} from '../../story/story-viewer/story-viewer.compon
     RouterOutlet,
     NgIf,
     NgSwitchCase,
-    CommonModule
+    CommonModule,
+    MatIconButton
   ],
   styleUrls: ['./profile.component.css']
 })
@@ -188,7 +190,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   openFollowingDialog(followers: boolean): void {
     const dialogUserFollowingConfig = new MatDialogConfig();
-    dialogUserFollowingConfig.width = '400px';
+    //dialogUserFollowingConfig.width = '400px';
+    dialogUserFollowingConfig.panelClass = 'custom-likes-dialog-panel';
     dialogUserFollowingConfig.data = {
       followers: followers,
       username: this.user?.username

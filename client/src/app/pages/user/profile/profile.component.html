@@ -1,67 +1,110 @@
 <div class="profile-container">
+
   <div class="profile-header">
+
+    <!-- AVATAR -->
     <div class="profile-avatar-block">
-      <label class="profile-avatar-upload-label" >
-        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'" alt="avatar" class="profile-avatar"
-             [ngClass]="{ 'story': hasStory }"
-             (click)="hasStory &&openStoryViewer()">
+      <label class="profile-avatar-upload-label">
+        <img
+          [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+          alt="avatar"
+          class="profile-avatar"
+          [ngClass]="{ 'story': hasStory }"
+          (click)="hasStory && openStoryViewer()"
+        >
       </label>
     </div>
+
+    <!-- USER INFO -->
     <div class="profile-info-block">
+
       <div class="profile-row">
         <span class="profile-username">{{ user?.username }}</span>
-        <button *ngIf="isCurrentUser"  class="edit-btn" (click)="openEditDialog()">Редактировать</button>
-        <button *ngIf="isFollow&&!isCurrentUser; else subscribeBtn"
-                (click)="unfollow(user!.username)" class="follow-btn">
+
+        <button *ngIf="isCurrentUser"
+                class="edit-btn"
+                (click)="openEditDialog()">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button *ngIf="isCurrentUser"
+                class="edit-btn"
+                (click)="openCreatePostDialog()">
+          <mat-icon>add</mat-icon>
+        </button>
+
+        <button *ngIf="isFollow && !isCurrentUser; else subscribeBtn"
+                class="follow-btn"
+                (click)="unfollow(user!.username)">
           Отписаться
         </button>
 
         <ng-template #subscribeBtn>
-          <button *ngIf="!isCurrentUser" (click)="follow(user!.username)" class="follow-btn">
+          <button *ngIf="!isCurrentUser"
+                  class="follow-btn"
+                  (click)="follow(user!.username)">
             Подписаться
           </button>
         </ng-template>
       </div>
+
       <div class="profile-stats">
-        <span><b>{{ postsCount }}</b> {{ pluralize(postsCount, 'публикация', 'публикации', 'публикаций') }}</span>
-        <span (click)="openFollowingDialog(true)"><b>{{ followersCount }}</b> {{ pluralize(followersCount, 'подписчик', 'подписчика', 'подписчиков') }}</span>
-        <span (click)="openFollowingDialog(false)"><b>{{ followingCount }}</b> {{ pluralize(followingCount, 'подписка', 'подписки', 'подписок') }}</span>
+        <span>
+          <b>{{ postsCount }}</b>
+          {{ pluralize(postsCount, 'публикация', 'публикации', 'публикаций') }}
+        </span>
+
+        <span (click)="openFollowingDialog(true)">
+          <b>{{ followersCount }}</b>
+          {{ pluralize(followersCount, 'подписчик', 'подписчика', 'подписчиков') }}
+        </span>
+
+        <span (click)="openFollowingDialog(false)">
+          <b>{{ followingCount }}</b>
+          {{ pluralize(followingCount, 'подписка', 'подписки', 'подписок') }}
+        </span>
       </div>
+
       <div class="profile-bio">
-        <div class="profile-fullname">{{ user?.firstname }} {{ user?.lastname }}</div>
-        <div class="profile-description">{{ user!.bio }}</div>
+        <div class="profile-fullname">
+          {{ user?.firstname }} {{ user?.lastname }}
+        </div>
+        <div class="profile-description">
+          {{ user!.bio }}
+        </div>
       </div>
 
     </div>
-
-  </div>
-  <div *ngIf="isCurrentUser" class="add-post-custom-btn" >
-    <div class="circle" (click)="openCreatePostDialog()">
-      <span class="plus-sign">+</span>
-    </div>
-    <div class="add-label">Добавить</div>
   </div>
 
   <div class="profile-divider"></div>
 
-  <!-- Instagram-style tabs -->
   <div class="profile-tabs">
-    <button class="profile-tab-btn" [class.active]="activeTab === 'posts'" (click)="selectTab('posts')">
+    <button class="profile-tab-btn"
+            [class.active]="activeTab === 'posts'"
+            (click)="selectTab('posts')">
       <mat-icon>grid_on</mat-icon>
       <span>Публикации</span>
     </button>
-    <button class="profile-tab-btn" [class.active]="activeTab === 'saved'" *ngIf="isCurrentUser" (click)="selectTab('saved')">
+
+    <button *ngIf="isCurrentUser"
+            class="profile-tab-btn"
+            [class.active]="activeTab === 'saved'"
+            (click)="selectTab('saved')">
       <mat-icon>bookmark_border</mat-icon>
       <span>Сохранённое</span>
     </button>
-    <button class="profile-tab-btn" [class.active]="activeTab === 'tagged'" (click)="selectTab('tagged')">
+
+    <button class="profile-tab-btn"
+            [class.active]="activeTab === 'tagged'"
+            (click)="selectTab('tagged')">
       <mat-icon>person_pin</mat-icon>
       <span>Отметки</span>
     </button>
   </div>
 
-  <!-- Router Outlet для всех вкладок -->
   <div class="profile-tab-content">
     <router-outlet></router-outlet>
   </div>
+
 </div>

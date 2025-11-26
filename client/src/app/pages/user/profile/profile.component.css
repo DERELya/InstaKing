@@ -1,111 +1,59 @@
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
-/* --- Основной контейнер профиля --- */
-.profile-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 12px 0 0 0;
+/* GLOBAL FIX */
+* {
   box-sizing: border-box;
+}
+
+/* CONTAINER */
+.profile-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px;
   background: var(--color-bg);
-  color: #fff;
+  color: var(--color-text);
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
 
-/* --- Шапка профиля, теперь компактнее --- */
+/* HEADER */
 .profile-header {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  margin: 20px;
-  gap: 24px;
+  gap: 22px;
+  margin: 20px 0;
+  flex-wrap: nowrap; /* ❗ Всегда в ряд */
 }
 
-/* --- Блок аватара --- */
+/* AVATAR BLOCK */
 .profile-avatar-block {
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  justify-content: center;
 }
 
 .profile-avatar-upload-label {
-  position: relative;
+  width: 110px;
+  height: 110px;
   display: block;
   cursor: pointer;
-  width: 96px;
-  height: 96px;
-}
-
-.profile-avatar-upload-label.disabled {
-  pointer-events: none;
-
 }
 
 .profile-avatar {
-  width: 96px;
-  height: 96px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--color-bg);
-  background: var(--color-bg);
-  transition: filter 0.2s;
-  display: block;
-  box-shadow: 0 2px 12px 0 #0006;
+  box-shadow: 0 2px 12px #0006;
 }
 
 .profile-avatar.story {
   border: 4px solid var(--color-primary);
 }
 
-
-/* --- Оверлей на аватаре --- */
-.avatar-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  width: 100%; height: 100%;
-  border-radius: 50%;
-  background: var(--color-bg);
-  opacity: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.21s;
-  pointer-events: none;
-}
-.profile-avatar-upload-label:hover .avatar-overlay,
-.profile-avatar-upload-label:focus .avatar-overlay {
-  opacity: 1;
-  pointer-events: all;
-}
-.avatar-overlay-text {
-  color: var(--color-text);
-  font-size: 12px;
-  font-weight: 500;
-  text-shadow: 0 2px 8px #000a;
-  user-select: none;
-}
-.avatar-upload-btn {
-  margin-top: 10px;
-  width: 100%;
-  max-width: 96px;
-  background: var(--color-bg) !important;
-  color: var(--color-primary) !important;
-  border-radius: 8px;
-  border: 1.5px solid var(--color-primary);
-  font-weight: 500;
-  font-size: 14px;
-  transition: background 0.15s, color 0.15s;
-}
-.avatar-upload-btn:hover {
-  background: var(--color-primary) !important;
-  color: var(--color-bg) !important;
-}
-
-/* --- Блок информации --- */
+/* INFO */
 .profile-info-block {
-  flex: 1 1 0;
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -115,234 +63,151 @@
 .profile-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .profile-username {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--color-text);
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 8px #0003;
 }
 
-.edit-btn, .follow-btn {
-  font-size: 14px;
-  padding: 2px 13px;
-  border-radius: 8px;
-  background: var(--color-bg);
-  color: var(--color-primary); !important;
-  border: 1.2px solid var(--color-primary);
-  font-weight: 500;
-  transition: background 0.15s, color 0.15s;
-  min-height: 32px;
+/* 🔥 Уменьшенные edit/add кнопки */
+.edit-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  min-width: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.edit-btn:hover, .follow-btn:hover {
+
+.edit-btn mat-icon {
+  font-size: 16px;
+}
+
+.edit-btn,
+.follow-btn {
+  padding: 3px 8px;
+  background: var(--color-bg);
+  border-radius: 6px;
+  border: 1.4px solid var(--color-primary);
+  color: var(--color-primary);
+  transition: 0.15s;
+}
+
+.edit-btn:hover,
+.follow-btn:hover {
   background: var(--color-primary);
   color: var(--color-bg);
 }
 
-/* --- Статистика --- */
+/* STATS */
 .profile-stats {
   display: flex;
-  gap: 22px;
+  gap: 18px;
+  margin-top: 6px;
   font-size: 15px;
-  margin-bottom: 6px;
-  color: var(--color-text);
-}
-.profile-stats span b {
-  color: var(--color-text);
+  flex-wrap: wrap;
 }
 
-/* --- Био --- */
-.profile-bio {
-  margin-top: 5px;
+.profile-stats span {
+  cursor: pointer;
 }
+
+/* BIO */
 .profile-fullname {
   font-weight: 500;
   font-size: 15px;
-  margin-bottom: 2px;
-  color: var(--color-text);
-  letter-spacing: 0.01em;
 }
+
 .profile-description {
   font-size: 14px;
-  color: var(--color-text);
   white-space: pre-line;
 }
 
-/* --- Разделитель --- */
+/* DIVIDER */
 .profile-divider {
   border-bottom: 1.2px solid var(--color-border);
   margin: 12px 0 18px 0;
 }
+
+/* TABS */
 .profile-tabs {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 32px;
-  margin-bottom: 10px;
+  gap: 26px;
+  padding: 10px 0;
   border-bottom: 1.2px solid var(--color-border);
-  padding-bottom: 0;
-  background: var(--color-bg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.profile-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .profile-tab-btn {
-  background: var(--color-bg);
+  background: none;
   border: none;
-  outline: none;
   color: var(--color-text);
   font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;    /* это важно! */
-  gap: 7px;
-  padding: 7px 10px 10px 10px;
-  cursor: pointer;
+  padding: 7px 6px;
   border-bottom: 2px solid transparent;
-  transition: color 0.18s, border-bottom 0.18s;
-  position: relative;
-  min-height: 28px;
-  line-height: 1.2;
-}
-
-.profile-tab-btn mat-icon,
-.profile-tab-btn .mat-icon { /* на всякий случай оба варианта */
-  font-size: 18px !important;
-  line-height: 1;
-  vertical-align: middle;
-  display: flex;          /* flex вместо inline или block */
-  align-items: center;    /* выравнивание по центру */
-  justify-content: center;
-  padding: 0;
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
 }
 
 .profile-tab-btn.active {
   color: var(--color-primary);
   border-bottom: 2px solid var(--color-primary);
-  font-weight: 600;
 }
 
-/* --- Кнопка "Добавить пост" --- */
-.add-post-custom-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  user-select: none;
-  position: static;
-  margin-left: 30px;
-  margin-top: 8px;
-}
+/* ===== MOBILE ADAPTATION ===== */
 
-.circle {
-  width: 56px;
-  height: 56px;
-  background: var(--color-bg);
-  border-radius: 50%;
-  border: 2px solid var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  box-shadow: 0 0 0 2px #222;
-  transition: background 0.18s, box-shadow 0.18s;
-  cursor: pointer;
-}
-
-.circle:hover,
-.circle:focus {
-  background: var(--color-primary);
-  box-shadow: 0 0 0 4px #1e1e1e;
-}
-
-.plus-sign {
-  color: var(--color-primary);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 400;
-  font-family: 'Arial', sans-serif;
-  transition: color 0.15s;
-}
-
-.circle:hover .plus-sign,
-.circle:focus .plus-sign {
-  color: var(--color-bg);
-}
-
-.add-label {
-  color: #fff;
-  font-size: 13px;
-  font-weight: bold;
-  text-align: left;
-  margin-top: 0;
-  text-shadow: 0 1px 2px #000;
-}
-
-.empty-tab-msg {
-  text-align: center;
-  padding: 28px 0;
-  color: #555;
-  font-size: 16px;
-}
-.custom-create-post-modal {
-  box-shadow: none !important;
-  background: transparent !important; /* если вдруг нужен прозрачный фон */
-  padding: 0 !important;
-}
-
-/* --- Медиазапросы для мобильных/планшетов --- */
-@media (max-width: 900px) {
+/* 📱 Мобильная версия — аватар + инфо остаются в РЯДУ */
+@media (max-width: 600px) {
   .profile-header {
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 12px;
   }
-  .profile-avatar-upload-label,
-  .profile-avatar {
-    width: 64px;
-    height: 64px;
+
+  .profile-avatar-upload-label {
+    width: 70px;
+    height: 70px;
   }
-  .avatar-upload-btn {
-    max-width: 64px;
-  }
-  .profile-row {
-    gap: 7px;
-  }
-  .profile-info-block {
-    align-items: center;
-    text-align: center;
-  }
-  .profile-divider {
-    margin: 8px 0 14px 0;
-  }
-  .add-label {
-    font-size: 13px;
-  }
-}
-@media (max-width: 500px) {
-  .profile-container {
-    padding: 6px 0 0 0;
-  }
-  .profile-avatar-upload-label,
-  .profile-avatar {
-    width: 44px;
-    height: 44px;
-  }
-  .avatar-upload-btn {
-    max-width: 44px;
-    font-size: 12px;
-  }
+
   .profile-username {
     font-size: 18px;
   }
-  .profile-row {
-    gap: 5px;
+
+  .edit-btn {
+    width: 24px;
+    height: 24px;
   }
-  .profile-tabs {
+
+  .edit-btn mat-icon {
+    font-size: 14px;
+  }
+
+  .profile-stats {
     gap: 16px;
-    font-size: 13px;
+    font-size: 14px;
+  }
+}
+
+/* Очень маленькие телефоны */
+@media (max-width: 420px) {
+  .profile-avatar-upload-label {
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-username {
+    font-size: 17px;
   }
 }

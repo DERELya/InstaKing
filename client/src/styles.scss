@@ -230,6 +230,25 @@ item-hover-state-layer-color{
   overflow: hidden !important;
 }
 
+.custom-likes-dialog-panel {
+  /* Убираем стандартные отступы, которые конфликтуют с вашим дизайном */
+  padding: 0 !important;
+  /* Убедитесь, что фон самого Material-контейнера прозрачен,
+     чтобы .likes-dialog полностью контролировал внешний вид */
+  background: transparent !important;
+  /* Сбрасываем ширину, чтобы .likes-dialog мог контролировать ее сам */
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Сброс фона для самого контейнера внутри Material */
+.custom-likes-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 
 
 

@@ -1,61 +1,67 @@
 .likes-dialog {
   width: 400px;
-  max-height: 500px;
+  max-height: 520px;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
 }
 
+/* Шапка */
 .likes-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  font-weight: 600;
+  padding: 14px 18px;
+  font-weight: 700;
   font-size: 18px;
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Список */
 .likes-dialog-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 0;
+  padding: 6px 0;
 }
 
+/* Строка пользователя */
 .like-user-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  transition: background 0.2s;
+  padding: 10px 18px;
+  gap: 12px;
+  transition: background 0.2s ease;
 }
 
 .like-user-row:hover {
-  background: var(--color-bg);
+  background: var(--color-bg-dark);
 }
 
+/* Аватар */
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--color-border);
 }
 
+/* Имя + фуллнейм */
 .user-info {
   flex: 1;
-  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .username {
   font-weight: 600;
+  font-size: 15px;
   color: var(--color-text);
   text-decoration: none;
-  cursor: pointer;
 }
 
 .username:hover {
@@ -64,48 +70,43 @@
 
 .fullname {
   font-size: 13px;
-  color: var(--color-text);
+  opacity: 0.8;
+  margin-top: 1px;
 }
 
-/* === КНОПКИ ПОДПИСКИ === */
-
-.follow-btn {
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.25s ease;
+/* Чекбокс */
+mat-checkbox {
+  transform: scale(0.85);
 }
 
-/* Подписаться — синяя кнопка */
-.follow-btn.follow {
-  background-color: var(--color-primary);
-  color: var(--color-text);
-}
+/* === MOBILE ADAPTATION === */
+@media (max-width: 480px) {
+  .likes-dialog {
+    width: 92vw;
+    max-height: 80vh;
+    border-radius: 14px;
+  }
 
-.follow-btn.follow:hover {
-  background-color: #007acc;
-}
+  .likes-dialog-header {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
 
-/* Отписаться — серый контур */
-.follow-btn.unfollow {
-  background-color: var(--color-bg-dark);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
+  .like-user-row {
+    padding: 8px 14px;
+    gap: 10px;
+  }
 
-.follow-btn.unfollow:hover {
-  background-color: var(--color-bg);
-}
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
 
-/* Скрываем полосу прокрутки */
-.likes-dialog-list::-webkit-scrollbar {
-  width: 6px;
-}
+  .username {
+    font-size: 14px;
+  }
 
-.likes-dialog-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-bg);
-  border-radius: 4px;
+  .fullname {
+    font-size: 12px;
+  }
 }
