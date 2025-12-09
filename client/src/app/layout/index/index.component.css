@@ -1,368 +1,297 @@
-/* ====== FEED PAGE STYLES ====== */
-
-.feed-container {
-  padding-top: 32px;
-  min-height: 100vh;
-  /* full width, center content */
-}
-
-.post-card {
-  border-radius: 18px;
-  box-shadow: 0 6px 30px rgba(0,0,0,0.07);
-  margin-bottom: 32px;
+/* --- STORIES SECTION --- */
+.stories-wrapper {
   background: var(--color-bg);
-  transition: box-shadow 0.2s;
-  padding: 0 0 12px 0;
-}
-
-.post-card:hover {
-  box-shadow: 0 5px 12px rgba(4, 160, 188, 0.3);
-}
-
-/* Post header (avatar + username) */
-.post-header {
-  padding: 14px 16px 0 16px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-/* Avatar styles */
-.avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--color-border);
-  margin-right: 8px;
-}
-mat-icon.favorited {
-  color: gold;
-}
-.ig-modal-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-/* Post image */
-.feed-image {
-  max-width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px 0;
   width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 12px;
-  margin: 0 auto 10px auto;
-  background: var(--color-bg);
-  display: block;
+  overflow: hidden;
 }
 
-/* Modal info block */
-.modal-info-block {
+.stories-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 16px;
+  scrollbar-width: none;
+}
+.stories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.story-item {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 0 16px;
-  background: var(--color-bg);
-  box-sizing: border-box;
+  align-items: center;
+  cursor: pointer;
+  width: 74px; /* Фиксированная ширина для выравнивания */
+  flex-shrink: 0;
 }
 
-/* Actions (like, comment, bookmark) */
-.actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0;
-}
-.actions-horizontal {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-}
-
-/* Like button colored */
-.liked {
-  color: #ed4956 !important;
-}
-
-.likes {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.likes-avatars {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-}
-.like-avatar {
-  width: 28px;
-  height: 28px;
+/* Круг сторис */
+.story-circle {
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
-  border: 2px solid var(--color-bg);
-  object-fit: cover;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.11);
-  background: var(--color-bg);
-  transition: box-shadow .2s;
-  margin-left: 0;
+  padding: 2px; /* Отступ для градиента */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.likes-label {
-  margin-left: 8px;
-  font-size: 16px;
-  vertical-align: middle;
-  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-  font-weight: 350;
-  letter-spacing: 0.01em;
+/* Градиентная рамка для новых сторис */
+.story-circle.has-story {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+/* Серая рамка для просмотренных */
+.story-circle.viewed {
+  background: var(--color-border);
+}
+
+.story-circle img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--color-bg); /* Белая прослойка */
+  object-fit: cover;
+}
+
+/* Кнопка добавления сторис */
+.add-btn-circle {
+  background: transparent;
+  border: 2px solid var(--color-text);
+}
+.add-btn-circle mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
   color: var(--color-text);
 }
 
-.like-username {
-  text-decoration: none;
-  font-weight: 700;
-  transition: color .2s;
-  color: inherit;
+.story-username {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+}
+
+
+/* --- FEED SECTION --- */
+.feed-container {
+  padding-top: 24px;
+  padding-bottom: 60px;
+}
+
+/* Карточка поста - ВЕРНУЛИ ЧЕТКИЙ ВИД КАРТОЧКИ */
+.post-card {
+  background: var(--color-bg);
+  /* Четкая граница */
+  border: 1px solid var(--color-border);
+  /* Скругление */
+  border-radius: 12px;
+  /* Увеличенный отступ между постами */
+  margin-bottom: 32px;
+  /* Легкая тень, чтобы приподнять карточку */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.post-card:hover {
+
+  box-shadow: 0 5px 12px rgba(4, 160, 188, 0.3);
+
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 12px 12px 16px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
   cursor: pointer;
 }
-.like-username:hover {
-  text-decoration: underline;
-}
 
-
-.comment {
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-
-/* Add comment form */
-.add-comment-form {
-  gap: 8px;
-  margin-top: 10px;
-  background: var(--color-bg);
-  border-radius: 10px;
-  padding: 8px 8px 8px 12px;
-}
-.add-comment-form input {
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  padding: 6px 12px;
-  font-size: 15px;
-  background: var(--color-bg);
-  outline: none;
-}
-.add-comment-form input:focus {
-  border-color: var(--color-primary);
-}
-.add-comment-form .send-btn {
-  min-width: 40px;
-  color: var(--color-primary);
-}
-
-.profile-link .ig-modal-avatar {
+.avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 4px;
+  margin-right: 10px;
   border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  transition: box-shadow 0.2s;
 }
-.profile-link:hover .ig-modal-avatar,
-.profile-link:focus .ig-modal-avatar {
-  box-shadow: 0 0 0 2px var(--color-primary)33;
-}
-.profile-link * {
-  font-weight: normal !important;
-}
+
 .username {
-  color: var(--color-text);
-  font-weight: 500;
-  font-size: 18px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-.title{
-  color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
-  margin-left: 14px;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  color: var(--color-text);
 }
+
+.more-btn {
+  color: var(--color-text);
+}
+
+.post-title {
+  padding: 0 16px 8px;
+  font-size: 12px;
+  color: var(--color-text);
+  opacity: 0.8;
+}
+
+/* Image */
+.post-image-container {
+  position: relative;
+  width: 100%;
+  background-color: var(--color-bg-dark); /* Фон пока грузится картинка */
+  display: flex; /* Центрирует, если картинка меньше */
+  justify-content: center;
+}
+
+.feed-image {
+  width: 100%;
+  height: auto;
+  max-height: 700px; /* Ограничение высоты для очень длинных фото */
+  object-fit: contain;
+}
+
+/* Heart Animation */
 .heart-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 4rem;
-  opacity: 0.8;
-  animation: pop 0.8s ease forwards;
+  animation: pop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none; /* Чтобы клики проходили сквозь */
+}
+
+.heart-overlay mat-icon {
+  font-size: 120px;
+  width: 120px;
+  height: 120px;
+  color: white;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
 }
 
 @keyframes pop {
-  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(0.9); }
+  45% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
 }
 
-.btn {
+/* Footer Actions */
+.post-footer {
+  padding: 8px 16px 16px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  /* Компенсация дефолтных паддингов mat-icon-button */
+  margin-left: -10px;
+}
+
+.liked-icon { color: #ed4956; animation: likePulse 0.3s ease-in-out; }
+.favorited-icon { color: var(--color-text); } /* Или золото */
+
+@keyframes likePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Likes Text */
+.likes-text {
   font-size: 14px;
-  padding: 2px 13px;
-  border-radius: 8px;
-  background: var(--color-bg);
-  color: var(--color-primary); !important;
-  border: 1.2px solid var(--color-primary);
-  font-weight: 500;
-  transition: background 0.15s, color 0.15s;
-  min-height: 32px;
-}
-.btn:hover {
-  background: var(--color-primary);
-  color: var(--color-bg);
-}
-.anchor-sentinel {
-  height: 1px;
-  opacity: 0;
+  color: var(--color-text);
+  display: block;
+  margin-bottom: 6px;
 }
 
+.others-link {
+  cursor: pointer;
+  opacity: 0.9;
+}
 
-/* Responsive */
+/* Comments */
+.view-all-comments {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #8e8e8e;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+/* Comment Input */
+.add-comment-box form {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--color-border); /* Опционально */
+  padding-top: 12px;
+}
+
+.add-comment-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.post-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 1;
+  padding: 0;
+}
+.post-btn:disabled {
+  opacity: 0.3;
+}
+
+/* Load More */
+.load-more-container {
+  text-align: center;
+  margin: 20px 0;
+  color: #8e8e8e;
+  font-size: 14px;
+}
+
+/* --- MOBILE RESPONSIVE --- */
 @media (max-width: 600px) {
   .feed-container {
+    /* Добавляем горизонтальный паддинг к контейнеру, чтобы посты не прилипали к краям */
+    padding: 12px 12px 60px 12px;
+  }
+
+  .feed-col {
     padding: 0;
   }
+
   .post-card {
-    border-radius: 10px;
-    margin-bottom: 16px;
-    padding: 0 0 8px 0;
-  }
-  .avatar {
-    width: 28px;
-    height: 28px;
-  }
-  .feed-image {
+    /* Возвращаем границы и скругление на мобильном */
+    border: 1px solid var(--color-border);
     border-radius: 8px;
+    /* Четкий отступ между постами */
+    margin-bottom: 20px;
   }
-  .add-comment-form {
-    padding: 6px 6px 6px 8px;
+  .stories-scroll {
+    padding: 0 12px;
   }
-}
-
-.stories-bar {
-  display: flex;
-  justify-content: flex-start;
-  overflow-x: auto;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
-}
-
-.stories-scroll {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  padding: 0 10px;
-}
-
-.story-avatar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-}
-.story-avatar img {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  cursor: pointer;
-  transition: border-color 0.3s;
-}
-
-.story-avatar img.not-viewed {
-  border-color: var(--color-primary); /* синий (или любой цвет для новых сторис) */
-}
-
-.story-avatar img.viewed {
-  border-color: #b0b0b0; /* серый для просмотренных */
-}
-
-
-.story-avatar img:hover {
-  transform: scale(1.05);
-}
-
-.story-username {
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--color-text);
-  max-width: 70px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.add-story-custom-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  user-select: none;
-  position: static;
-  margin-left: 30px;
-  margin-top: 8px;
-}
-
-.circle {
-  width: 56px;
-  height: 56px;
-  background: var(--color-bg);
-  border-radius: 50%;
-  border: 2px solid var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  box-shadow: 0 0 0 2px #222;
-  transition: background 0.18s, box-shadow 0.18s;
-  cursor: pointer;
-}
-
-.circle:hover,
-.circle:focus {
-  background: var(--color-primary);
-  box-shadow: 0 0 0 4px #1e1e1e;
-}
-
-.plus-sign {
-  color: var(--color-primary);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 400;
-  font-family: 'Arial', sans-serif;
-  transition: color 0.15s;
-}
-
-.circle:hover .plus-sign,
-.circle:focus .plus-sign {
-  color: var(--color-bg);
-}
-.add-label {
-  color: var(--color-text);
-  font-size: 13px;
-  font-weight: bold;
-  text-align: left;
-  margin-top: 0;
-  text-shadow: 0 1px 2px #000;
 }

@@ -64,6 +64,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "gratis-accompanied-seventh-anna.trycloudflare.com"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "client:build:production"
@@ -74,6 +79,7 @@
           },
           "defaultConfiguration": "development"
         },
+
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
         },

@@ -1,62 +1,66 @@
-<mat-toolbar color="primary" class="toolbar">
-  <!-- Левая часть: лого и переключатель темы -->
+<mat-toolbar class="mat-toolbar">
   <div class="toolbar-section left">
-    <span class="logo" routerLink="/main">InstaKing</span>
+    <a class="logo" routerLink="/main">InstaKing</a>
   </div>
 
   <div class="toolbar-section center">
     <div class="search-container" *ngIf="router.url.startsWith('/main')">
-      <mat-form-field class="search-field"  appearance="fill">
-        <mat-icon matPrefix>search</mat-icon>
-        <input class="search-input"
-               matInput
+      <mat-form-field class="search-field" appearance="outline" floatLabel="always">
+        <mat-icon matPrefix class="search-icon">search</mat-icon>
+
+        <input matInput
+               class="search-input"
                [(ngModel)]="query"
                (input)="searchUsers()"
                placeholder="Поиск"
                autocomplete="off"
                [matAutocomplete]="auto">
-        <button mat-icon-button matSuffix *ngIf="query" (click)="clearSearch()">
+
+        <button mat-icon-button matSuffix *ngIf="query" (click)="clearSearch()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
     </div>
   </div>
 
-  <!-- Правая часть: имя пользователя и аватар -->
   <div class="toolbar-section right">
+
     <ng-container *ngIf="!router.url.startsWith('/profile/'+user?.username)">
-      <h3 *ngIf="isDataLoaded" class="username">{{ user?.username }}</h3>
-      <button *ngIf="isLoggedIn" [matMenuTriggerFor]="menu" matTooltip="Profile" mat-icon-button class="avatar-button">
+      <h3 *ngIf="isDataLoaded" class="username-text">{{ user?.username }}</h3>
+
+      <button *ngIf="isLoggedIn" [matMenuTriggerFor]="menu" class="avatar-button">
         <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
              alt="avatar"
-             width="40"
-             height="40"
              class="avatar-icon">
       </button>
     </ng-container>
+
     <div *ngIf="router.url.startsWith('/profile/'+user?.username)">
       <button mat-icon-button (click)="openSetting()">
         <mat-icon>settings_applications</mat-icon>
       </button>
     </div>
 
-
     <mat-menu #menu="matMenu" class="my-custom-menu">
-      <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">Profile</button>
-      <button mat-menu-item class="my-custom-menu-item" (click)="logout()">Logout</button>
+      <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">
+        <mat-icon>person_outline</mat-icon>
+        <span>Profile</span>
+      </button>
+      <button mat-menu-item class="my-custom-menu-item" (click)="logout()">
+        <mat-icon>logout</mat-icon> <span>Logout</span>
+      </button>
     </mat-menu>
   </div>
 </mat-toolbar>
-<mat-autocomplete #auto="matAutocomplete">
+
+<mat-autocomplete #auto="matAutocomplete" class="custom-autocomplete">
   <mat-option *ngFor="let user of users" (onSelectionChange)="goToProfile($event, user.username)">
-    <div class="like-user-row">
-      <img class="avatar" [src]="user.avatarUrl" alt="avatar" />
-      <div class="user-info">
-        <div class="username">{{ user.username }}</div>
-        <div class="fullname" *ngIf="user.firstname">{{ user.firstname }} {{user.lastname }}</div>
+    <div class="search-user-row">
+      <img class="search-avatar" [src]="user.avatarUrl || 'assets/placeholder.jpg'" alt="avatar" />
+      <div class="search-info">
+        <span class="search-username">{{ user.username }}</span>
+        <span class="search-fullname" *ngIf="user.firstname">{{ user.firstname }} {{ user.lastname }}</span>
       </div>
     </div>
   </mat-option>
 </mat-autocomplete>
-
-
