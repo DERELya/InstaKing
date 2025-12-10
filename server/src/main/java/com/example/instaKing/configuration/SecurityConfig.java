@@ -1,5 +1,9 @@
-package com.example.instaKing.security;
+package com.example.instaKing.configuration;
 
+import com.example.instaKing.security.JWTAuthenticationEntryPoint;
+import com.example.instaKing.security.JWTAuthenticationFilter;
+import com.example.instaKing.security.JWTTokenProvider;
+import com.example.instaKing.security.SecurityConstants;
 import com.example.instaKing.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -56,7 +60,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -92,7 +92,6 @@
   background: var(--color-bg);
   /* Четкая граница */
   border: 1px solid var(--color-border);
-  /* Скругление */
   border-radius: 12px;
   /* Увеличенный отступ между постами */
   margin-bottom: 32px;

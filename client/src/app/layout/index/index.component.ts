@@ -170,6 +170,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openPostDetails(index: number) {
+    console.log(this.posts[index].addedAt);
     const dialogRef = this.dialog.open(PostInfoComponent, {
       data: { post: this.posts[index], index },
       width: '700px',

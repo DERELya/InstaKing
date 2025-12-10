@@ -148,10 +148,6 @@ export class PostService {
     );
   }
 
-  /**
-   * Гибкий парсер ответа пагинации.
-   * Возвращает объект { posts: UiPost[], totalPages: number, pageNumber?: number }
-   */
   loadPostsByPage(
     page: number,
     size: number,

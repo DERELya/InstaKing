@@ -3,7 +3,6 @@ package com.example.instaKing.controllers;
 import com.example.instaKing.models.User;
 import com.example.instaKing.payload.request.LoginRequest;
 import com.example.instaKing.payload.request.SignUpRequest;
-import com.example.instaKing.payload.response.JWTTokenSuccessResponse;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.security.JWTTokenProvider;
 import com.example.instaKing.security.SecurityConstants;

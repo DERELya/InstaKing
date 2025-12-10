@@ -491,7 +491,7 @@
   color: var(--color-text);
   margin-left: 17px;
 }
-.favoritetext{
+.favorite{
   color: var(--color-text);
   margin-left: 17px;
   margin-top: 5px;
@@ -543,27 +543,24 @@
 
   /* Верхний заголовок поста в модалке */
   .ig-modal-author-bar {
-    flex-shrink: 0; /* Шапка всегда фиксирована */
-  }
-
-  /* Заголовок поста */
-  .title, .favoritetext {
     flex-shrink: 0;
   }
 
-  /* Блок с комментариями (Скроллируемый) */
+  .title, .favorite {
+    flex-shrink: 0;
+  }
+
   .comments-scrollable-block {
-    flex: 1 1 auto; /* Занимает все оставшееся место */
+    flex: 1 1 auto;
     overflow-y: auto;
-    min-height: 0; /* Обязательно для скроллируемого flex-элемента */
+    min-height: 0;
   }
 
-  /* Футер (Лайки, Форма, Дата) - Должен быть прижат к низу */
   .modal-info-block, .timestamp {
-    flex-shrink: 0; /* Эти элементы фиксируют свою высоту */
+    flex-shrink: 0;
   }
 
-  /* Скрываем кнопку закрытия, так как на мобильном ее обычно нет */
+
   .close-modal-btn {
     display: none;
   }
@@ -577,21 +574,19 @@
   .comments-scrollable-block,
   .timestamp,
   .title,
-  .favoritetext {
+  .favorite {
     padding-left: 12px;
     padding-right: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  /* Дальнейшее сжатие отступов на узких экранах */
-
   .ig-modal-author-bar,
   .modal-info-block,
   .comments-scrollable-block,
   .timestamp,
   .title,
-  .favoritetext {
+  .favorite {
     padding-left: 12px;
     padding-right: 12px;
   }

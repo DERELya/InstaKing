@@ -1,63 +1,64 @@
 <div class="fullscreen-modal" (click)="close()">
 
   <div class="fullscreen-content" (click)="$event.stopPropagation()">
-    <!-- Кнопка закрыть -->
     <div class="modal-img-block">
       <img class="modal-photo"
            [src]="data.post.image"
            alt="photo"/>
     </div>
     <div class="info-block">
-      <div class="ig-modal-author-bar">
-        <div class="ig-modal-author-info">
-          <img [src]="getUserImage(data.post.username!)" alt="avatar" class="ig-modal-avatar">
-          <span class="username">{{ data.post.username }}</span>
-        </div>
-        <div class="ig-modal-actions">
-          <button matIconButton [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          <mat-menu #menu="matMenu" class="my-custom-menu">
-            <button *ngIf="meUsername===data.post.username" mat-menu-item (click)="onMenuAction('delete')" class="my-custom-menu-item">
-              <mat-icon>delete
-              </mat-icon>
-              <span>Delete</span>
+      <div>
+        <div class="ig-modal-author-bar">
+          <div class="ig-modal-author-info">
+            <img [src]="getUserImage(data.post.username!)" alt="avatar" class="ig-modal-avatar">
+            <span class="username">{{ data.post.username }}</span>
+          </div>
+          <div class="ig-modal-actions">
+            <button matIconButton [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+              <mat-icon>more_vert</mat-icon>
             </button>
-            <button mat-menu-item disabled>
-              <mat-icon>voicemail</mat-icon>
-              <span>Check voice mail</span>
-            </button>
-            <button mat-menu-item>
-              <mat-icon>notifications_off</mat-icon>
-              <span>Disable alerts</span>
-            </button>
-          </mat-menu>
-          <button class="close-btn" (click)="close()" aria-label="Закрыть">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path d="M10 10 L22 22 M22 10 L10 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="dots-menu" *ngIf="menuOpen">
-            <button class="dots-menu-item delete" (click)="onMenuAction('delete')">
-              <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
-                <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="2"/>
-                <path d="M9 5v4m0 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <mat-menu #menu="matMenu" class="my-custom-menu">
+              <button *ngIf="meUsername===data.post.username" mat-menu-item (click)="onMenuAction('delete')" class="my-custom-menu-item">
+                <mat-icon>delete
+                </mat-icon>
+                <span>Delete</span>
+              </button>
+              <button mat-menu-item disabled>
+                <mat-icon>voicemail</mat-icon>
+                <span>Check voice mail</span>
+              </button>
+              <button mat-menu-item>
+                <mat-icon>notifications_off</mat-icon>
+                <span>Disable alerts</span>
+              </button>
+            </mat-menu>
+            <button class="close-btn" (click)="close()" aria-label="Закрыть">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M10 10 L22 22 M22 10 L10 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              Удалить пост
             </button>
-            <button class="dots-menu-item update" (click)="onMenuAction('update')">
-              <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
-                <rect x="4" y="4" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
-                <rect x="7" y="7" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Редактировать пост
-            </button>
+            <div class="dots-menu" *ngIf="menuOpen">
+              <button class="dots-menu-item delete" (click)="onMenuAction('delete')">
+                <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
+                  <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="2"/>
+                  <path d="M9 5v4m0 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Удалить пост
+              </button>
+              <button class="dots-menu-item update" (click)="onMenuAction('update')">
+                <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
+                  <rect x="4" y="4" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <rect x="7" y="7" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Редактировать пост
+              </button>
+            </div>
           </div>
         </div>
+        <span class="title" >{{data.post.title}}</span>
+        <span  *ngIf="data.post.favorited" class="favorite" >added to favorite {{data.post.addedAt | date:'dd.MM.yyyy'}} </span>
       </div>
-      <span class="title" >{{data.post.title}}</span>
-      <span  *ngIf="data.post.favorited" class="favoritetext" >added to favorite {{data.post.addedAt | date:'dd.MM.yyyy'}} </span>
-      <!-- ... -->
+
       <div class="comments-scrollable-block">
         <div *ngIf="comments.length > 0">
           <div style="text-align:left" >
