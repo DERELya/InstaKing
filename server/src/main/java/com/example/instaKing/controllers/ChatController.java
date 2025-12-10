@@ -21,13 +21,8 @@ public class ChatController {
 
     @MessageMapping("/sendMessage")
     public void sendMessage(Message message, Principal principal) {
-        // гарантируем, что sender совпадает с авторизованным пользователем
         message.setSender(principal.getName());
-
-        // сохраняем в БД
         Message saved = chatService.saveMessage(message);
-
-        // отправляем только получателю
         messagingTemplate.convertAndSendToUser(
                 saved.getReceiver(),
                 "/queue/messages",
