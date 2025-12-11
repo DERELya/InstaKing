@@ -1,0 +1,86 @@
+.conversation-list {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.conversation-item {
+  display: flex;
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-items: center;
+  border-bottom: 1px solid rgba(var(--color-border), 0.5);
+  color: var(--color-text);
+  outline: none;
+}
+
+.conversation-item:hover,
+.conversation-item:focus {
+  background-color: var(--color-bg-dark); /* Темнее, чем фон списка */
+}
+
+/* Подсветка активного чата */
+.conversation-item.active {
+  background-color: rgba(var(--color-primary), 0.1); /* Легкий оттенок основного цвета */
+  border-left: 3px solid var(--color-primary);
+  padding-left: 12px;
+}
+
+.avatar {
+  margin-right: 15px;
+}
+
+.avatar mat-icon {
+  font-size: 40px;
+  height: 40px;
+  width: 40px;
+  color: var(--chat-text-secondary); /* Используем более тусклый текст */
+  border-radius: 50%;
+}
+
+.conversation-content {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.title {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: var(--chat-text-secondary);
+}
+
+.preview-text {
+  font-size: 0.9rem;
+  color: var(--chat-text-secondary);
+}
+
+.unread-badge {
+  /* Используем акцентный цвет, если он у вас определен,
+     иначе используем primary. Я создам переменную для контрастного текста. */
+  --badge-bg: var(--color-primary);
+  --badge-text: var(--color-text); /* Текст, который хорошо читается на --color-primary */
+
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  margin-left: 10px;
+  line-height: 1;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Убедимся, что бейдж хорошо виден на вашем бирюзовом primary */
+body:not(.dark-theme) .unread-badge {
+  /* Если фон светлый, текст на бирюзовом должен быть черным */
+  --badge-text: #121212;
+}
+body.dark-theme .unread-badge {
+  /* Если фон темный, текст на бирюзовом должен быть черным */
+  --badge-text: #121212;
+}

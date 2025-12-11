@@ -1,0 +1,64 @@
+<div class="chat-list-container">
+
+  <header class="list-search-header">
+    <mat-form-field appearance="outline" class="search-input-field">
+      <input matInput
+             placeholder="Поиск диалогов..."
+             [(ngModel)]="searchInput"
+             (ngModelChange)="onSearchChange()">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+  </header>
+
+  <div *ngIf="isLoading$ | async" class="loading-state">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>Идет загрузка чатов...</p>
+  </div>
+
+  <ng-container *ngIf="!(isLoading$ | async)">
+
+    <ng-container *ngIf="conversations$ | async as conversations">
+
+      <ng-container *ngIf="conversations.length > 0; else noChatsFound">
+
+        <div *ngFor="let conv of conversations"
+             class="conversation-item"
+             tabindex="0"
+             [ngClass]="{'active': (activeConversation$ | async)?.id === conv.id }"
+             (click)="selectConversation(conv)"
+             (keyup.enter)="selectConversation(conv)">
+
+          <div class="avatar">
+            <mat-icon>account_circle</mat-icon>
+          </div>
+
+          <div class="conversation-content">
+            <div class="top-row">
+              <span class="title">{{ getConversationTitle(conv) }}</span>
+              <span class="timestamp">{{ conv.lastMessageAt | date:'shortTime' }}</span>
+            </div>
+
+            <div class="preview-row">
+              <p class="preview-text">{{ conv.previewMessage || 'Нет сообщений' }}</p>
+
+              <span *ngIf="conv.unreadCount > 0" class="unread-badge">
+                  {{ conv.unreadCount }}
+                </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noChatsFound>
+        <div class="no-chats-found">
+          <p *ngIf="!searchInput">У вас нет активных диалогов.</p>
+          <p *ngIf="searchInput">Диалоги по запросу "{{ searchInput }}" не найдены.</p>
+          <button mat-button color="primary" (click)="startNewChat()">Начать чат</button>
+        </div>
+      </ng-template>
+
+    </ng-container>
+
+  </ng-container>
+
+</div>

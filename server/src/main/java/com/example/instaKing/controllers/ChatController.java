@@ -1,8 +1,13 @@
 package com.example.instaKing.controllers;
 
+import com.example.instaKing.dto.MessageDTO;
+import com.example.instaKing.dto.TypingDTO;
 import com.example.instaKing.models.Message;
 import com.example.instaKing.services.ChatService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -11,22 +16,26 @@ import java.security.Principal;
 @Controller
 public class ChatController {
 
-    private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
 
-    public ChatController(SimpMessagingTemplate messagingTemplate, ChatService chatService) {
-        this.messagingTemplate = messagingTemplate;
+    @Autowired
+    public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
 
-    @MessageMapping("/sendMessage")
-    public void sendMessage(Message message, Principal principal) {
-        message.setSender(principal.getName());
-        Message saved = chatService.saveMessage(message);
-        messagingTemplate.convertAndSendToUser(
-                saved.getReceiver(),
-                "/queue/messages",
-                saved
-        );
+    @MessageMapping("/chat/sendMessage")
+    public void sendMessage(@Payload MessageDTO messageDto, Principal principal) {
+        //Long senderId = principal.getName();
+        try {
+            Message savedMessage = chatService.saveAndSend(messageDto);
+        } catch (EntityNotFoundException e) {
+            System.err.println("Ошибка при отправке: " + e.getMessage());
+        }
+    }
+
+    @MessageMapping("/chat/typing")
+    public void handleTypingNotification(@Payload TypingDTO typingDto, Principal principal) {
+        String senderUsername = principal.getName();
+        chatService.sendTypingNotification(typingDto, senderUsername);
     }
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+// Рекомендуемая структура
 
 @Data
 @Entity
@@ -13,7 +14,7 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String message;
+    private String content; // Лучше назвать message -> content
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -23,14 +24,15 @@ public class Message {
         this.createdAt = LocalDateTime.now();
     }
 
-    private String sender;
-    private String receiver;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageStatus status = MessageStatus.SENT;
 
-    @ManyToOne
-    @JoinColumn(name = "conversation_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 }

@@ -13,6 +13,10 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "scripts": [
+              "src/global-shim.js"
+            ],
+            "allowedCommonJsDependencies": ["sockjs-client"],
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [

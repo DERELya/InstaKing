@@ -60,16 +60,37 @@ export class TokenStorageService {
     }
   }
 
-  public getUsernameFromToken(): string | null {
+  public getUsernameFromToken(): string {
     const token = this.getToken();
-    if (!token) return null;
+    if (!token) {
+
+      return "";
+    }
 
     try {
       const payload = JSON.parse(atob(decodeURIComponent(token).split('.')[1]));
-      // Попробуй поля в таком порядке — зависит от того, что кладёт твой backend:
-      return payload.username || payload.sub || null;
+
+      return payload.username || payload.sub || "";
     } catch (e) {
-      return null;
+      console.error("JWT decoding failed:", e);
+      return "";
+    }
+  }
+  public getIdFromToken(): number {
+    const token = this.getToken();
+    if (!token) {
+      return 0;
+    }
+
+    try {
+      const payload = JSON.parse(atob(decodeURIComponent(token).split('.')[1]));
+      const idValue = payload.id || payload.sub;
+
+      return Number(idValue) || 0;
+
+    } catch (e) {
+      console.error("JWT decoding failed:", e);
+      return 0;
     }
   }
 }

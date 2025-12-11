@@ -3,8 +3,8 @@
     <a class="logo" routerLink="/main">InstaKing</a>
   </div>
 
-  <div class="toolbar-section center">
-    <div class="search-container" *ngIf="router.url.startsWith('/main')">
+  <div class="toolbar-section center" *ngIf="router.url.startsWith('/main')">
+    <div class="search-container" >
       <mat-form-field class="search-field" appearance="outline" floatLabel="always">
         <mat-icon matPrefix class="search-icon">search</mat-icon>
 
@@ -21,6 +21,9 @@
         </button>
       </mat-form-field>
     </div>
+    <button mat-icon-button matSuffix  (click)="openChat()" class="chat-btn">
+      <mat-icon>send</mat-icon>
+    </button>
   </div>
 
   <div class="toolbar-section right">

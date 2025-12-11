@@ -1,0 +1,64 @@
+.chat-window-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ХЕДЕР */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+/* КОНТЕЙНЕР СООБЩЕНИЙ */
+.messages-container {
+  flex-grow: 1;
+  padding: 10px 20px;
+  overflow-y: auto;
+}
+
+/* Пузыри сообщений */
+.message-bubble {
+  max-width: 60%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  position: relative;
+}
+
+/* Пузырь собеседника (слева) */
+.message-row:not(.mine) .message-bubble {
+  background-color: var(--color-bg-dark); /* Используем темный фон */
+  color: var(--color-text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Ваш пузырь (справа) */
+.message-row.mine .message-bubble {
+  background-color: var(--color-primary);
+  color: var(--color-text); /* Текст должен быть читаемым на бирюзовом */
+  border-bottom-right-radius: 4px;
+}
+
+/* ФУТЕР (Форма ввода) */
+.chat-footer {
+  padding: 10px 20px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  flex-shrink: 0;
+}
+
+/* Стиль для поля ввода (Mat-field) */
+.message-input-field {
+  width: 100%;
+}
+
+/* Цвет текста в форме ввода */
+.message-input-field input {
+  color: var(--color-text);
+}

@@ -183,7 +183,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   openSetting() {
-      console.log("gg");
       this.router.navigate(['/settings']);
+  }
+
+   openChat() {
+     this.router.navigate(['/direct']);
   }
 }

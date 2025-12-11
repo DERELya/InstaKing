@@ -1,0 +1,28 @@
+<div class="direct-container">
+
+  <div class="chat-list-sidebar">
+    <header class="sidebar-header">
+      <h2>Директ</h2>
+    </header>
+
+    <app-chat-list
+      (conversationSelected)="onSelectConversation($event)"
+      (newChatRequested)="openUserSelectionModal()">
+    </app-chat-list>
+  </div>
+
+  <div class="chat-window-area">
+
+    <ng-container *ngIf="activeConversation$ | async as activeChat">
+      <app-chat-window [conversation]="activeChat"></app-chat-window>
+    </ng-container>
+
+    <div *ngIf="!(activeConversation$ | async)" class="no-chat-selected">
+      <mat-icon class="icon-large">message</mat-icon>
+      <h3>Ваши сообщения</h3>
+      <p>Выберите чат или начните новый диалог.</p>
+      <button mat-flat-button color="primary" (click)="openUserSelectionModal()">Начать сообщение</button>
+    </div>
+  </div>
+
+</div>

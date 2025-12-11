@@ -8,6 +8,7 @@ import {UserPostsComponent} from './pages/user/user-posts/user-posts.component';
 import {UserFavoriteComponent} from './pages/user/user-favorite/user-favorite.component';
 import {SettingComponent} from './pages/setting/setting.component';
 import {ArchiveStoryComponent} from './pages/story/archive-story/archive-story.component';
+import {DirectComponent} from './pages/Chat(direct)/direct/direct.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -25,6 +26,7 @@ export const routes: Routes = [
     ]
   },
   {path:'settings',canActivate: [AuthGuard], component: SettingComponent},
+  {path:'direct',canActivate: [AuthGuard], component: DirectComponent},
   { path: '', redirectTo: 'main', pathMatch: 'full' }
 ];
 

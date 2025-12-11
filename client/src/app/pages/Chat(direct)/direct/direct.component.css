@@ -1,0 +1,90 @@
+/* Переопределяем некоторые локальные переменные на основе глобальных для удобства */
+.direct-container {
+  --chat-bg: var(--color-bg);
+  --chat-bg-sidebar: var(--color-bg-dark);
+  --chat-border: var(--color-border);
+  --chat-text: var(--color-text);
+  --chat-text-secondary: rgba(var(--color-text), 0.7);
+  --chat-primary: var(--color-primary);
+  --chat-hover: var(--color-bg-dark); /* Используем темный фон как hover */
+  --chat-shadow: var(--box-shadow);
+  --chat-radius: var(--border-radius);
+}
+
+/* Общий контейнер Директа */
+.direct-container {
+  display: flex;
+  height: calc(100vh - 60px);
+  max-width: 1000px;
+  margin: 30px auto;
+  border: 1px solid var(--chat-border); /* Используем глобальный border */
+  border-radius: var(--chat-radius);
+  overflow: hidden;
+  background-color: var(--chat-bg);
+  box-shadow: var(--chat-shadow);
+}
+
+/* ЛЕВАЯ КОЛОНКА: Список чатов */
+.chat-list-sidebar {
+  width: 350px;
+  min-width: 250px;
+  border-right: 1px solid var(--color-border); /* Визуальный разделитель */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--chat-bg-sidebar); /* Чуть более темный фон для списка */
+}
+
+.sidebar-header {
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--chat-text);
+  flex-shrink: 0;
+}
+
+/* ПРАВАЯ КОЛОНКА: Окно чата */
+.chat-window-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--chat-bg);
+}
+
+/* Состояние "Чат не выбран" */
+.no-chat-selected {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--chat-text-secondary);
+  padding: 20px;
+}
+
+.no-chat-selected .icon-large {
+  font-size: 80px;
+  height: 80px;
+  width: 80px;
+  color: var(--chat-text-secondary);
+  margin-bottom: 20px;
+}
+
+.no-chat-selected h3 {
+  margin: 10px 0 5px 0;
+  font-weight: 400;
+  color: var(--chat-text);
+}
+
+/* Стилизация кнопки (если это не Mat-button) */
+.no-chat-selected button {
+  background-color: var(--chat-primary);
+  color: var(--color-text); /* Светлый текст на первичном цвете */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: 600;
+}

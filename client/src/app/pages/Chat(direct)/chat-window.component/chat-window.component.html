@@ -1,0 +1,50 @@
+<div class="chat-window-container">
+
+  <header class="chat-header">
+    <div class="header-info">
+      <mat-icon>account_circle</mat-icon>
+      <h4>{{ getConversationTitle(conversation) }}</h4>
+    </div>
+    <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
+  </header>
+
+  <main #messageContainer class="messages-container">
+
+    <div *ngIf="messages$ | async as messages">
+
+      <div *ngFor="let message of messages"
+           class="message-row"
+           [class.mine]="message.senderId === currentUserId">
+
+        <div class="message-bubble">
+          <p>{{ message.content }}</p>
+          <span class="message-time">{{ message.createdAt | date:'shortTime' }}</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div *ngIf="typingStatus$ | async as status" class="typing-status">
+        <span *ngIf="status.isTyping && status.username !== currentUsername">
+            {{ status.username }} печатает...
+        </span>
+    </div>
+
+  </main>
+
+  <footer class="chat-footer">
+    <mat-form-field appearance="outline" class="message-input-field">
+      <input matInput
+             placeholder="Написать сообщение..."
+             [(ngModel)]="messageInput"
+             (keyup.enter)="sendMessage()"
+             (input)="onInputChange()">
+
+      <button mat-icon-button matSuffix (click)="sendMessage()" [disabled]="!messageInput.trim()">
+        <mat-icon color="primary">send</mat-icon>
+      </button>
+    </mat-form-field>
+  </footer>
+
+</div>
