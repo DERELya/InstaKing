@@ -1,8 +1,11 @@
+
+import {User} from './User';
+
 export interface ConversationDTO {
-    id: number;
-    participants: any[];
-    lastMessageAt: Date;
-    previewMessage: string;
-    unreadCount: number;
-    title: string;
+  id: number;
+  participants: User[];
+  previewMessage: string;
+  lastMessageAt: Date;
+  unreadCount: number;
+  title: string;
 }

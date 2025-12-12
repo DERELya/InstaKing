@@ -74,6 +74,11 @@ public class JWTTokenProvider {
         return Long.parseLong(String.valueOf(id));
     }
 
+    public String getUsernameFromToken(String token, boolean isRefresh, Key secret) {
+        Object username = getClaims(token, isRefresh,secret).get("username");
+        return String.valueOf(username);
+    }
+
     public String getTokenType(String token, boolean isRefresh, Key secret) {
         return String.valueOf(getClaims(token, isRefresh,secret).get("tokenType"));
     }

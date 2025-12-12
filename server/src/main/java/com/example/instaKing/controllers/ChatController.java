@@ -34,7 +34,13 @@ public class ChatController {
     }
 
     @MessageMapping("/chat/typing")
-    public void handleTypingNotification(@Payload TypingDTO typingDto, Principal principal) {
+    public void handleTypingNotification(@Payload TypingDTO typingDto, java.security.Principal principal) {
+        // 💡 ПОСТАВЬТЕ ТОЧКУ ОСТАНОВА ЗДЕСЬ И ПРОВЕРЬТЕ principal
+        if (principal == null) {
+            // Если здесь null, это означает, что Principal не дошел
+            System.err.println("Principal is NULL! The session context was lost.");
+            return;
+        }
         String senderUsername = principal.getName();
         chatService.sendTypingNotification(typingDto, senderUsername);
     }

@@ -3,8 +3,10 @@ package com.example.instaKing.controllers;
 import com.example.instaKing.dto.ConversationDTO;
 import com.example.instaKing.dto.MessageDTO;
 import com.example.instaKing.dto.StartChatDTO;
+import com.example.instaKing.dto.UserDTO;
 import com.example.instaKing.facade.ConversationMapper;
 import com.example.instaKing.facade.MessageMapper;
+import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.Conversation;
 import com.example.instaKing.models.Message;
 import com.example.instaKing.models.User;
@@ -13,6 +15,7 @@ import com.example.instaKing.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -30,28 +33,24 @@ public class DialogController {
     @GetMapping
     public List<ConversationDTO> getUserConversation(Principal principal) {
         User currentUser = userService.getUserByUsername(principal.getName());
-
         List<Conversation> conversations=chatService.getConversationByUser(currentUser.getId());
-
-
         return conversations.stream()
-                .map(c->conversationMapper.toDto(c,currentUser)) // Вам нужно создать маппер
+                .map(c->conversationMapper.toDto(c,currentUser))
                 .collect(Collectors.toList());
     }
 
     @PostMapping("/start")
     public ConversationDTO startNewConversation(@RequestBody StartChatDTO startChatDto, Principal principal) {
-
         User userA = userService.getUserByUsername(principal.getName());
         User userB = userService.getUserById(startChatDto.getRecipientId());
-
         Conversation conversation = chatService.getOrCreatePrivateConversation(
                 userA.getId(),
                 userB.getId()
         );
-
         return conversationMapper.toDto(conversation,userA);
     }
+
+
 
     @GetMapping("/{conversationId}/messages")
     public List<MessageDTO> getConversationHistory(

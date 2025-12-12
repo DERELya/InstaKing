@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, inject } from '@angular/core';
+import {Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, inject, SimpleChanges} from '@angular/core';
 import { ChatStateService } from '../../../services/chat-state.service';
 import { ChatService } from '../../../services/chat.service';
 import { TokenStorageService } from '../../../services/token-storage.service';
@@ -122,7 +122,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
       username: this.currentUsername,
       isTyping: isTyping
     };
-    this.chatService.sendTypingNotification(typingDto);
+    //this.chatService.sendTypingNotification(typingDto);
   }
 
   private scrollToBottom(): void {
@@ -136,5 +136,18 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     // Очищаем таймер при уничтожении компонента
     clearTimeout(this.typingTimeout);
+  }
+
+  @Input() user: any;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['user'] && this.user) {
+      this.loadMessages(this.user.id);
+    }
+  }
+
+  loadMessages(userId: string) {
+    console.log(`Загрузка истории для пользователя ${userId}...`);
+    // Вызов твоего API
   }
 }

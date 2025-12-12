@@ -1,38 +1,70 @@
 import {inject, Injectable} from '@angular/core';
-import { Client, StompHeaders,Message } from '@stomp/stompjs';
+import {Client, Message, ActivationState, StompHeaders} from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {MessageDTO} from '../models/MessageDTO';
 import {TypingDTO} from '../models/TypingDTO';
 import {TokenStorageService} from './token-storage.service';
 import SockJS from 'sockjs-client';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
-  private stompClient: Client;
+  private stompClient!: Client;
   static readonly SOCKET_URL = 'http://localhost:8080/ws';
+
   private newMessagesSubject = new BehaviorSubject<MessageDTO | null>(null);
   public newMessages$: Observable<MessageDTO | null> = this.newMessagesSubject.asObservable();
 
   private typingNotificationSubject = new BehaviorSubject<TypingDTO | null>(null);
   public typingNotifications$: Observable<TypingDTO | null> = this.typingNotificationSubject.asObservable();
 
-  // Флаг состояния подключения
   private isConnectedSubject = new BehaviorSubject<boolean>(false);
   public isConnected$: Observable<boolean> = this.isConnectedSubject.asObservable();
+
   private tokenService = inject(TokenStorageService);
 
   constructor() {
+  }
+  private getAuthHeaders(): StompHeaders {
+    const fullJwtToken = this.tokenService.getToken();
+
+    if (fullJwtToken) {
+      // Убедимся, что токен чистый, и добавим его в заголовок
+      const trimmedToken = fullJwtToken.trim();
+
+        return { 'Authorization': trimmedToken } as StompHeaders;
+    }
+    return {} as StompHeaders;
+  }
+
+  public connect(): void {
+    if (this.stompClient && this.stompClient.state === ActivationState.ACTIVE) {
+      console.log('WebSocket уже активен.');
+      return;
+    }
+
+    const headers = this.getAuthHeaders(); // Получаем заголовки
+
+    // Проверка, что токен не null перед созданием клиента
+    if (Object.keys(headers).length === 0) {
+      console.error("JWT токен отсутствует. Невозможно подключиться к WebSocket.");
+      return;
+    }
+
     this.stompClient = new Client({
       webSocketFactory: () => {
+        // ✅ URL без токена
         return new SockJS(ChatService.SOCKET_URL);
       },
+
+      // ✅ Передаем заголовки при подключении
+      connectHeaders: headers,
+
 
       onConnect: (frame) => {
         console.log('WebSocket Connected: ' + frame);
         this.isConnectedSubject.next(true);
-
-        // Важный шаг: после onConnect мы подписываемся на нужные очереди/топики
         this.subscribeToQueues();
       },
 
@@ -46,58 +78,51 @@ export class ChatService {
         console.error('Additional details: ' + frame.body);
       }
     });
-  }
 
-  // --- 1. Управление Подключением ---
-  private getAuthHeaders(): StompHeaders {
-    // 1. Получаем токен из хранилища (localStorage, sessionStorage и т.д.)
-    const jwtToken = localStorage.getItem('accessToken');
+    this.stompClient.debug = (str) => {
+      if (str.includes('STOMP: ERROR')) console.error(str);
+    };
 
-    if (jwtToken) {
-      return {
-        'Authorization': `Bearer ${jwtToken}`
-      } as StompHeaders;
-    }
-
-    return {} as StompHeaders;
-  }
-  public connect(): void {
-    // В production не забудьте добавить логику, чтобы не подключаться, если уже подключены
     this.stompClient.activate();
   }
 
   public disconnect(): void {
-    this.stompClient.deactivate();
+    if (this.stompClient) {
+      this.stompClient.deactivate();
+    }
   }
+
+  // --- 2. Подписки ---
   private subscribeToQueues(): void {
     const username = this.getCurrentUsername();
 
     if (!username) {
-      console.error("Username is required for subscription.");
+      console.error("Username is required for subscription. Disconnecting...");
+      this.disconnect();
       return;
     }
 
+    if (!this.stompClient.active) {
+      console.warn("STOMP client не активен, не могу подписаться на очереди.");
+      return;
+    }
+
+
+    // Подписка на личные сообщения
     this.stompClient.subscribe(
       '/user/queue/messages',
       (message: Message) => {
         const receivedMessage: MessageDTO = JSON.parse(message.body);
         this.newMessagesSubject.next(receivedMessage);
-      },
-      {} as StompHeaders
-    );
-
-
-    this.stompClient.subscribe(
-      '/user/queue/typing',
-      (notification: Message) => {
-        const typingNotification: TypingDTO = JSON.parse(notification.body);
-        this.typingNotificationSubject.next(typingNotification);
       }
     );
+
+    // Подписка на уведомления о печати
   }
 
+  // --- 3. Отправка Сообщений ---
   public sendMessage(messageDto: MessageDTO): void {
-    if (this.stompClient.active) {
+    if (this.stompClient?.active) {
       this.stompClient.publish({
         destination: '/app/chat/sendMessage',
         body: JSON.stringify(messageDto)
@@ -108,9 +133,9 @@ export class ChatService {
   }
 
   public sendTypingNotification(typingDto: TypingDTO): void {
-    if (this.stompClient.active) {
+    if (this.stompClient?.active) {
       this.stompClient.publish({
-        destination: '/app/chat/typing', // Эндпоинт вашего @MessageMapping
+        destination: '/app/chat/typing',
         body: JSON.stringify(typingDto)
       });
     }

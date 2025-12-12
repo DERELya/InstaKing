@@ -99,7 +99,6 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   }
 
   close(): void {
-    // Явное закрытие пользователем
     this.dialogRef.close(this.data.post);
   }
 

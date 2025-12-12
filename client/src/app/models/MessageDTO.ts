@@ -1,11 +1,11 @@
 import {MessageStatus} from './MessageStatus';
 
 export interface MessageDTO {
-  id?: number;
+  id?: number; // Если ID генерируется на бэке
   content: string;
   senderId: number;
-  createdAt: Date;
   conversationId: number;
+  createdAt: Date;
   status: MessageStatus;
 }
 

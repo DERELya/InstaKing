@@ -14,7 +14,7 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content; // Лучше назвать message -> content
+    private String content;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

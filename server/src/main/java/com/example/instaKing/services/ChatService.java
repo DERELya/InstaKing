@@ -54,7 +54,7 @@ public class ChatService {
 
         Conversation newConversation = new Conversation();
         newConversation.setParticipants(List.of(userA, userB));
-        newConversation.setLastMessageAt(LocalDateTime.now()); // Инициализируем
+        newConversation.setLastMessageAt(LocalDateTime.now());
 
         return conversationRepository.save(newConversation);
     }
@@ -84,11 +84,8 @@ public class ChatService {
     }
 
     private void sendRealTimeNotification(Message message, Conversation conversation) {
-
         for (User participant : conversation.getParticipants()) {
-
             String destination = "/queue/messages";
-
             messagingTemplate.convertAndSendToUser(
                     participant.getUsername(),
                     destination,

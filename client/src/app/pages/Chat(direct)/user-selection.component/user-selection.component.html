@@ -1,0 +1,38 @@
+<div class="modal-container">
+  <h3>Поиск пользователей</h3>
+
+  <div class="search-container" >
+    <mat-form-field class="search-field" appearance="outline" floatLabel="always">
+      <mat-icon matPrefix class="search-icon">search</mat-icon>
+
+      <input matInput
+             class="search-input"
+             [formControl]="searchControl"
+             placeholder="Поиск"
+             autocomplete="off">
+
+      <button mat-icon-button matSuffix  (click)="clearSearch()" class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <div class="results-list">
+    <div *ngIf="isLoading" class="status-message">Загрузка...</div>
+
+    <div *ngFor="let user of users" class="user-card">
+      <div class="search-user-row">
+        <img class="search-avatar" [src]="user.avatarUrl || 'assets/placeholder.jpg'" alt="avatar" />
+        <div class="search-info">
+          <span class="search-username">{{ user.username }}</span>
+          <span class="search-fullname" *ngIf="user.firstname">{{ user.firstname }} {{ user.lastname }}</span>
+        </div>
+        <button (click)="onWrite(user)" class="btn-write">Написать</button>
+      </div>
+      </div>
+
+    </div>
+
+    <div *ngIf="users.length === 0 && !isLoading" class="status-message">Пользователи не найдены</div>
+  </div>
+

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of} from 'rxjs';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
@@ -17,7 +17,6 @@ import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
 
-const USER_API = 'http://localhost:8080/api/user/';
 
 @Component({
   selector: 'app-navigation',
@@ -25,7 +24,6 @@ const USER_API = 'http://localhost:8080/api/user/';
     MatIcon,
     MatToolbar,
     RouterLink,
-    MatTooltip,
     MatMenu,
     MatMenuItem,
     MatIconButton,
@@ -50,21 +48,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
   userProfileImage?: string;
   previewUrl?: string;
 
-  isOpen = false;
   query = '';
   users: any[] = [];
-  isLoading = false;
   error: string | null = null;
   private destroy$ = new Subject<void>();
   private searchInput$ = new Subject<string>();
+  private tokenService=inject(TokenStorageService);
+  private userService=inject(UserService);
+  public router=inject(Router);
+  private imageService=inject(ImageUploadService);
+  private cd=inject(ChangeDetectorRef);
+  private themeService=inject(ThemeService);
 
   constructor(
-    private tokenService: TokenStorageService,
-    private userService: UserService,
-    protected router: Router,
-    private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef,
-    public themeService: ThemeService) {
+    ) {
   }
 
 
@@ -117,14 +114,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   // Новый метод для загрузки и обновления аватара
   loadProfileImage(): void {
-    // 1. Очищаем старый URL, чтобы избежать утечки памяти
     if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
       URL.revokeObjectURL(this.userProfileImage);
     }
-
-    // 2. Запрашиваем новый аватар.
-    // ImageUploadService гарантирует, что если аватар был обновлен,
-    // его внутренний кэш сброшен, и будет сделан новый HTTP-запрос.
     this.imageService.getProfileImage().pipe(takeUntil(this.destroy$)).subscribe({
       next: (blob) => {
         this.userProfileImage = URL.createObjectURL(blob);
@@ -137,14 +129,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       }
     });
-  }
-
-  toggleTheme() {
-    this.themeService.toggleTheme();
-  }
-
-  isDarkTheme(): boolean {
-    return this.themeService.isDarkTheme();
   }
 
   logout(): void {

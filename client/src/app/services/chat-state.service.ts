@@ -1,9 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { TypingDTO } from '../models/TypingDTO';
 import { MessageDTO } from '../models/MessageDTO';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+// ✅ Добавлены catchError, EMPTY для обработки ошибок в Observable
+import { BehaviorSubject, Observable, combineLatest, catchError, EMPTY } from 'rxjs';
 import { ConversationDTO } from '../models/ConversationDTO';
 import { HttpClient } from '@angular/common/http';
+// Импорты операторов RxJS из 'rxjs/operators'
 import { tap, map, debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { TokenStorageService } from './token-storage.service';
 
@@ -11,6 +13,7 @@ import { TokenStorageService } from './token-storage.service';
   providedIn: 'root'
 })
 export class ChatStateService {
+  // Убедитесь, что этот URL корректен для вашего Spring Boot
   private apiUrl = 'http://localhost:8080/api/chats';
 
   // --- Состояния ---
@@ -26,7 +29,6 @@ export class ChatStateService {
   private typingStatusSubject = new BehaviorSubject<TypingDTO | null>(null);
   public typingStatus$ = this.typingStatusSubject.asObservable();
 
-  // Состояние загрузки (для компонента списка)
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
@@ -38,26 +40,19 @@ export class ChatStateService {
   private http = inject(HttpClient);
   private tokenService = inject(TokenStorageService);
 
-  // currentUserId инициализируется один раз при создании сервиса
-  // Используем || 0 для гарантии типа number
   private currentUserId: number = this.tokenService.getIdFromToken() || 0;
 
-  // Конструктор остается пустым, так как инъекции и инициализация уже в полях класса
   constructor() {
-
-    // Инициализация фильтрующего Observable
     this.filteredConversationsList$ = combineLatest([
       this.conversationsList$,
-      // Ждем 200мс после последнего ввода, чтобы не спамить фильтрацией
       this.searchTermSubject.pipe(debounceTime(200), distinctUntilChanged())
     ]).pipe(
       map(([conversations, searchTerm]) => {
         const term = searchTerm.toLowerCase().trim();
         if (!term) {
-          return conversations; // Если поиск пуст
+          return conversations;
         }
 
-        // Фильтрация
         return conversations.filter(conversation => {
           const participantName = this.getOtherParticipantName(conversation);
           const preview = conversation.previewMessage || '';
@@ -72,10 +67,10 @@ export class ChatStateService {
    * Загружает все диалоги пользователя.
    */
   getConversations(): Observable<ConversationDTO[]> {
-    this.loadingSubject.next(true); // Начало загрузки
+    this.loadingSubject.next(true);
     return this.http.get<ConversationDTO[]>(this.apiUrl).pipe(
       tap(conversations => this.conversationsListSubject.next(conversations)),
-      finalize(() => this.loadingSubject.next(false)) // Конец загрузки
+      finalize(() => this.loadingSubject.next(false))
     );
   }
 
@@ -95,6 +90,7 @@ export class ChatStateService {
     const other = conversation.participants.find(
       p => p.id !== this.currentUserId
     );
+    // ✅ Убедитесь, что participants имеет поле username, как в вашем DTO.
     return other ? other.username : conversation.title || 'Чат';
   }
 
@@ -143,11 +139,9 @@ export class ChatStateService {
     const isMessageFromActiveChat = this.activeConversationSubject.value?.id === message.conversationId;
 
     if (isMessageFromActiveChat) {
-      // 1. Обновляем окно чата
       const currentMessages = this.messagesSubject.value;
       this.messagesSubject.next([...currentMessages, message]);
 
-      // 2. Если сообщение от другого пользователя, сразу помечаем его как прочитанное
       if (message.senderId !== this.currentUserId) {
         this.markAsRead(message.conversationId).subscribe(() => {
           this.updateUnreadCountInList(message.conversationId, 0);
@@ -165,21 +159,18 @@ export class ChatStateService {
     if (index !== -1) {
       const conv = list[index];
 
-      // Обновляем превью и время
+      // createdAt теперь должно быть доступно в MessageDTO
       conv.previewMessage = message.content;
       conv.lastMessageAt = message.createdAt;
 
-      // Увеличиваем счетчик, если чат неактивен И сообщение от другого пользователя
       if (this.activeConversationSubject.value?.id !== message.conversationId && message.senderId !== this.currentUserId) {
         conv.unreadCount = (conv.unreadCount || 0) + 1;
       }
 
-      // Перемещаем чат наверх (самый свежий)
       const updatedConv = list.splice(index, 1)[0];
       list.unshift(updatedConv);
       this.conversationsListSubject.next(list);
     }
-    // TODO: Если чат не найден, возможно, его нужно запросить по REST (новый чат).
   }
 
   /**
@@ -189,7 +180,6 @@ export class ChatStateService {
     const list = this.conversationsListSubject.value;
     const index = list.findIndex(c => c.id === conversationId);
     if (index !== -1) {
-      // Immutable update (лучшая практика)
       const updatedList = list.map((conv, i) => {
         if (i === index) {
           return { ...conv, unreadCount: count };
@@ -204,5 +194,57 @@ export class ChatStateService {
     if (this.activeConversationSubject.value?.id === notification.conversationId) {
       this.typingStatusSubject.next(notification);
     }
+  }
+
+  /**
+   * Запрашивает существующий диалог с пользователем по его ID или создает новый (REST API).
+   * Обновляет активную беседу и список чатов.
+   */
+  loadConversationByUserId(userId: string): void {
+    const startChatDto = {
+      recipientId: userId
+    };
+
+    if (this.loadingSubject.value) return;
+    this.loadingSubject.next(true);
+
+    this.http.post<ConversationDTO>(`${this.apiUrl}/start`, startChatDto)
+      .pipe(
+        tap((conversation: ConversationDTO) => {
+          // 1. Устанавливаем активный чат
+          this.activeConversationSubject.next(conversation);
+
+          // 2. Инициируем отдельный запрос для истории сообщений (Правильная логика для ваших DTO)
+          this.messagesSubject.next([]);
+          this.loadMessageHistory(conversation.id);
+
+          // 3. Обновляем список
+          this.updateConversationListOnNewConversation(conversation);
+        }),
+        finalize(() => {
+          this.loadingSubject.next(false);
+        }),
+        catchError((error) => {
+          console.error("Ошибка REST API при загрузке/создании беседы:", error);
+          this.loadingSubject.next(false);
+          return EMPTY;
+        })
+      )
+      .subscribe(); // Запуск HTTP-запроса
+  }
+
+  /**
+   * Вспомогательный метод для обновления списка после создания нового чата.
+   */
+  private updateConversationListOnNewConversation(newConversation: ConversationDTO): void {
+    const list = [...this.conversationsListSubject.value];
+    const index = list.findIndex(c => c.id === newConversation.id);
+
+    if (index !== -1) {
+      list.splice(index, 1);
+    }
+
+    list.unshift(newConversation);
+    this.conversationsListSubject.next(list);
   }
 }
