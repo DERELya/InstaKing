@@ -11,7 +11,6 @@ public class MessageMapper {
         dto.setContent(message.getContent());
         dto.setSenderId(message.getSender().getId());
         dto.setConversationId(message.getConversation().getId());
-
         return dto;
     }
 

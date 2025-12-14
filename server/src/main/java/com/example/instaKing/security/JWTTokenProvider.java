@@ -33,7 +33,6 @@ public class JWTTokenProvider {
         return buildToken(user, now, expiryDate, "refresh", SecurityConstants.REFRESH_SECRET);
     }
 
-    // --- Общая сборка токена ---
     private String buildToken(User user, Date now, Date expiryDate, String type, Key secret) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
@@ -51,7 +50,6 @@ public class JWTTokenProvider {
                 .compact();
     }
 
-    // --- Валидация токена ---
     public boolean validateToken(String token, boolean isRefresh,Key secret) {
         try {
             getClaims(token, isRefresh,secret);
@@ -68,22 +66,16 @@ public class JWTTokenProvider {
         return false;
     }
 
-    // --- Извлечение данных ---
     public Long getUserIdFromToken(String token, boolean isRefresh, Key secret) {
         Object id = getClaims(token, isRefresh,secret).get("userId");
         return Long.parseLong(String.valueOf(id));
     }
 
-    public String getUsernameFromToken(String token, boolean isRefresh, Key secret) {
-        Object username = getClaims(token, isRefresh,secret).get("username");
-        return String.valueOf(username);
-    }
 
     public String getTokenType(String token, boolean isRefresh, Key secret) {
         return String.valueOf(getClaims(token, isRefresh,secret).get("tokenType"));
     }
 
-    // --- Вспомогательный метод ---
     private Claims getClaims(String token, boolean isRefresh,Key secret) {
         return Jwts.parser()
                 .setSigningKey(secret)

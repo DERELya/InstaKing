@@ -1,64 +1,91 @@
 <div class="chat-list-container">
 
+  <!-- 1. Шапка с поиском -->
   <header class="list-search-header">
     <mat-form-field appearance="outline" class="search-input-field">
       <input matInput
-             placeholder="Поиск диалогов..."
+             placeholder="Поиск..."
              [(ngModel)]="searchInput"
              (ngModelChange)="onSearchChange()">
       <mat-icon matPrefix>search</mat-icon>
+      <!-- Кнопка очистки поиска (появляется, если есть текст) -->
+      <button *ngIf="searchInput" matSuffix mat-icon-button aria-label="Clear" (click)="searchInput=''; onSearchChange()">
+        <mat-icon>close</mat-icon>
+      </button>
     </mat-form-field>
   </header>
 
+  <!-- 2. Индикатор загрузки -->
   <div *ngIf="isLoading$ | async" class="loading-state">
-    <mat-spinner diameter="30"></mat-spinner>
-    <p>Идет загрузка чатов...</p>
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Загрузка чатов...</p>
   </div>
 
+  <!-- 3. Список чатов (отображается, когда не грузится) -->
   <ng-container *ngIf="!(isLoading$ | async)">
 
+    <!-- Получаем список через async pipe один раз -->
     <ng-container *ngIf="conversations$ | async as conversations">
 
-      <ng-container *ngIf="conversations.length > 0; else noChatsFound">
+      <!-- Если список не пуст -->
+      <div *ngIf="conversations.length > 0; else noChatsFound" class="conversation-list">
 
         <div *ngFor="let conv of conversations"
              class="conversation-item"
-             tabindex="0"
              [ngClass]="{'active': (activeConversation$ | async)?.id === conv.id }"
              (click)="selectConversation(conv)"
-             (keyup.enter)="selectConversation(conv)">
+             tabindex="0">
 
+          <!-- Аватарка (пока стандартная иконка) -->
           <div class="avatar">
             <mat-icon>account_circle</mat-icon>
           </div>
 
+          <!-- Контент (Имя, Превью, Дата) -->
           <div class="conversation-content">
+
+            <!-- Верхняя строка: Имя собеседника и Время -->
             <div class="top-row">
               <span class="title">{{ getConversationTitle(conv) }}</span>
-              <span class="timestamp">{{ conv.lastMessageAt | date:'shortTime' }}</span>
+
+              <!-- Показываем время только если есть сообщения -->
+              <span *ngIf="conv.lastMessageAt" class="timestamp">
+                <!-- Важно: на бэкенде должно быть spring.jackson.serialization.write-dates-as-timestamps=false -->
+                {{ conv.lastMessageAt | date:'HH:mm' }}
+              </span>
             </div>
 
+            <!-- Нижняя строка: Текст сообщения и Бейдж непрочитанных -->
             <div class="preview-row">
-              <p class="preview-text">{{ conv.previewMessage || 'Нет сообщений' }}</p>
+              <p class="preview-text">
+                <!-- Если сообщение длинное, CSS обрежет его троеточием -->
+                {{ conv.previewMessage || 'Нет сообщений' }}
+              </p>
 
+              <!-- Красный кружок (показываем, только если > 0) -->
               <span *ngIf="conv.unreadCount > 0" class="unread-badge">
-                  {{ conv.unreadCount }}
-                </span>
+                {{ conv.unreadCount > 99 ? '99+' : conv.unreadCount }}
+              </span>
             </div>
+
           </div>
         </div>
-      </ng-container>
+      </div>
 
+      <!-- 4. Если чатов нет или поиск не дал результатов -->
       <ng-template #noChatsFound>
         <div class="no-chats-found">
-          <p *ngIf="!searchInput">У вас нет активных диалогов.</p>
-          <p *ngIf="searchInput">Диалоги по запросу "{{ searchInput }}" не найдены.</p>
-          <button mat-button color="primary" (click)="startNewChat()">Начать чат</button>
+          <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #ccc; margin-bottom: 10px;">chat_bubble_outline</mat-icon>
+          <p *ngIf="!searchInput">У вас пока нет переписок.</p>
+          <p *ngIf="searchInput">Ничего не найдено по запросу "{{ searchInput }}".</p>
+
+          <button mat-raised-button color="primary" (click)="startNewChat()">
+            <mat-icon>add</mat-icon> Начать новый чат
+          </button>
         </div>
       </ng-template>
 
     </ng-container>
-
   </ng-container>
 
 </div>

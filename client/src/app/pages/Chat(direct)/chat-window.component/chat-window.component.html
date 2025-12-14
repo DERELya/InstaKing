@@ -1,50 +1,45 @@
-<div class="chat-window-container">
+<div class="chat-window">
 
-  <header class="chat-header">
+  <div class="chat-header">
     <div class="header-info">
-      <mat-icon>account_circle</mat-icon>
-      <h4>{{ getConversationTitle(conversation) }}</h4>
+      <span class="chat-title">{{ getConversationTitle() }}</span>
+      <span *ngIf="typingUser$ | async as user" class="typing-indicator">
+        {{ user }} печатает...
+      </span>
     </div>
-    <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
-  </header>
+  </div>
 
-  <main #messageContainer class="messages-container">
-
-    <div *ngIf="messages$ | async as messages">
-
-      <div *ngFor="let message of messages"
-           class="message-row"
-           [class.mine]="message.senderId === currentUserId">
-
-        <div class="message-bubble">
-          <p>{{ message.content }}</p>
-          <span class="message-time">{{ message.createdAt | date:'shortTime' }}</span>
+  <div #messageContainer class="message-container">
+    <div *ngFor="let msg of messages$ | async"
+         class="message-wrapper"
+         [ngClass]="msg.senderId === currentUserId ? 'sent' : 'received'">
+      <div class="message-content">
+        <div class="message-text">{{ msg.content }}</div>
+        <div class="message-info">
+          <span class="message-time">{{ msg.createdAt | date: 'HH:mm' }}</span>
+          <ng-container *ngIf="msg.senderId === currentUserId">
+            <mat-icon class="status-icon" style="font-size: 14px; width: 14px; height: 14px;">done_all</mat-icon>
+          </ng-container>
         </div>
-
       </div>
-
     </div>
+  </div>
 
-    <div *ngIf="typingStatus$ | async as status" class="typing-status">
-        <span *ngIf="status.isTyping && status.username !== currentUsername">
-            {{ status.username }} печатает...
-        </span>
-    </div>
-
-  </main>
-
-  <footer class="chat-footer">
-    <mat-form-field appearance="outline" class="message-input-field">
-      <input matInput
-             placeholder="Написать сообщение..."
-             [(ngModel)]="messageInput"
-             (keyup.enter)="sendMessage()"
-             (input)="onInputChange()">
-
-      <button mat-icon-button matSuffix (click)="sendMessage()" [disabled]="!messageInput.trim()">
-        <mat-icon color="primary">send</mat-icon>
-      </button>
+  <div class="input-panel">
+    <mat-form-field appearance="outline" class="full-width-input">
+      <textarea matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="5"
+                placeholder="Напишите сообщение..."
+                [(ngModel)]="messageInput"
+                (keydown.enter)="onEnter($event)"
+                (input)="onTyping()"></textarea>
     </mat-form-field>
-  </footer>
+
+    <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!messageInput?.trim()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
 
 </div>

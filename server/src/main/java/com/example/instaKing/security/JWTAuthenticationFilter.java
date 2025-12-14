@@ -6,19 +6,17 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 
 @Component
@@ -37,13 +35,13 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwt = getJWTFromRequest(request);
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt,false,SecurityConstants.ACCESS_SECRET)) {
-                if (!"access".equals(tokenProvider.getTokenType(jwt,false,SecurityConstants.ACCESS_SECRET))) {
+            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt, false, SecurityConstants.ACCESS_SECRET)) {
+                if (!"access".equals(tokenProvider.getTokenType(jwt, false, SecurityConstants.ACCESS_SECRET))) {
                     filterChain.doFilter(request, response);
                     return;
                 }
-                Long userId = tokenProvider.getUserIdFromToken(jwt,false,SecurityConstants.ACCESS_SECRET);
-                User userDetails = customUserDetailsService.loadUserById(userId);
+                Long userId = tokenProvider.getUserIdFromToken(jwt, false, SecurityConstants.ACCESS_SECRET);
+                UserDetails userDetails = customUserDetailsService.loadUserById(userId);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -70,6 +68,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return request.getRequestURI().startsWith("/ws/");

@@ -38,7 +38,7 @@ export class ChatListComponent implements OnDestroy{
   public conversations$: Observable<ConversationDTO[]>; // ФИЛЬТРОВАННЫЙ список
   public isLoading$: Observable<boolean>; // Флаг загрузки
   public activeConversation$: Observable<ConversationDTO | null>; // Активный чат
-
+  public typingUser$: Observable<string | null>;
   // ✅ 2. Свойство для поля ввода поиска
   public searchInput: string = '';
 
@@ -55,6 +55,7 @@ export class ChatListComponent implements OnDestroy{
     this.conversations$ = this.chatStateService.filteredConversationsList$;
     this.isLoading$ = this.chatStateService.loading$;
     this.activeConversation$ = this.chatStateService.activeConversation$;
+    this.typingUser$ = this.chatStateService.typingUser$;
 
     // Запускаем загрузку данных при инициализации компонента
     // и добавляем подписку в коллекцию для корректного отписывания
@@ -105,5 +106,19 @@ export class ChatListComponent implements OnDestroy{
   ngOnDestroy(): void {
     // Обязательная отписка от всех подписок, сделанных вручную
     this.subscriptions.unsubscribe();
+  }
+
+  getAvatarInitials(conversation: ConversationDTO): string {
+    const title = this.getConversationTitle(conversation);
+    return title.slice(0, 2).toUpperCase(); // Первые 2 буквы
+  }
+  getAvatarColor(conversation: ConversationDTO): string {
+    const name = this.getConversationTitle(conversation);
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
   }
 }

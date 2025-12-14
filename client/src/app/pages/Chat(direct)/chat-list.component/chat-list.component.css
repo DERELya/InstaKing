@@ -1,6 +1,33 @@
-.conversation-list {
-  overflow-y: auto;
+.chat-list-container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  background-color: var(--color-bg); /* Фон контейнера */
+}
+
+.list-search-header {
+  padding: 10px 15px;
+  background-color: var(--color-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.search-input-field {
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Скрываем подпись Angular Material для компактности */
+::ng-deep .search-input-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: var(--color-text, #888);
 }
 
 .conversation-item {
@@ -9,78 +36,89 @@
   cursor: pointer;
   transition: background-color 0.2s;
   align-items: center;
-  border-bottom: 1px solid rgba(var(--color-border), 0.5);
-  color: var(--color-text);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: var(--color-text); /* ИСПРАВЛЕНО! */
   outline: none;
 }
 
-.conversation-item:hover,
-.conversation-item:focus {
-  background-color: var(--color-bg-dark); /* Темнее, чем фон списка */
+.conversation-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
-/* Подсветка активного чата */
 .conversation-item.active {
-  background-color: rgba(var(--color-primary), 0.1); /* Легкий оттенок основного цвета */
-  border-left: 3px solid var(--color-primary);
+  background-color: rgba(63, 81, 181, 0.08); /* Цвет Primary с прозрачностью */
+  border-left: 3px solid #3f51b5; /* Primary color */
   padding-left: 12px;
 }
 
 .avatar {
   margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar mat-icon {
   font-size: 40px;
   height: 40px;
   width: 40px;
-  color: var(--chat-text-secondary); /* Используем более тусклый текст */
-  border-radius: 50%;
+  color: #bdbdbd; /* Серый цвет для иконки по умолчанию */
 }
 
 .conversation-content {
   flex-grow: 1;
-  overflow: hidden;
+  overflow: hidden; /* Чтобы текст обрезался */
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
 .title {
   font-weight: 600;
   color: var(--color-text);
+  font-size: 0.95rem;
 }
 
 .timestamp {
   font-size: 0.75rem;
-  color: var(--chat-text-secondary);
+  color: #888;
+  white-space: nowrap;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .preview-text {
-  font-size: 0.9rem;
-  color: var(--chat-text-secondary);
+  font-size: 0.85rem;
+  color: #666; /* Чуть светлее заголовка */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Троеточие, если текст длинный */
+  margin: 0;
+  max-width: 180px; /* Ограничиваем ширину превью */
 }
 
 .unread-badge {
-  /* Используем акцентный цвет, если он у вас определен,
-     иначе используем primary. Я создам переменную для контрастного текста. */
-  --badge-bg: var(--color-primary);
-  --badge-text: var(--color-text); /* Текст, который хорошо читается на --color-primary */
-
-  background-color: var(--badge-bg);
-  color: var(--badge-text);
-  border-radius: 50%;
+  background-color: #ff4081; /* Accent color */
+  color: white;
+  border-radius: 10px;
   font-size: 0.7rem;
   padding: 2px 6px;
-  margin-left: 10px;
-  line-height: 1;
+  min-width: 18px;
+  text-align: center;
   font-weight: bold;
   flex-shrink: 0;
+  margin-left: 8px;
 }
 
-/* Убедимся, что бейдж хорошо виден на вашем бирюзовом primary */
-body:not(.dark-theme) .unread-badge {
-  /* Если фон светлый, текст на бирюзовом должен быть черным */
-  --badge-text: #121212;
-}
-body.dark-theme .unread-badge {
-  /* Если фон темный, текст на бирюзовом должен быть черным */
-  --badge-text: #121212;
+.no-chats-found {
+  padding: 30px;
+  text-align: center;
+  color: #888;
 }

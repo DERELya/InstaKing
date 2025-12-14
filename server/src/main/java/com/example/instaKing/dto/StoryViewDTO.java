@@ -1,11 +1,6 @@
 package com.example.instaKing.dto;
 
-import com.example.instaKing.models.Story;
-import com.example.instaKing.models.User;
-import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 

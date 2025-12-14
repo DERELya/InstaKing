@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -29,6 +31,7 @@ public class DialogController {
     private final ChatService chatService;
     private final UserService userService;
     private final ConversationMapper conversationMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public List<ConversationDTO> getUserConversation(Principal principal) {
@@ -47,7 +50,24 @@ public class DialogController {
                 userA.getId(),
                 userB.getId()
         );
-        return conversationMapper.toDto(conversation,userA);
+        ConversationDTO dto = conversationMapper.toDto(conversation, userA);
+        messagingTemplate.convertAndSendToUser(
+                userB.getUsername().toString(),
+                "/queue/new-chats",
+                dto
+        );
+        return dto;
+    }
+
+    @PostMapping("/{conversationId}/read")
+    public void markAsRead(@PathVariable Long conversationId, Principal principal) {
+
+        boolean isParticipant = chatService.isUserParticipant(conversationId, principal.getName());
+        if (!isParticipant) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Вы не участник этого чата");
+        }
+        User user = userService.getUserByUsername(principal.getName());
+        chatService.markConversationAsRead(conversationId, user.getId());
     }
 
 
@@ -59,25 +79,15 @@ public class DialogController {
             @RequestParam(defaultValue = "50") int size,
             Principal principal) {
 
-        // Тут можно добавить проверку, что текущий пользователь является участником диалога!
+        boolean isParticipant = chatService.isUserParticipant(conversationId, principal.getName());
+        if (!isParticipant) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Вы не участник этого чата");
+        }
 
         List<Message> messages = chatService.getMessageHistory(conversationId, page, size);
-
         return messages.stream()
                 .map(MessageMapper::toDTO)
                 .collect(Collectors.toList());
-    }
-
-
-    @PostMapping("/{conversationId}/read")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void markAsRead(@PathVariable Long conversationId, Principal principal) {
-        User reader = userService.getUserByUsername(principal.getName());
-
-        chatService.markConversationAsRead(conversationId, reader.getId());
-
-        // Опционально: можно отправить по WebSocket уведомление другому участнику,
-        // что все сообщения прочитаны (если нужно показывать статус "Прочитано" в реальном времени).
     }
 
 }

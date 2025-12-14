@@ -1,87 +1,70 @@
-import {Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, inject, SimpleChanges} from '@angular/core';
+import {Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef} from '@angular/core';
 import { ChatStateService } from '../../../services/chat-state.service';
 import { ChatService } from '../../../services/chat.service';
 import { TokenStorageService } from '../../../services/token-storage.service';
 import { Observable, Subscription } from 'rxjs';
-import {MatIconButton} from '@angular/material/button';
-import {AsyncPipe, DatePipe, NgForOf, NgIf} from '@angular/common';
-import {MatIconModule} from '@angular/material/icon';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput, MatInputModule, MatSuffix} from '@angular/material/input';
-import {ConversationDTO} from '../../../models/ConversationDTO';
-import {MessageDTO} from '../../../models/MessageDTO';
-import {TypingDTO} from '../../../models/TypingDTO';
-import {User} from '../../../models/User';
-import {FormsModule} from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { AsyncPipe, DatePipe, NgForOf, NgIf, NgClass } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ConversationDTO } from '../../../models/ConversationDTO';
+import { MessageDTO } from '../../../models/MessageDTO';
+import { FormsModule } from '@angular/forms';
+import { TextFieldModule } from '@angular/cdk/text-field'
 
 @Component({
   selector: 'app-chat-window',
+  standalone: true,
   templateUrl: './chat-window.component.html',
+  styleUrls: ['./chat-window.component.css'],
   imports: [
     MatIconModule,
     MatFormFieldModule,
     MatIconButton,
-    MatSuffix,
-    MatIconModule,
     NgIf,
     NgForOf,
+    NgClass,
     AsyncPipe,
     DatePipe,
     FormsModule,
-    MatInputModule
-  ],
-  styleUrls: ['./chat-window.component.css']
+    MatInputModule,
+    TextFieldModule
+  ]
 })
 export class ChatWindowComponent implements OnInit, OnDestroy {
-
   @Input() conversation!: ConversationDTO;
-
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
 
   private chatStateService = inject(ChatStateService);
   private chatService = inject(ChatService);
   private tokenService = inject(TokenStorageService);
 
-  // Observable для отображения сообщений и статуса печати
   public messages$: Observable<MessageDTO[]> = this.chatStateService.messages$;
-  public typingStatus$: Observable<TypingDTO | null> = this.chatStateService.typingStatus$;
+  public typingUser$ = this.chatStateService.typingUser$; // Стрим "печатает"
 
   public messageInput: string = '';
+  public currentUserId: number;
   private subscriptions: Subscription = new Subscription();
-
-  // Идентификация текущего пользователя
-  public currentUserId: number ;
-  public currentUsername: string;
-
-  // Логика для уведомления о печати
-  private isTyping: boolean = false;
-  private typingTimeout: any;
-
+  private lastTypingSent = 0;
+  private cdr=inject(ChangeDetectorRef)
   constructor() {
-    // Получаем данные пользователя при создании компонента
-    this.currentUserId = this.tokenService.getIdFromToken();
-    this.currentUsername = this.tokenService.getUsernameFromToken();
+    this.currentUserId = this.tokenService.getIdFromToken() || 0;
   }
 
   ngOnInit(): void {
     this.subscriptions.add(
       this.messages$.subscribe(() => {
-        setTimeout(() => this.scrollToBottom(), 0);
+        setTimeout(() => this.scrollToBottom(), 50);
+        this.cdr.detectChanges();
       })
     );
   }
-
-  getConversationTitle(conversation: ConversationDTO): string {
-    if (!conversation.participants || conversation.participants.length < 2) {
-      return `Чат #${conversation.id}`;
-    }
-
-    const otherParticipant = conversation.participants.find(
-      (p: User) => p.id !== this.currentUserId
-    );
-
-    return otherParticipant ? otherParticipant.username : 'Групповой чат';
+  ngAfterViewInit() {
+    this.scrollToBottom();
   }
+
+
 
   sendMessage(): void {
     if (!this.messageInput.trim() || !this.conversation.id) {
@@ -89,65 +72,53 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
 
     const messageDto: MessageDTO = {
-      content: this.messageInput,
+      content: this.messageInput.trim(), // Убираем пробелы по краям
       conversationId: this.conversation.id,
-      senderId: this.currentUserId, // Отправляем ID отправителя
+      senderId: this.currentUserId,
       createdAt: new Date(),
       status: 'SENT' as any
     };
 
     this.chatService.sendMessage(messageDto);
-    this.messageInput = ''; // Очистка поля ввода
-    this.sendTypingStatus(false); // Сброс статуса "печатает"
+    this.messageInput = '';
   }
 
-  onInputChange(): void {
-    if (!this.isTyping) {
-      this.isTyping = true;
-      this.sendTypingStatus(true);
+  // Обработка ввода (Shift+Enter - новая строка, Enter - отправка)
+  onEnter(event: Event): void {
+    const e = event as KeyboardEvent;
+    if (!e.shiftKey) {
+      e.preventDefault();
+      this.sendMessage();
     }
-
-    clearTimeout(this.typingTimeout);
-
-    // Если в течение 1.5 сек нет ввода, сбросить статус
-    this.typingTimeout = setTimeout(() => {
-      this.isTyping = false;
-      this.sendTypingStatus(false);
-    }, 1500);
   }
 
-  private sendTypingStatus(isTyping: boolean): void {
-    const typingDto: TypingDTO = {
-      conversationId: this.conversation.id,
-      username: this.currentUsername,
-      isTyping: isTyping
-    };
-    //this.chatService.sendTypingNotification(typingDto);
+  // Отправка статуса "печатает"
+  onTyping(): void {
+    const now = Date.now();
+    // Шлем событие не чаще раза в 3 секунды
+    if (now - this.lastTypingSent > 3000 && this.conversation.id) {
+      this.lastTypingSent = now;
+      this.chatService.sendTyping({
+        conversationId: this.conversation.id,
+        username: ''
+      });
+    }
+  }
+
+  getConversationTitle(): string {
+    const other = this.conversation.participants?.find(p => p.id !== this.currentUserId);
+    return other ? other.username : (this.conversation.title || 'Чат');
   }
 
   private scrollToBottom(): void {
-    if (this.messageContainer) {
-      const element = this.messageContainer.nativeElement;
-      element.scrollTop = element.scrollHeight;
-    }
+    try {
+      this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+    } catch(err) { }
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    // Очищаем таймер при уничтожении компонента
-    clearTimeout(this.typingTimeout);
-  }
-
-  @Input() user: any;
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['user'] && this.user) {
-      this.loadMessages(this.user.id);
-    }
-  }
-
-  loadMessages(userId: string) {
-    console.log(`Загрузка истории для пользователя ${userId}...`);
-    // Вызов твоего API
+    // Очищаем активный чат при закрытии окна
+    this.chatStateService.clearActiveConversation();
   }
 }

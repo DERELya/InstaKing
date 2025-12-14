@@ -1,28 +1,33 @@
-<div class="direct-container">
+<div class="direct-layout">
 
-  <div class="chat-list-sidebar">
-    <header class="sidebar-header">
-      <h2>Директ</h2>
-    </header>
-
+  <!-- Сайдбар (Список чатов) -->
+  <aside class="sidebar">
+    <!-- Слушаем событие запроса нового чата из списка (если там есть кнопка "Новый чат") -->
     <app-chat-list
-      (conversationSelected)="onSelectConversation($event)"
       (newChatRequested)="openUserSelectionModal()">
     </app-chat-list>
-  </div>
+  </aside>
 
-  <div class="chat-window-area">
+  <!-- Основная область -->
+  <main class="chat-main">
 
-    <ng-container *ngIf="activeConversation$ | async as activeChat">
-      <app-chat-window [conversation]="activeChat"></app-chat-window>
+    <!-- Если чат выбран -> Показываем окно чата -->
+    <ng-container *ngIf="activeConversation$ | async as active; else noChatTemplate">
+      <!-- Передаем активный чат внутрь окна -->
+      <app-chat-window [conversation]="active"></app-chat-window>
     </ng-container>
 
-    <div *ngIf="!(activeConversation$ | async)" class="no-chat-selected">
-      <mat-icon class="icon-large">message</mat-icon>
-      <h3>Ваши сообщения</h3>
-      <p>Выберите чат или начните новый диалог.</p>
-      <button mat-flat-button color="primary" (click)="openUserSelectionModal()">Начать сообщение</button>
-    </div>
-  </div>
+    <!-- Если чат НЕ выбран -> Показываем заглушку -->
+    <ng-template #noChatTemplate>
+      <div class="empty-state">
+        <div class="empty-icon-circle">
+          <span class="material-icons-outlined empty-icon">forum</span>
+        </div>
+        <h3>Ваши сообщения</h3>
+        <p>Отправляйте личные сообщения другу или группе.</p>
+        <button (click)="openUserSelectionModal()" class="start-btn">Написать сообщение</button>
+      </div>
+    </ng-template>
 
+  </main>
 </div>

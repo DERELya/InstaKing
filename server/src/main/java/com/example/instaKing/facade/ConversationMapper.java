@@ -23,31 +23,22 @@ public class ConversationMapper {
     public ConversationDTO toDto(Conversation conversation, User currentUser) {
         ConversationDTO dto = new ConversationDTO();
         dto.setId(conversation.getId());
-
         List<UserDTO> participants = conversation.getParticipants()
                 .stream()
                 .map(UserFacade::userToUserDTO)
                 .collect(Collectors.toList());
         dto.setParticipants(participants);
-
         dto.setTitle(getConversationTitle(conversation, currentUser));
-
-        // Время
         dto.setLastMessageAt(conversation.getLastMessageAt());
+        dto.setUnreadCount(getUnreadMessageCount(conversation.getId(), currentUser.getId()));
+        dto.setPreviewMessage(getLastMessageContent(conversation.getId()));
 
-        // 2. Использование this (теперь корректное)
-        dto.setUnreadCount(this.getUnreadMessageCount(conversation.getId(), currentUser.getId()));
-
-        // 3. Использование this (теперь корректное)
-        dto.setPreviewMessage(this.getLastMessageContent(conversation.getId()));
-
-        // 4. ДОБАВЛЯЕМ RETURN
         return dto;
     }
 
     private int getUnreadMessageCount(Long conversationId, Long currentUserId) {
         // Здесь вызывается метод, который вы определили в MessageRepository
-        return (int) messageRepository.countUnreadMessagesInConversation(conversationId, currentUserId);
+        return (int) messageRepository.countUnreadMessages(conversationId, currentUserId);
     }
 
     private String getLastMessageContent(Long conversationId) {

@@ -3,6 +3,7 @@ package com.example.instaKing.repositories;
 import com.example.instaKing.models.Conversation;
 import com.example.instaKing.models.Message;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,27 +15,20 @@ import java.util.Optional;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message,Long> {
+    // Поиск сообщений с пагинацией
+    Page<Message> findByConversationId(Long conversationId, Pageable pageable);
 
-    List<Message> findByConversationIdOrderByCreatedAtDesc(Long conversationId, Pageable pageable);
-
-    //обновление статуса сообщения
-    @Modifying
-    @Transactional
-    @Query("UPDATE Message m SET m.status = 'READ' WHERE m.conversation.id = :conversationId AND m.sender.id <> :readerId AND m.status <> 'READ'")
-    void markMessagesAsReadInConversation(
-            @Param("conversationId") Long conversationId,
-            @Param("readerId") Long readerId
-    );
-
+    // Поиск самого последнего сообщения
     Optional<Message> findTopByConversationIdOrderByCreatedAtDesc(Long conversationId);
 
-    // 2. Для подсчета UnreadCount (Непрочитанные сообщения)
-    @Query("SELECT COUNT(m.id) FROM Message m " +
-            "WHERE m.conversation.id = :conversationId " +
-            "AND m.status = 'SENT' " + // Или UNREAD, если вы используете READ/UNREAD
-            "AND m.sender.id <> :currentUserId") // Сообщения, отправленные НЕ текущим пользователем
-    long countUnreadMessagesInConversation(
-            @Param("conversationId") Long conversationId,
-            @Param("currentUserId") Long currentUserId
-    );
+    // Подсчет непрочитанных (где я не отправитель и статус SENT)
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation.id = :convId " +
+            "AND m.sender.id != :userId AND m.status = 'SENT'")
+    int countUnreadMessages(@Param("convId") Long conversationId, @Param("userId") Long userId);
+
+    // Массовое обновление статуса на READ
+    @Modifying
+    @Query("UPDATE Message m SET m.status = 'READ' WHERE m.conversation.id = :convId " +
+            "AND m.sender.id != :userId AND m.status = 'SENT'")
+    void markMessagesAsReadInConversation(@Param("convId") Long conversationId, @Param("userId") Long userId);
 }

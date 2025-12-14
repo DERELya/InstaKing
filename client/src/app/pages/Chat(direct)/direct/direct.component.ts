@@ -1,24 +1,20 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { filter, Observable, Subscription } from 'rxjs';
+import {Component, OnDestroy, OnInit, inject, Inject, Renderer2, DOCUMENT} from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ChatService } from '../../../services/chat.service';
 import { ChatStateService } from '../../../services/chat-state.service';
-import { MessageDTO } from '../../../models/MessageDTO';
 import { ConversationDTO } from '../../../models/ConversationDTO';
 import { ChatListComponent } from '../chat-list.component/chat-list.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { ChatWindowComponent } from '../chat-window.component/chat-window.component';
+import { MatDialog } from '@angular/material/dialog';
+import { UserSelection } from '../user-selection.component/user-selection.component'; // Убедись, что путь верный
 import { AsyncPipe, NgIf } from '@angular/common';
-import { UserSelection } from '../user-selection.component/user-selection.component';
-import { MatDialog } from '@angular/material/dialog'; // ✅ Правильный импорт
 
 @Component({
   selector: 'app-direct',
-  // Убедись, что UserSelection импортирован, если DirectComponent standalone
+  standalone: true,
   imports: [
     ChatListComponent,
-    MatIconModule,
-    MatButtonModule,
     ChatWindowComponent,
     AsyncPipe,
     NgIf
@@ -27,71 +23,58 @@ import { MatDialog } from '@angular/material/dialog'; // ✅ Правильны�
   styleUrl: './direct.component.css'
 })
 export class DirectComponent implements OnInit, OnDestroy {
-  // ✅ Использование inject() для чистой инъекции
   private chatService = inject(ChatService);
   private chatStateService = inject(ChatStateService);
-  private dialog = inject(MatDialog); // ✅ Инъекция MatDialog
+  private dialog = inject(MatDialog);
 
-  selectedChatUser: any = null;
-  private subscriptions: Subscription = new Subscription();
-  public activeConversation$: Observable<ConversationDTO | null>;
+  private subs = new Subscription();
+  constructor(
+    private renderer: Renderer2,
+    @Inject(DOCUMENT) private document: Document
+  ) {
 
-  // Инициализация Observable
-  constructor() {
-    this.activeConversation$ = this.chatStateService.activeConversation$;
   }
+  // Поток активного чата: если null, показываем заглушку "Выберите чат"
+  public activeConversation$: Observable<ConversationDTO | null> = this.chatStateService.activeConversation$;
 
   ngOnInit(): void {
+    // 1. Подключаем WebSocket
     this.chatService.connect();
-
-    const newMessagesSub = this.chatService.newMessages$.pipe(
-      filter((msg): msg is MessageDTO => !!msg)
-    ).subscribe((msg: MessageDTO) => {
-      this.chatStateService.addMessage(msg);
-    });
-
-    const typingSub = this.chatService.typingNotifications$.pipe(
-      filter(typing => !!typing)
-    ).subscribe(typing => {
-      this.chatStateService.updateTypingStatus(typing);
-    });
-
-    this.subscriptions.add(newMessagesSub);
-    this.subscriptions.add(typingSub);
+    this.renderer.addClass(this.document.body, 'chat-mode-locked');
+    this.renderer.addClass(this.document.documentElement, 'chat-mode-locked'); // html
+    // 2. Загружаем список чатов (чтобы сайдбар не был пустым)
+    this.subs.add(this.chatStateService.getConversations().subscribe());
   }
 
-  onSelectConversation(conversation: ConversationDTO): void {
-    this.chatStateService.setActiveConversation(conversation);
-    // Очищаем selectedChatUser, так как активный чат теперь выбран из списка
-    this.selectedChatUser = null;
-  }
-
+  /**
+   * Открытие модалки для выбора пользователя и создание нового чата
+   */
   openUserSelectionModal(): void {
-    console.log("-> Запрос: ОТКРЫТИЕ ОКНА ВЫБОРА ПОЛЬЗОВАТЕЛЯ.");
-
-    // Открываем модалку. Рекомендуется задать размеры для лучшего UX
-    this.dialog.open(UserSelection, {
-      width: '450px',
+    const dialogRef = this.dialog.open(UserSelection, {
+      width: '400px',
       maxHeight: '80vh',
-    }).afterClosed().pipe(
-      // ✅ Добавляем фильтр, чтобы обрабатывать только успешный выбор (не undefined)
-      filter(user => !!user)
-    ).subscribe(user => {
-      // 'user' здесь — это объект User, который ты передал в dialogRef.close(user)
-      this.startChatWith(user);
+      panelClass: 'user-selection-modal' // Можно стилизовать модалку
     });
-  }
 
-  startChatWith(user: any) {
-    this.selectedChatUser = user;
-
-    this.chatStateService.loadConversationByUserId(user.id);
-
-    console.log(`Инициирован переход к чату с пользователем: ${user.username}`);
+    this.subs.add(
+      dialogRef.afterClosed().pipe(
+        filter(user => !!user) // Продолжаем, только если юзер был выбран
+      ).subscribe(user => {
+        // Сервис сам создаст чат (или найдет старый) и сделает его активным
+        this.chatStateService.loadConversationByUserId(user.id);
+      })
+    );
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.subs.unsubscribe();
+
     this.chatService.disconnect();
+
+
+    this.chatStateService.clearActiveConversation();
+    this.renderer.removeClass(this.document.body, 'chat-mode-locked');
+    this.renderer.removeClass(this.document.documentElement, 'chat-mode-locked');
+
   }
 }

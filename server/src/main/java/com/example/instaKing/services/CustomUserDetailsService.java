@@ -2,6 +2,7 @@ package com.example.instaKing.services;
 
 import com.example.instaKing.models.User;
 import com.example.instaKing.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -42,8 +43,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         return build(user);
     }
 
-    public User loadUserById(long id) {
-        return userRepository.findById(id).orElse(null);
-    }
+    @Transactional // 1. Открываем транзакцию
+    public UserDetails loadUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id : " + id));
 
+        // 2. Используем метод build(), чтобы инициализировать роли и заполнить authorities
+        return build(user);
+
+    }
 }
