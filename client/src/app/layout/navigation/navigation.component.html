@@ -1,13 +1,29 @@
 <mat-toolbar class="mat-toolbar">
+  <!-- Логотип -->
   <div class="toolbar-section left">
     <a class="logo" routerLink="/main">InstaKing</a>
   </div>
 
+  <!-- Центральная часть (Кнопки и Поиск) -->
   <div class="toolbar-section center" *ngIf="router.url.startsWith('/main')">
-    <div class="search-container" >
+
+    <!-- 1. КНОПКА УВЕДОМЛЕНИЙ (Исправлено) -->
+    <button mat-icon-button class="chat-btn" [matMenuTriggerFor]="notificationMenu">
+      <mat-icon
+        [matBadge]="unreadCountNot$ | async"
+        [matBadgeHidden]="(unreadCountNot$ | async) === 0"
+        matBadgeColor="warn"
+        matBadgeSize="small"
+        aria-hidden="false"
+        aria-label="Уведомления">
+        notifications
+      </mat-icon>
+    </button>
+
+    <!-- Поиск -->
+    <div class="search-container">
       <mat-form-field class="search-field" appearance="outline" floatLabel="always">
         <mat-icon matPrefix class="search-icon">search</mat-icon>
-
         <input matInput
                class="search-input"
                [(ngModel)]="query"
@@ -15,23 +31,31 @@
                placeholder="Поиск"
                autocomplete="off"
                [matAutocomplete]="auto">
-
         <button mat-icon-button matSuffix *ngIf="query" (click)="clearSearch()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
     </div>
-    <button mat-icon-button matSuffix  (click)="openChat()" class="chat-btn">
-      <mat-icon>send</mat-icon>
+
+    <!-- Кнопка Direct -->
+    <button mat-icon-button matSuffix (click)="openChat()" class="chat-btn">
+      <mat-icon
+        [matBadge]="unreadCount$ | async"
+        [matBadgeHidden]="(unreadCount$ | async) === 0"
+        matBadgeColor="warn"
+        matBadgeSize="small">
+        send
+      </mat-icon>
     </button>
   </div>
 
+  <!-- Правая часть (Профиль) -->
   <div class="toolbar-section right">
-
     <ng-container *ngIf="!router.url.startsWith('/profile/'+user?.username)">
       <h3 *ngIf="isDataLoaded" class="username-text">{{ user?.username }}</h3>
 
-      <button *ngIf="isLoggedIn" [matMenuTriggerFor]="menu" class="avatar-button">
+      <!-- Меню профиля (оставляем #menu) -->
+      <button *ngIf="isLoggedIn" [matMenuTriggerFor]="profileMenu" class="avatar-button">
         <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
              alt="avatar"
              class="avatar-icon">
@@ -44,7 +68,8 @@
       </button>
     </div>
 
-    <mat-menu #menu="matMenu" class="my-custom-menu">
+    <!-- МЕНЮ ПРОФИЛЯ -->
+    <mat-menu #profileMenu="matMenu" class="my-custom-menu">
       <button mat-menu-item class="my-custom-menu-item" [routerLink]="['/profile/', user?.username]">
         <mat-icon>person_outline</mat-icon>
         <span>Profile</span>
@@ -56,6 +81,7 @@
   </div>
 </mat-toolbar>
 
+<!-- Автокомплит поиска -->
 <mat-autocomplete #auto="matAutocomplete" class="custom-autocomplete">
   <mat-option *ngFor="let user of users" (onSelectionChange)="goToProfile($event, user.username)">
     <div class="search-user-row">
@@ -67,3 +93,57 @@
     </div>
   </mat-option>
 </mat-autocomplete>
+
+
+<!-- ============================================== -->
+<!--        МЕНЮ УВЕДОМЛЕНИЙ (Новое имя #notificationMenu) -->
+<!-- ============================================== -->
+<mat-menu #notificationMenu="matMenu" class="notification-dropdown" xPosition="before">
+  <div class="menu-container" (click)="$event.stopPropagation()">
+
+    <!-- Шапка -->
+    <div class="menu-header">
+      <span class="header-title">Уведомления</span>
+      <button mat-button color="primary" class="mark-all-btn"
+              *ngIf="(unreadCountNot$ | async)! > 0"
+              (click)="markAllRead()">
+        Прочитать все
+      </button>
+    </div>
+
+    <!-- Список -->
+    <div class="notification-list">
+
+      <!-- Пусто -->
+      <div *ngIf="(notifications$ | async)?.length === 0" class="empty-state">
+        <mat-icon>notifications_off</mat-icon>
+        <p>Нет новых уведомлений</p>
+      </div>
+
+      <!-- Элементы -->
+      <button mat-menu-item
+              *ngFor="let item of notifications$ | async"
+              class="notification-item"
+              [class.unread]="!item.isRead"
+              (click)="handleNotificationClick(item)">
+
+        <div class="item-content">
+          <div class="icon-wrapper">
+            <mat-icon *ngIf="item.type === 'LIKE'" class="like-icon">favorite</mat-icon>
+            <mat-icon *ngIf="item.type === 'FOLLOW'" class="follow-icon">person_add</mat-icon>
+            <mat-icon *ngIf="item.type === 'COMMENT'" class="comment-icon">chat_bubble</mat-icon>
+            <mat-icon *ngIf="item.type === 'SYSTEM'" class="system-icon">info</mat-icon>
+          </div>
+
+          <div class="text-wrapper">
+            <span class="sender-name">{{ item.senderUsername }}</span>
+            <span class="message-text">{{ item.content }}</span>
+            <span class="time-text">{{ item.createdAt | date:'shortTime' }}</span>
+          </div>
+
+          <div *ngIf="!item.isRead" class="unread-dot"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+</mat-menu>

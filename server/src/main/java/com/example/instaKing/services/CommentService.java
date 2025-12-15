@@ -5,9 +5,11 @@ import com.example.instaKing.exceptions.PostNotFoundException;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
+import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.CommentRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,18 +23,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-
-    @Autowired
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository, UserRepository userRepository) {
-        this.commentRepository = commentRepository;
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-    }
+    private final NotificationService notificationService;
 
     public Comment saveComment(Long postId, CommentDTO commentDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
@@ -44,7 +41,13 @@ public class CommentService {
         comment.setUserId(user.getId());
         comment.setUsername(user.getUsername());
         comment.setMessage(commentDTO.getMessage());
-
+        User owner = post.getUser();
+        notificationService.createNotification(
+                owner,
+                user,
+                NotificationType.COMMENT,
+                "оставил комментарий под вашим постом: "+post.getTitle()
+        );
         return commentRepository.save(comment);
     }
 

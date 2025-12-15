@@ -6,8 +6,11 @@ import com.example.instaKing.facade.CommentFacade;
 import com.example.instaKing.models.Comment;
 import com.example.instaKing.payload.response.MessageResponse;
 import com.example.instaKing.services.CommentService;
+import com.example.instaKing.services.NotificationService;
 import com.example.instaKing.validators.ResponseErrorValidator;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,11 +29,13 @@ import java.util.stream.Collectors;
 public class CommentController {
     private CommentService commentService;
     private ResponseErrorValidator responseErrorValidator;
+    private NotificationService notificationService;
 
     @Autowired
-    public CommentController(CommentService commentService, ResponseErrorValidator responseErrorValidator) {
+    public CommentController(CommentService commentService, ResponseErrorValidator responseErrorValidator, NotificationService notificationService) {
         this.commentService = commentService;
         this.responseErrorValidator = responseErrorValidator;
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/{postId}/create")
@@ -43,7 +48,6 @@ public class CommentController {
 
         Comment comment = commentService.saveComment(Long.parseLong(postId), commentDTO, principal);
         CommentDTO createdComment = CommentFacade.CommentToCommentDTO(comment);
-
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 

@@ -12,6 +12,8 @@ import { ConversationDTO } from '../../../models/ConversationDTO';
 import { MessageDTO } from '../../../models/MessageDTO';
 import { FormsModule } from '@angular/forms';
 import { TextFieldModule } from '@angular/cdk/text-field'
+import {User} from '../../../models/User';
+import {ImageUploadService} from '../../../services/image-upload.service';
 
 @Component({
   selector: 'app-chat-window',
@@ -35,7 +37,8 @@ import { TextFieldModule } from '@angular/cdk/text-field'
 export class ChatWindowComponent implements OnInit, OnDestroy {
   @Input() conversation!: ConversationDTO;
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
-
+  private imageService=inject(ImageUploadService);
+  protected avatarUrl: string='';
   private chatStateService = inject(ChatStateService);
   private chatService = inject(ChatService);
   private tokenService = inject(TokenStorageService);
@@ -56,6 +59,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.messages$.subscribe(() => {
         setTimeout(() => this.scrollToBottom(), 50);
+        this.loadAvatar(this.getConversationTitle());
         this.cdr.detectChanges();
       })
     );
@@ -120,5 +124,23 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     // Очищаем активный чат при закрытии окна
     this.chatStateService.clearActiveConversation();
+  }
+
+  trackByMessageId(index: number, message: MessageDTO): number | string {
+    return message.id || index; // Используем ID, если его нет (пока летит) — индекс
+  }
+
+  loadAvatar(username: string) {
+    this.imageService.getImageToUser(username).subscribe({
+      next: blob => {
+        const preview = URL.createObjectURL(blob);
+        this.avatarUrl = preview;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.avatarUrl = 'assets/placeholder.jpg';
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

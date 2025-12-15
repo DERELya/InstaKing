@@ -1,13 +1,21 @@
 @use '@angular/material' as mat;
 
-// ======================
-// Material Progress Bar Overrides
-// ======================
+/* ========================================= */
+/* 1. Глобальные переменные (Темы)           */
+/* ========================================= */
 :root {
-  --color-bg: #fff;
-  --color-border: #ccc;
-  --color-progress: var(--color-primary);
+  /* Базовые переменные для переопределения Material Progress Bar */
+  --color-progress: #49edd4;
   --color-progress-track: rgba(255,255,255,0.3);
+
+  /* Светлая тема (Light Default) */
+  --color-bg: #f5f5f7;
+  --color-bg-dark: #e7e7e7;
+  --color-text: #121212;
+  --color-primary: #49edd4;
+  --color-border: rgba(0, 0, 0, 0.1); /* Сделал чуть видимым, иначе границ нет */
+  --border-radius: 16px;
+  --box-shadow: 0 6px 32px 0 rgba(0,0,0,0.1);
 
   @include mat.progress-bar-overrides((
     active-indicator-color: var(--color-progress),
@@ -15,253 +23,265 @@
   ));
 }
 
-/* You can add global styles to this file, and also import other style files */
-
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float  .mat-form-field-appearance-outline.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper {
-  transform: translateY(-0.8em) scale(0.75);
-  width: 133.3333333333%;
+body.dark-theme {
+  /* Темная тема */
+  --color-bg: #232323;
+  --color-bg-dark: #181a1b;
+  --color-text: #f5f5f7;
+  --color-primary: #49edd4;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --border-radius: 16px;
+  --box-shadow: 0 6px 32px 0 rgba(0,0,0,0.5);
 }
 
-.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap {
-  border-top-color: currentColor !important;
-}
-body, html {
-  background: var(--color-bg) !important; /* Совпадает с профилем */
+/* ========================================= */
+/* 2. Базовый сброс и Лейаут                 */
+/* ========================================= */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg) !important;
   color: var(--color-text);
-
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  overflow-x: hidden; /* Убираем горизонтальный скролл */
 }
 
+app-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Класс для блокировки скролла (используется в Direct) */
 .chat-mode-locked {
   overflow: hidden !important;
   height: 100% !important;
-  position: fixed; /* Иногда нужно, чтобы iOS Safari не скроллил */
+  position: fixed;
   width: 100%;
 }
 
-.my-custom-menu-item.mat-mdc-menu-item {
-  background: var(--color-bg) !important;
-  color: #e0e0e0 !important;
+/* ========================================= */
+/* 3. Глобальные фиксы Angular Material      */
+/* ========================================= */
 
-  transition: background 0.13s, color 0.13s !important;
-  display: flex !important;
-  align-items: center !important;
-  border-bottom: 1px solid #292c33 !important;
+/* --- Фон диалоговых окон (Модалки) --- */
+/* MDC структура: container -> surface. Красить нужно surface */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--box-shadow) !important;
 }
 
-.my-custom-menu-item.mat-mdc-menu-item:last-child {
-  border-bottom: none !important;
-}
-/* Переопределение глобальных стилей Material Design */
-.mat-mdc-text-field-wrapper {
-  background: transparent !important; /* Убираем фон */
-}
-
-
-
-.mdc-text-field:hover {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-.mdc-text-field--filled {
-  background: transparent !important; /* Убираем фон */
+/* --- Фон Меню (Dropdown) --- */
+.mat-mdc-menu-panel,
+.mat-mdc-menu-content {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 
-.mdc-text-field--no-label {
-  background: transparent !important; /* Убираем фон */
+/* --- Фон Сайдбара (Drawer/Sidenav) --- */
+.mat-drawer-container,
+.mat-drawer-inner-container,
+.mat-sidenav-content {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 
-.my-custom-menu-item.mat-mdc-menu-item:hover{
-  color: var(--color-primary);
+/* --- Фон Карточек --- */
+.mat-mdc-card {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
-.my-custom-menu-item.mat-mdc-menu-item.cdk-focused {
-  background: var(--color-bg) !important;
+
+/* --- Автокомплит (Выпадающий список поиска) --- */
+.mat-mdc-autocomplete-panel {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+}
+
+/* Опции в выпадающих списках */
+.mat-mdc-option {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+.mat-mdc-option:hover,
+.mat-mdc-option.mat-mdc-option-active {
+  background-color: var(--color-bg-dark) !important;
   color: var(--color-primary) !important;
 }
 
-.my-custom-menu-item.mat-mdc-menu-item:last-child:hover {
-  background: #3a2323 !important;
-  color: #ff5c5c !important;
+/* ========================================= */
+/* 4. Поля ввода (Inputs / Form Fields)      */
+/* ========================================= */
+
+/* Убираем серый фон у полей Material Design */
+.mat-mdc-text-field-wrapper,
+.mdc-text-field--filled,
+.mdc-text-field--no-label {
+  background: transparent !important;
 }
 
-/* Для текста */
-.my-custom-menu-item .mat-mdc-menu-item-text {
-  font-weight: 500 !important;
-  color: inherit !important;
-}
-.my-custom-menu .mat-mdc-menu-panel,
-.my-custom-menu .mat-mdc-menu-content,
-[role="menu"].mat-mdc-menu-content,
-.mat-mdc-menu-panel {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  border-radius: 13px !important;
-  min-width: 170px !important;
-  box-shadow: 0 8px 32px #000d !important;
-  padding: 0 !important;
-  border: none !important;
-}
-/* Для всех outline-полей Angular Material v20 */
+/* Цвет границ (Outline) */
 .mat-mdc-form-field .mat-mdc-text-field-wrapper {
-  --mdc-outlined-text-field-outline-color: var(--color-border) !important;               /* обычная рамка */
-  --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;      /* hover */
-  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;      /* focus */
+  --mdc-outlined-text-field-outline-color: var(--color-border) !important;
+  --mdc-outlined-text-field-hover-outline-color: var(--color-primary) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--color-primary) !important;
+  --mdc-outlined-text-field-caret-color: var(--color-primary) !important;
 }
 
-/* ФОРСИРУЕМ цвет рамки при hover и focus напрямую (это точно работает в v20) */
+/* Форсируем цвет рамки */
 .mdc-text-field--focused .mdc-notched-outline,
-.mdc-text-field:hover .mdc-notched-outline,
-.mdc-notched-outline:focus-within {
+.mdc-text-field:hover .mdc-notched-outline {
   border-color: var(--color-primary) !important;
-  border-width: 2px;
-  transition: border-color 0.2s;
 }
 
-/* Цвет label */
+/* Цвет лейбла (плавающего текста) */
 .mat-mdc-form-field.mat-focused .mat-mdc-floating-label,
 .mat-mdc-form-field:hover .mat-mdc-floating-label {
   color: var(--color-primary) !important;
 }
 
-
+/* Цвет текста внутри инпута */
 .mat-mdc-input-element {
-  background: var(--color-bg-dark) !important;
   color: var(--color-text) !important;
+  caret-color: var(--color-primary) !important;
 }
 
-.mat-mdc-input-element:-webkit-autofill,
-.mat-mdc-input-element:-webkit-autofill:focus,
-.mat-mdc-input-element:-webkit-autofill:hover,
-.mat-mdc-input-element:-webkit-autofill:active {
+/* Фикс автозаполнения браузера (чтобы не становился белым/желтым) */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
   box-shadow: 0 0 0 1000px var(--color-bg) inset !important;
   -webkit-text-fill-color: var(--color-text) !important;
-  caret-color: var(--color-primary) !important;
-  border-radius: 0 !important;
   transition: background-color 5000s ease-in-out 0s;
-}
-input:-webkit-autofill,
-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--color-text) !important;
+  caret-color: var(--color-primary) !important;
 }
 
-.mat-mdc-dialog-container, .mat-dialog-container {
+/* ========================================= */
+/* 5. Кастомные классы (Твои компоненты)     */
+/* ========================================= */
+
+/* --- Custom Menu Items (Профиль/Выход) --- */
+.my-custom-menu .mat-mdc-menu-panel {
+  border-radius: 13px !important;
+  min-width: 170px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden; /* Важно для скругления */
+}
+
+.my-custom-menu-item.mat-mdc-menu-item {
   background: var(--color-bg) !important;
-  border-radius: var(--border-radius) !important;
-  box-shadow: var(--box-shadow) !important;
-}
-:root {
-  /* Light theme */
-  --color-bg: #f5f5f7;
-  --color-bg-dark: #e7e7e7;
-  --color-text: #121212;
-  --color-primary: #49edd4;
-  --color-border: rgba(224, 224, 224, 0);
-  --border-radius: 16px;
-  --box-shadow: 0 6px 32px 0 #000a;
+  color: var(--color-text) !important; /* Исправил жесткий серый цвет */
+  transition: background 0.15s, color 0.15s !important;
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--color-border) !important;
 }
 
-body.dark-theme {
-  /* Dark theme */
-  --color-bg: #232323;
-  --color-bg-dark: #181a1b;
-  --color-text: #f5f5f7;
-  --color-primary: #49edd4;
-  --color-border: rgba(68, 68, 68, 0);
-  --border-radius: 16px;
-  --box-shadow: 0 6px 32px 0 #000a;
-}
-.dark-theme .mat-autocomplete-panel,
-.dark-theme .mat-option {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  border-color: var(--color-border) !important;
+.my-custom-menu-item.mat-mdc-menu-item:last-child {
+  border-bottom: none !important;
 }
 
-.dark-theme .mat-option:hover {
+.my-custom-menu-item.mat-mdc-menu-item:hover,
+.my-custom-menu-item.mat-mdc-menu-item.cdk-focused {
   background: var(--color-bg-dark) !important;
   color: var(--color-primary) !important;
 }
-/* === Форсируем темизацию Angular Material Autocomplete === */
 
-/* Общая панель */
-.dark-theme .mat-mdc-autocomplete-panel,
-.dark-theme .mat-mdc-autocomplete-panel.mdc-menu-surface {
-  background-color: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  border: 1px solid var(--color-border) !important;
-  box-shadow: 0 8px 32px #000d !important;
-}
-item-hover-state-layer-color{
-  color: var(--color-primary);
-}
-/* Каждая опция */
-.dark-theme .mat-mdc-option,
-.dark-theme .mat-option {
-  background-color: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  transition: background 0.2s, color 0.2s !important;
+/* Кнопка выхода (красная) */
+.my-custom-menu-item.mat-mdc-menu-item:last-child:hover {
+  background: #3a2323 !important;
+  color: #ff5c5c !important;
 }
 
-/* Hover/active состояние */
-.dark-theme .mat-mdc-option:hover,
-.dark-theme .mat-mdc-option.mat-mdc-option-active,
-.dark-theme .mat-option:hover,
-.dark-theme .mat-option.mat-active {
-  color: var(--color-primary) !important;
+.my-custom-menu-item .mat-mdc-menu-item-text {
+  font-weight: 500 !important;
+  color: inherit !important;
 }
 
-/* Аватар и текст */
-.dark-theme .mat-option .avatar {
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 6px #0003;
-}
+/* --- Специфичные модалки --- */
 
-.dark-theme .mat-option .username {
-  color: var(--color-text);
-}
-
-.dark-theme .mat-option .fullname {
-  color: #aaa;
-}
-
-
-.custom-create-post-modal .mat-mdc-dialog-surface {
+/* Прозрачный фон для панели создания поста (если нужно) */
+.custom-create-post-modal .mat-mdc-dialog-container .mdc-dialog__surface {
   background: none !important;
   box-shadow: none !important;
 }
-.custom-create-story-modal .mat-mdc-dialog-container {
-  padding: 0 !important;
-  background: var(--color-bg);
+
+/* Модалка истории */
+.custom-create-story-modal .mat-mdc-dialog-container .mdc-dialog__surface {
+  background-color: var(--color-bg) !important;
   border-radius: 24px !important;
-  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6) !important;
-  overflow: hidden !important;
+  padding: 0 !important;
 }
 
-.custom-likes-dialog-panel {
-  /* Убираем стандартные отступы, которые конфликтуют с вашим дизайном */
-  padding: 0 !important;
-  /* Убедитесь, что фон самого Material-контейнера прозрачен,
-     чтобы .likes-dialog полностью контролировал внешний вид */
+/* Диалог лайков (Сброс стилей контейнера) */
+.custom-likes-dialog-panel .mat-mdc-dialog-container {
+  /* Сам контейнер делаем невидимым, чтобы контент внутри решал */
   background: transparent !important;
-  /* Сбрасываем ширину, чтобы .likes-dialog мог контролировать ее сам */
-  max-width: none !important;
-  max-height: none !important;
-}
-
-/* Сброс фона для самого контейнера внутри Material */
-.custom-likes-dialog-panel .mat-dialog-container {
+  box-shadow: none !important;
   padding: 0 !important;
-  border-radius: 0 !important;
+}
+.custom-likes-dialog-panel .mdc-dialog__surface {
   background: transparent !important;
   box-shadow: none !important;
 }
+/* ========================================= */
+/* 6. СТИЛИЗАЦИЯ ПОЛОСЫ ПРОКРУТКИ (SCROLLBAR)*/
+/* ========================================= */
+
+/* --- Для Webkit (Chrome, Edge, Safari, Opera) --- */
+
+/* Ширина полосы прокрутки */
+::-webkit-scrollbar {
+  width: 8px;           /* Вертикальный скролл */
+  height: 8px;          /* Горизонтальный скролл */
+}
+
+/* "Дорожка" (фон), по которой ездит ползунок */
+::-webkit-scrollbar-track {
+  background: transparent; /* Прозрачный фон, чтобы было видно цвет сайта */
+}
+
+/* Сам "Ползунок" */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.4); /* Нейтральный серый, полупрозрачный */
+  border-radius: 10px;    /* Закругленные края */
+  border: 2px solid transparent; /* Отступ от края, чтобы скролл казался тоньше */
+  background-clip: content-box;  /* Важно для отступа */
+}
+
+/* Ползунок при наведении мыши */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary); /* Подсветка твоим акцентным цветом */
+  /* Или просто более серый, если не хочешь цветной: background-color: rgba(128, 128, 128, 0.7); */
+}
+
+/* Уголок между вертикальным и горизонтальным скроллом */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
 
 
+/* --- Для Firefox (использует стандарт CSS) --- */
+* {
+  /* thin - тонкий, auto - обычный */
+  scrollbar-width: thin;
 
+  /* Цвет ползунка | Цвет дорожки */
+  /* Используем полупрозрачный серый и прозрачный фон */
+  scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+}
 
-
-
-
-
-
+/* Специфично для темной темы в Firefox (если нужно перебить) */
+.dark-theme * {
+  scrollbar-color: #555 #232323;
+}

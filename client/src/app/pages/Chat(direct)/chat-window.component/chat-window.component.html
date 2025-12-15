@@ -2,6 +2,7 @@
 
   <div class="chat-header">
     <div class="header-info">
+      <img class="avatar" [src]="avatarUrl" alt="avatar" />
       <span class="chat-title">{{ getConversationTitle() }}</span>
       <span *ngIf="typingUser$ | async as user" class="typing-indicator">
         {{ user }} печатает...
@@ -10,7 +11,7 @@
   </div>
 
   <div #messageContainer class="message-container">
-    <div *ngFor="let msg of messages$ | async"
+    <div *ngFor="let msg of messages$ | async; trackBy: trackByMessageId"
          class="message-wrapper"
          [ngClass]="msg.senderId === currentUserId ? 'sent' : 'received'">
       <div class="message-content">

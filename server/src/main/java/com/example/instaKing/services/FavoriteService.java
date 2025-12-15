@@ -7,6 +7,7 @@ import com.example.instaKing.facade.Facade;
 import com.example.instaKing.models.Favorite;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
+import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.FavoriteRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
@@ -29,6 +30,8 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final Facade facade;
+    private final NotificationService notificationService;
+
 
     public boolean toggleFavorite(Long userId, Long postId) {
         User user = userRepository.findById(userId)
@@ -39,7 +42,7 @@ public class FavoriteService {
         return favoriteRepository.findByUserAndPost(user, post)
                 .map(fav -> {
                     favoriteRepository.delete(fav);
-                    return false; // удалено
+                    return false;
                 })
                 .orElseGet(() -> {
                     Favorite favorite = new Favorite();
@@ -47,7 +50,13 @@ public class FavoriteService {
                     favorite.setPost(post);
                     favorite.setAddedAt(LocalDateTime.now());
                     favoriteRepository.save(favorite);
-                    return true; // добавлено
+                    notificationService.createNotification(
+                            user,
+                            post.getUser(),
+                            NotificationType.FAVORITE,
+                            "Добавил в избранное ваш пост: "+ post.getTitle()
+                    );
+                    return true;
                 });
     }
 

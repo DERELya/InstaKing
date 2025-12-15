@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of} from 'rxjs';
+import {debounceTime, distinctUntilChanged, Observable, of, Subject, switchMap, takeUntil} from 'rxjs';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {UserService} from '../../services/user.service';
@@ -8,7 +8,6 @@ import {MatToolbar} from '@angular/material/toolbar';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
-import {MatTooltip} from '@angular/material/tooltip';
 import {ImageUploadService} from '../../services/image-upload.service';
 import {CommonModule} from '@angular/common';
 import {ThemeService} from '../../services/theme.service';
@@ -16,6 +15,10 @@ import {MatFormField, MatInput} from '@angular/material/input';
 import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
+import {ChatStateService} from '../../services/chat-state.service';
+import {MatBadgeModule} from '@angular/material/badge';
+import {NotificationService} from '../../services/notification.service';
+import {NotificationDTO} from '../../models/NotificationDTO';
 
 
 @Component({
@@ -35,13 +38,15 @@ import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/mater
     MatInput,
     MatAutocomplete,
     MatOption,
-    MatAutocompleteTrigger
+    MatAutocompleteTrigger,
+    MatBadgeModule
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
 })
 export class NavigationComponent implements OnInit, OnDestroy {
-
+  private chatService = inject(ChatStateService);
+  unreadCount$: Observable<number> = this.chatService.totalUnreadCount$;
   isLoggedIn = false;
   isDataLoaded = false;
   user!: User;
@@ -53,15 +58,16 @@ export class NavigationComponent implements OnInit, OnDestroy {
   error: string | null = null;
   private destroy$ = new Subject<void>();
   private searchInput$ = new Subject<string>();
-  private tokenService=inject(TokenStorageService);
-  private userService=inject(UserService);
-  public router=inject(Router);
-  private imageService=inject(ImageUploadService);
-  private cd=inject(ChangeDetectorRef);
-  private themeService=inject(ThemeService);
-
-  constructor(
-    ) {
+  private tokenService = inject(TokenStorageService);
+  private userService = inject(UserService);
+  public router = inject(Router);
+  private imageService = inject(ImageUploadService);
+  private cd = inject(ChangeDetectorRef);
+  private themeService = inject(ThemeService);
+  private notificationService=inject(NotificationService);
+  notifications$ = this.notificationService.notifications$;
+  unreadCountNot$ = this.notificationService.unreadCount$;
+  constructor() {
   }
 
 
@@ -73,7 +79,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.isDataLoaded = true;
         this.cd.markForCheck();
       });
-
+      this.chatService.getConversations().subscribe();
       this.loadProfileImage();
       this.userService.avatarUpdated$
         .pipe(takeUntil(this.destroy$))
@@ -167,10 +173,41 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   openSetting() {
-      this.router.navigate(['/settings']);
+    this.router.navigate(['/settings']);
   }
 
-   openChat() {
-     this.router.navigate(['/direct']);
+  openChat() {
+    this.router.navigate(['/direct']);
+  }
+
+  handleNotificationClick(notification: NotificationDTO) {
+    // 1. Если оно не прочитано, помечаем
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.id);
+    }
+
+    // 2. Логика перехода в зависимости от типа
+    switch (notification.type) {
+      case 'LIKE':
+      case 'COMMENT':
+        // Переходим к посту (предполагаем, что в content или отдельном поле есть ID поста)
+        // Но пока можно просто перейти в профиль отправителя
+        this.router.navigate(['/profile', notification.senderUsername]);
+        break;
+
+      case 'FOLLOW':
+        this.router.navigate(['/profile', notification.senderUsername]);
+        break;
+
+      default:
+        console.log('Клик по уведомлению:', notification);
+    }
+  }
+
+  /**
+   * Кнопка "Прочитать все"
+   */
+  markAllRead() {
+    this.notificationService.markAllAsRead();
   }
 }

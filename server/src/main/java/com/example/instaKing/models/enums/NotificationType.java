@@ -5,5 +5,7 @@ public enum NotificationType {
     FOLLOW,
     COMMENT,
     MESSAGE,
-    FAVORITE
+    FAVORITE,
+    SYSTEM,
+    VIEWSTORY
 }

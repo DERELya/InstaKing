@@ -8,4 +8,5 @@ export interface ConversationDTO {
   lastMessageAt: Date;
   unreadCount: number;
   title: string;
+  avatarUrl?: any;
 }

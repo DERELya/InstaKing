@@ -1,6 +1,5 @@
 <div class="chat-list-container">
 
-  <!-- 1. Шапка с поиском -->
   <header class="list-search-header">
     <mat-form-field appearance="outline" class="search-input-field">
       <input matInput
@@ -8,7 +7,6 @@
              [(ngModel)]="searchInput"
              (ngModelChange)="onSearchChange()">
       <mat-icon matPrefix>search</mat-icon>
-      <!-- Кнопка очистки поиска (появляется, если есть текст) -->
       <button *ngIf="searchInput" matSuffix mat-icon-button aria-label="Clear" (click)="searchInput=''; onSearchChange()">
         <mat-icon>close</mat-icon>
       </button>
@@ -21,13 +19,10 @@
     <p>Загрузка чатов...</p>
   </div>
 
-  <!-- 3. Список чатов (отображается, когда не грузится) -->
   <ng-container *ngIf="!(isLoading$ | async)">
 
-    <!-- Получаем список через async pipe один раз -->
     <ng-container *ngIf="conversations$ | async as conversations">
 
-      <!-- Если список не пуст -->
       <div *ngIf="conversations.length > 0; else noChatsFound" class="conversation-list">
 
         <div *ngFor="let conv of conversations"
@@ -36,10 +31,21 @@
              (click)="selectConversation(conv)"
              tabindex="0">
 
-          <!-- Аватарка (пока стандартная иконка) -->
-          <div class="avatar">
-            <mat-icon>account_circle</mat-icon>
-          </div>
+          <!-- АВАТАРКА -->
+          <div class="avatar-container">
+            <!-- 1. Если есть картинка -->
+            <img *ngIf="conv.avatarUrl"
+                 [src]="conv.avatarUrl"
+                 class="avatar-image"
+                 alt="avatar">
+
+            <!-- 2. Если картинки нет — цветной кружок с буквами -->
+            <div *ngIf="!conv.avatarUrl"
+                 class="avatar-placeholder"
+                 [ngStyle]="{'background-color': getAvatarColor(conv)}">
+              {{ getAvatarInitials(conv) }}
+            </div>
+            </div>
 
           <!-- Контент (Имя, Превью, Дата) -->
           <div class="conversation-content">
@@ -48,21 +54,17 @@
             <div class="top-row">
               <span class="title">{{ getConversationTitle(conv) }}</span>
 
-              <!-- Показываем время только если есть сообщения -->
               <span *ngIf="conv.lastMessageAt" class="timestamp">
-                <!-- Важно: на бэкенде должно быть spring.jackson.serialization.write-dates-as-timestamps=false -->
                 {{ conv.lastMessageAt | date:'HH:mm' }}
               </span>
             </div>
 
-            <!-- Нижняя строка: Текст сообщения и Бейдж непрочитанных -->
             <div class="preview-row">
               <p class="preview-text">
                 <!-- Если сообщение длинное, CSS обрежет его троеточием -->
                 {{ conv.previewMessage || 'Нет сообщений' }}
               </p>
 
-              <!-- Красный кружок (показываем, только если > 0) -->
               <span *ngIf="conv.unreadCount > 0" class="unread-badge">
                 {{ conv.unreadCount > 99 ? '99+' : conv.unreadCount }}
               </span>

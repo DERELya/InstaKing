@@ -8,9 +8,11 @@ import com.example.instaKing.models.Conversation;
 import com.example.instaKing.models.Message;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.MessageStatus;
+import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.ConversationRepository;
 import com.example.instaKing.repositories.MessageRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,18 +32,18 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
+
 
     private static final long PRIVATE_CHAT_COUNT = 2;
 
     @Autowired
-    public ChatService(ConversationRepository conversationRepository,
-                       MessageRepository messageRepository,
-                       UserService userService,
-                       SimpMessagingTemplate simpMessagingTemplate) {
+    public ChatService(ConversationRepository conversationRepository, MessageRepository messageRepository, UserService userService, SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userService = userService;
-        this.messagingTemplate = simpMessagingTemplate;
+        this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -119,28 +121,23 @@ public class ChatService {
      * Рассылает сообщение всем участникам диалога.
      */
     private void sendRealTimeNotification(Message savedMessage, Conversation conversation) {
-        // Преобразуем Entity в DTO для отправки на фронт
         MessageDTO responseDto = convertToDto(savedMessage);
 
-        // Проходимся по ВСЕМ участникам диалога (и отправителю, и получателю)
         for (User participant : conversation.getParticipants()) {
-
-            // ВАЖНО: SimpMessagingTemplate использует username (строку) для маршрутизации
             String username = participant.getUsername();
 
-            // Отправляем в личную очередь юзера /user/{username}/queue/messages
             messagingTemplate.convertAndSendToUser(
                     username,
                     "/queue/messages",
                     responseDto
             );
 
-            // Логируем для проверки
             System.out.println("Отправлено WS сообщение пользователю: " + username);
         }
     }
     private MessageDTO convertToDto(Message msg) {
         MessageDTO dto = new MessageDTO();
+        dto.setId(msg.getId());
         dto.setContent(msg.getContent());
         dto.setSenderId(msg.getSender().getId());
         dto.setConversationId(msg.getConversation().getId());
@@ -151,15 +148,10 @@ public class ChatService {
      * Получает историю сообщений с пагинацией.
      */
     public List<Message> getMessageHistory(Long conversationId, int page, int size) {
-        // Сортируем DESC (от новых к старым), чтобы взять последние 'size' сообщений.
-        // На фронтенде их нужно будет перевернуть (reverse) для правильного порядка.
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return messageRepository.findByConversationId(conversationId, pageable).getContent();
     }
 
-    /**
-     * Проверяет, является ли пользователь участником диалога (для безопасности REST).
-     */
     public boolean isUserParticipant(Long conversationId, String username) {
         return conversationRepository.findById(conversationId)
                 .map(c -> c.getParticipants().stream()
@@ -167,18 +159,12 @@ public class ChatService {
                 .orElse(false);
     }
 
-    /**
-     * Помечает все входящие сообщения в диалоге как прочитанные.
-     */
     @Transactional
     public void markConversationAsRead(Long conversationId, Long readerId) {
-        // 1. Обновляем в БД
         messageRepository.markMessagesAsReadInConversation(conversationId, readerId);
 
-        // 2. Уведомляем собеседника, что его сообщения прочитали
         Conversation conversation = conversationRepository.findById(conversationId).get();
 
-        // Находим собеседника (того, КТО писал сообщения, которые мы сейчас прочитали)
         User otherUser = conversation.getParticipants().stream()
                 .filter(u -> !u.getId().equals(readerId))
                 .findFirst()
@@ -187,15 +173,12 @@ public class ChatService {
         if (otherUser != null) {
             messagingTemplate.convertAndSendToUser(
                     otherUser.getUsername(),
-                    "/queue/read-receipt", // Фронт должен слушать этот канал
-                    new ReadReceiptDTO(conversationId, readerId) // DTO с ID диалога
+                    "/queue/read-receipt",
+                    new ReadReceiptDTO(conversationId, readerId)
             );
         }
     }
 
-    /**
-     * Отправляет статус "печатает..." всем участникам, кроме самого отправителя.
-     */
     public void sendTypingNotification(TypingDTO typingDto, String senderUsername) {
         Conversation conversation = conversationRepository.findById(typingDto.getConversationId())
                 .orElseThrow(() -> new EntityNotFoundException("Диалог не найден"));
@@ -217,18 +200,12 @@ public class ChatService {
         return conversationRepository.findConversationsByParticipantId(id);
     }
 
-    /**
-     * Возвращает текст последнего сообщения для превью в списке чатов.
-     */
     public String getLastMessageContent(Long conversationId) {
         return messageRepository.findTopByConversationIdOrderByCreatedAtDesc(conversationId)
                 .map(Message::getContent)
                 .orElse("Нет сообщений");
     }
 
-    /**
-     * Считает количество непрочитанных сообщений для текущего пользователя.
-     */
     public int getUnreadMessageCount(Long conversationId, Long currentUserId) {
         return messageRepository.countUnreadMessages(conversationId, currentUserId);
     }

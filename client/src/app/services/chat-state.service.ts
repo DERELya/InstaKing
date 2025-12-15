@@ -41,6 +41,13 @@ export class ChatStateService {
   private tokenService = inject(TokenStorageService);
   private currentUserId: number = this.tokenService.getIdFromToken() || 0;
 
+
+  public totalUnreadCount$ = this.conversationsList$.pipe(
+    map(conversations => {
+      return conversations.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+    })
+  );
+
   constructor() {
     // Логика фильтрации списка чатов
     this.filteredConversationsList$ = combineLatest([
@@ -59,9 +66,6 @@ export class ChatStateService {
       })
     );
   }
-
-  // --- API Methods ---
-
   getConversations(): Observable<ConversationDTO[]> {
     this.loadingSubject.next(true);
     return this.http.get<ConversationDTO[]>(this.apiUrl).pipe(
@@ -113,40 +117,38 @@ export class ChatStateService {
   /** 1. Пришло новое сообщение */
   addMessage(message: MessageDTO): void {
     const activeConv = this.activeConversationSubject.value;
+    if (activeConv && activeConv.id == message.conversationId) {
 
-    // Если сообщение относится к текущему открытому чату
-    if (activeConv?.id === message.conversationId) {
       const currentMsgs = this.messagesSubject.value;
 
-      // Защита от дублей (по ID или дате)
-      const isDuplicate = currentMsgs.some(m =>
-        (m.id && m.id === message.id) ||
-        (m.createdAt === message.createdAt && m.content === message.content)
-      );
+      const isDuplicate = currentMsgs.some(m => {
+        if (m.id && message.id) {
+          return m.id === message.id;
+        }
+        return m.createdAt === message.createdAt && m.content === message.content;
+      });
 
       if (!isDuplicate) {
         this.messagesSubject.next([...currentMsgs, message]);
 
-        // Если отправитель не я — сразу помечаем как прочитанное
         if (message.senderId !== this.currentUserId) {
           this.markAsRead(message.conversationId).subscribe();
         }
+      } else {
+        console.warn('Дубликат сообщения отфильтрован:', message.id, message.content);
       }
-      // Сбрасываем статус "печатает", так как сообщение уже пришло
+
       this.typingUserSubject.next(null);
     }
 
-    // Обновляем список чатов слева (превью, время)
     this.updateConversationListOnNewMessage(message);
   }
 
   /** 2. Пришел новый диалог (создан другим юзером) */
   handleNewConversationFromSocket(newConv: ConversationDTO): void {
     const list = [...this.conversationsListSubject.value];
-    // Проверяем, нет ли его уже
     const exists = list.find(c => c.id === newConv.id);
     if (!exists) {
-      // Добавляем в начало
       list.unshift(newConv);
       this.conversationsListSubject.next(list);
     }
@@ -156,14 +158,12 @@ export class ChatStateService {
   handleTyping(dto: TypingDTO): void {
     const activeConv = this.activeConversationSubject.value;
 
-    // Показываем, только если это происходит в открытом чате
+
     if (activeConv && activeConv.id === dto.conversationId) {
       this.typingUserSubject.next(dto.username);
 
-      // Сбрасываем таймер, если он был
       if (this.typingTimeout) clearTimeout(this.typingTimeout);
 
-      // Убираем надпись через 3 секунды тишины
       this.typingTimeout = setTimeout(() => {
         this.typingUserSubject.next(null);
       }, 3000);

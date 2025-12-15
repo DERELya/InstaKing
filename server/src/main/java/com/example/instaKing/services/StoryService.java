@@ -131,7 +131,6 @@ public class StoryService {
                 })
                 .collect(Collectors.toList());
 
-        // Преобразуем в DTO
         return visibleStories.stream()
                 .map(story -> facade.storyToStoryDTO(story, currentUser))
                 .collect(Collectors.toList());
@@ -217,6 +216,7 @@ public class StoryService {
             story.getViewsDetails().add(view);
             story.setViews(story.getViewsDetails().size());
             storyRepository.save(story);
+
         }
     }
 

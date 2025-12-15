@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
 
 @Data
 public class NotificationDTO {
-
     private Long id;
-    private String recipient;
-    private String sender;
-    private NotificationType type;
-    private boolean isRead = false;
     private String content;
+    private NotificationType type;
+    private boolean isRead;
     private LocalDateTime createdAt;
+
+
+    private Long senderId;
+    private String senderUsername;
+    private String senderAvatarUrl;
 }

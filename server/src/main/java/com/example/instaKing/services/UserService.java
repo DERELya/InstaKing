@@ -6,6 +6,7 @@ import com.example.instaKing.exceptions.UserNotFoundException;
 import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.ERole;
+import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.payload.request.SignUpRequest;
 import com.example.instaKing.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -107,7 +108,6 @@ public class UserService {
         User follower = getUserByPrincipal(principal);
         User following = userRepository.findByUsername(followingUsername).orElseThrow();
         following.getFollowing().add(follower);
-        userRepository.save(following);
     }
 
     @Transactional

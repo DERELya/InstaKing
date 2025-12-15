@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Inject, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NotificationService} from '../../../services/notification.service';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -34,13 +34,15 @@ export class EditUserComponent implements OnInit {
   selectedFile?: File;
   userProfileImage?: string;
 
-  constructor(private dialogRef: MatDialogRef<EditUserComponent>,
-              private fb: FormBuilder,
-              private notificationService: NotificationService,
-              @Inject(MAT_DIALOG_DATA) public data: { user: User },
-              private userService: UserService,
-              protected imageService: ImageUploadService,
-              private cd: ChangeDetectorRef
+  private dialogRef=inject(MatDialogRef<EditUserComponent>);
+  private fb= inject(FormBuilder);
+  private notificationService= inject(NotificationService);
+
+  private userService=inject(UserService);
+  protected imageService= inject(ImageUploadService);
+  private cd=inject( ChangeDetectorRef);
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: { user: User }
   ) {
   }
 

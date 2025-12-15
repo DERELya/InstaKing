@@ -5,10 +5,12 @@ import com.example.instaKing.exceptions.PostNotFoundException;
 import com.example.instaKing.models.ImageModel;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
+import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.ImageRepository;
 import com.example.instaKing.repositories.PostRepository;
 import com.example.instaKing.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,19 +26,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, ImageRepository imageRepository, ImageService imageService) {
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-        this.imageRepository = imageRepository;
-        this.imageService=imageService;
-    }
 
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
@@ -82,6 +79,14 @@ public class PostService {
         } else {
             post.setLikes(post.getLikes() + 1);
             post.getLikedUser().add(username);
+            User liker=userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+
+            notificationService.createNotification(
+                    liker,
+                    post.getUser(),
+                    NotificationType.FAVORITE,
+                    "Понравилась ваша публикация: "+ post.getTitle()
+            );
         }
         return postRepository.save(post);
 

@@ -18,12 +18,12 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     //Поиск диалога между двумя пользователями
     @Query("SELECT c FROM Conversation c " +
             "JOIN c.participants p " +
-            "WHERE p.id IN :participantIds " +
+            "WHERE p.id IN :participants " +
             "GROUP BY c " +
             "HAVING COUNT(DISTINCT p) = :count " +
             "AND SIZE(c.participants) = :count")
     Optional<Conversation> findConversationByParticipantsAndCount(
-            @Param("participantsIds") List<Long> participantsIds,
+            @Param("participants") List<Long> participants,
             @Param("count") long count
     );
 

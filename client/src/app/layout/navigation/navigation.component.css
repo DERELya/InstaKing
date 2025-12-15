@@ -326,3 +326,154 @@ border: 1px solid var(--color-border) !important; /* Легкая рамка */
     max-width: 100vw !important;
   }
 }
+/* ... твои существующие стили Toolbar, Search, Profile ... */
+/* Оставь всё как есть до медиа-запросов, а в конец добавь блок ниже */
+
+/* ================================================= */
+/*          СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ (DROPDOWN)         */
+/* ================================================= */
+
+/* Настройка самого контейнера меню (панели) */
+::ng-deep .notification-dropdown.mat-mdc-menu-panel {
+  max-width: 360px !important;
+  width: 360px !important;
+  border-radius: 12px !important;
+  padding: 0 !important; /* Убираем паддинги панели, чтобы хедер был от края до края */
+  overflow: hidden !important;
+  background-color: #121212 !important; /* Фон меню */
+  border: 1px solid #333 !important;
+}
+
+/* Внутренний контейнер, чтобы клики не закрывали меню (если нужно) */
+.menu-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Шапка меню */
+.menu-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #121212;
+  color: #fff;
+  cursor: default;
+}
+
+.header-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.mark-all-btn {
+  font-size: 12px;
+  line-height: 24px;
+  height: 24px;
+  padding: 0 8px;
+  min-width: auto;
+}
+
+/* Список со скроллом */
+.notification-list {
+  max-height: 400px; /* Максимальная высота списка */
+  overflow-y: auto;
+  background-color: #121212;
+}
+
+/* Элемент списка (Кнопка) */
+/* Важно: перебиваем стили mat-menu-item */
+::ng-deep .notification-item.mat-mdc-menu-item {
+  height: auto !important; /* Разрешаем любую высоту */
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: flex-start;
+  white-space: normal !important; /* Текст переносится */
+  line-height: 1.4 !important;
+  color: #fff !important;
+}
+
+::ng-deep .notification-item.mat-mdc-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Подсветка непрочитанных */
+.notification-item.unread {
+  background-color: rgba(38, 38, 38, 0.8) !important; /* Чуть светлее фона */
+}
+
+/* Контент внутри элемента */
+.item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Иконки */
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.like-icon { color: #ed4956; }
+.follow-icon { color: #0095f6; }
+.comment-icon { color: #fff; }
+.system-icon { color: #8e8e8e; }
+
+/* Текст */
+.text-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  font-size: 13px;
+}
+
+.sender-name {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.message-text {
+  color: #dbdbdb;
+}
+
+.time-text {
+  font-size: 11px;
+  color: #8e8e8e;
+  margin-top: 4px;
+}
+
+/* Синяя точка */
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #0095f6;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #8e8e8e;
+  gap: 10px;
+}
+
+/* Скроллбар (тонкий для темной темы) */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.notification-list::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
