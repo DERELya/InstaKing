@@ -2,6 +2,7 @@ package com.example.instaKing.dto;
 
 
 import com.example.instaKing.models.enums.NotificationType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 
@@ -12,6 +13,8 @@ public class NotificationDTO {
     private Long id;
     private String content;
     private NotificationType type;
+
+    @JsonProperty("isRead")
     private boolean isRead;
     private LocalDateTime createdAt;
 

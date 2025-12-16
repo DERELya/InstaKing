@@ -46,8 +46,34 @@
 .message-container::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 
 /* Сообщения (оставляем как есть) */
-.message-wrapper { max-width: 75%; display: flex; width: fit-content; }
-.message-wrapper.sent { align-self: flex-end; }
+.message-wrapper {
+  position: relative; /* Чтобы позиционировать кнопку */
+  display: flex;
+  align-items: center; /* Центрируем кнопку по вертикали относительно сообщения */
+  gap: 8px;
+}
+
+/* Скрываем кнопку действий по умолчанию */
+.action-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+  width: 32px; /* Маленькая кнопка */
+  height: 32px;
+  line-height: 32px;
+}
+.action-btn mat-icon {
+  font-size: 18px;
+}
+
+/* Показываем при наведении на сообщение */
+.message-wrapper:hover .action-btn {
+  opacity: 1;
+}
+
+/* Меняем порядок для своих сообщений: Текст справа, кнопка слева */
+.message-wrapper.sent {
+  flex-direction: row-reverse;
+}
 .message-wrapper.sent .message-content { background-color: #0095f6; color: white; border-radius: 18px 18px 4px 18px; }
 .message-wrapper.received { align-self: flex-start; }
 .message-wrapper.received .message-content { background-color: #262626; color: white; border: 1px solid #363636; border-radius: 18px 18px 18px 4px; }

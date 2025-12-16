@@ -12,8 +12,8 @@ import { ConversationDTO } from '../../../models/ConversationDTO';
 import { MessageDTO } from '../../../models/MessageDTO';
 import { FormsModule } from '@angular/forms';
 import { TextFieldModule } from '@angular/cdk/text-field'
-import {User} from '../../../models/User';
 import {ImageUploadService} from '../../../services/image-upload.service';
+import {MatMenuItem, MatMenuModule, MatMenuTrigger} from '@angular/material/menu';
 
 @Component({
   selector: 'app-chat-window',
@@ -31,7 +31,10 @@ import {ImageUploadService} from '../../../services/image-upload.service';
     DatePipe,
     FormsModule,
     MatInputModule,
-    TextFieldModule
+    TextFieldModule,
+    MatMenuModule,
+    MatMenuTrigger,
+    MatMenuItem
   ]
 })
 export class ChatWindowComponent implements OnInit, OnDestroy {
@@ -142,5 +145,13 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  deleteMessage(messageId: number) {
+    if(confirm('Удалить сообщение?')) {
+      this.chatStateService.deleteMessage(messageId).subscribe({
+        error: (err) => console.error('Ошибка удаления', err)
+      });
+    }
   }
 }

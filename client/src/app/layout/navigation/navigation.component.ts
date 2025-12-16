@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {debounceTime, distinctUntilChanged, Observable, of, Subject, switchMap, takeUntil} from 'rxjs';
+import {debounceTime, distinctUntilChanged, Observable, of, Subject, switchMap, take, takeUntil, tap} from 'rxjs';
 import {User} from '../../models/User';
 import {TokenStorageService} from '../../services/token-storage.service';
 import {UserService} from '../../services/user.service';
@@ -64,10 +64,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
   private imageService = inject(ImageUploadService);
   private cd = inject(ChangeDetectorRef);
   private themeService = inject(ThemeService);
-  private notificationService=inject(NotificationService);
+  private notificationService = inject(NotificationService);
   notifications$ = this.notificationService.notifications$;
   unreadCountNot$ = this.notificationService.unreadCount$;
+
   constructor() {
+    this.notifications$ = this.notificationService.notifications$.pipe(
+      tap(list => {
+        // При получении списка запускаем загрузку аватарок для каждого уведомления
+        list.forEach(item => this.loadNotificationAvatar(item));
+      })
+    );
   }
 
 
@@ -112,13 +119,25 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // Очистка старого BLOB URL
     if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
       URL.revokeObjectURL(this.userProfileImage);
     }
   }
+  loadNotificationAvatar(item: NotificationDTO) {
+    if (item.senderAvatarUrl || !item.senderUsername) return;
 
-  // Новый метод для загрузки и обновления аватара
+    this.imageService.getImageToUser(item.senderUsername).subscribe({
+      next: (blob) => {
+        item.senderAvatarUrl = URL.createObjectURL(blob);
+        this.cd.markForCheck();
+      },
+      error: () => {
+        // Ошибка загрузки — останется заглушка
+        this.cd.markForCheck();
+      }
+    });
+  }
+
   loadProfileImage(): void {
     if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
       URL.revokeObjectURL(this.userProfileImage);
@@ -185,7 +204,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id);
     }
-
+    console.log(notification);
     // 2. Логика перехода в зависимости от типа
     switch (notification.type) {
       case 'LIKE':
@@ -209,5 +228,23 @@ export class NavigationComponent implements OnInit, OnDestroy {
    */
   markAllRead() {
     this.notificationService.markAllAsRead();
+  }
+
+  onMenuOpened() {
+    this.unreadCountNot$.pipe(take(1)).subscribe(count => {
+      if (count > 0) {
+        setTimeout(() => {
+          this.notificationService.markAllAsRead();
+        }, 2000);
+      }
+    });
+  }
+
+  getAvatarColor(username: string): string {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return '#' + (hash & 0x00FFFFFF).toString(16).padStart(6, '0').toUpperCase();
   }
 }

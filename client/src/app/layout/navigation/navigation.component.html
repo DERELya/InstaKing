@@ -8,12 +8,14 @@
   <div class="toolbar-section center" *ngIf="router.url.startsWith('/main')">
 
     <!-- 1. КНОПКА УВЕДОМЛЕНИЙ (Исправлено) -->
-    <button mat-icon-button class="chat-btn" [matMenuTriggerFor]="notificationMenu">
+    <button mat-icon-button class="chat-btn" [matMenuTriggerFor]="notificationMenu"
+            (menuOpened)="onMenuOpened()">
       <mat-icon
         [matBadge]="unreadCountNot$ | async"
         [matBadgeHidden]="(unreadCountNot$ | async) === 0"
         matBadgeColor="warn"
-        matBadgeSize="small"
+        matBadgeSize="medium"
+        matBadgePosition="before"
         aria-hidden="false"
         aria-label="Уведомления">
         notifications
@@ -43,7 +45,7 @@
         [matBadge]="unreadCount$ | async"
         [matBadgeHidden]="(unreadCount$ | async) === 0"
         matBadgeColor="warn"
-        matBadgeSize="small">
+        matBadgeSize="medium">
         send
       </mat-icon>
     </button>
@@ -100,8 +102,6 @@
 <!-- ============================================== -->
 <mat-menu #notificationMenu="matMenu" class="notification-dropdown" xPosition="before">
   <div class="menu-container" (click)="$event.stopPropagation()">
-
-    <!-- Шапка -->
     <div class="menu-header">
       <span class="header-title">Уведомления</span>
       <button mat-button color="primary" class="mark-all-btn"
@@ -111,16 +111,13 @@
       </button>
     </div>
 
-    <!-- Список -->
     <div class="notification-list">
-
-      <!-- Пусто -->
       <div *ngIf="(notifications$ | async)?.length === 0" class="empty-state">
         <mat-icon>notifications_off</mat-icon>
-        <p>Нет новых уведомлений</p>
+        <p>Нет уведомлений</p>
       </div>
 
-      <!-- Элементы -->
+      <!-- Элемент уведомления -->
       <button mat-menu-item
               *ngFor="let item of notifications$ | async"
               class="notification-item"
@@ -128,19 +125,39 @@
               (click)="handleNotificationClick(item)">
 
         <div class="item-content">
-          <div class="icon-wrapper">
-            <mat-icon *ngIf="item.type === 'LIKE'" class="like-icon">favorite</mat-icon>
-            <mat-icon *ngIf="item.type === 'FOLLOW'" class="follow-icon">person_add</mat-icon>
-            <mat-icon *ngIf="item.type === 'COMMENT'" class="comment-icon">chat_bubble</mat-icon>
-            <mat-icon *ngIf="item.type === 'SYSTEM'" class="system-icon">info</mat-icon>
+
+          <!-- 1. ИКОНКА ТИПА (Маленькая, слева) -->
+          <div class="type-icon-wrapper">
+            <mat-icon *ngIf="item.type === 'LIKE'" class="icon-like">heart_plus</mat-icon>
+            <mat-icon *ngIf="item.type === 'FOLLOW'" class="icon-follow">person_heart</mat-icon>
+            <mat-icon *ngIf="item.type === 'COMMENT'" class="icon-comment">chat_bubble</mat-icon>
+            <mat-icon *ngIf="item.type === 'SYSTEM'" class="icon-system">info</mat-icon>
           </div>
 
+          <!-- 2. АВАТАР (Кто совершил действие) -->
+          <div class="sender-avatar-wrapper">
+            <img *ngIf="item.senderAvatarUrl"
+                 [src]="item.senderAvatarUrl"
+                 class="sender-avatar"
+                 alt="avatar">
+            <!-- Заглушка, если аватара нет -->
+            <div *ngIf="!item.senderAvatarUrl"
+                 class="sender-avatar-placeholder"
+                 [style.background-color]="getAvatarColor(item.senderUsername)">
+              {{ item.senderUsername.slice(0,1).toUpperCase() }}
+            </div>
+          </div>
+
+          <!-- 3. ТЕКСТОВЫЙ БЛОК -->
           <div class="text-wrapper">
-            <span class="sender-name">{{ item.senderUsername }}</span>
-            <span class="message-text">{{ item.content }}</span>
+            <div class="content-row">
+              <span class="sender-name">{{ item.senderUsername }}</span>
+              <span class="message-text">{{ item.content }}</span>
+            </div>
             <span class="time-text">{{ item.createdAt | date:'shortTime' }}</span>
           </div>
 
+          <!-- Синяя точка непрочитанного (справа) -->
           <div *ngIf="!item.isRead" class="unread-dot"></div>
         </div>
       </button>

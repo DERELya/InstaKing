@@ -51,8 +51,8 @@ public class FavoriteService {
                     favorite.setAddedAt(LocalDateTime.now());
                     favoriteRepository.save(favorite);
                     notificationService.createNotification(
-                            user,
                             post.getUser(),
+                            user,
                             NotificationType.FAVORITE,
                             "Добавил в избранное ваш пост: "+ post.getTitle()
                     );

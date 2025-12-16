@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
+  ElementRef, inject,
   OnDestroy,
   OnInit,
   QueryList,
@@ -25,11 +25,15 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {RouterLink, RouterModule} from '@angular/router';
 import { LikesPostComponent } from '../../pages/post/likes-post/likes-post.component';
-import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {MatDialog} from '@angular/material/dialog';
 import { PostInfoComponent } from '../../pages/post/post-info/post-info.component';
 import {StoryViewerComponent} from '../../pages/story/story-viewer/story-viewer.component';
 import {Story} from '../../models/Story';
 import {CreateStoryComponent} from '../../pages/story/create-story/create-story.component';
+import {SocketClientService} from '../../services/SocketClient.service';
+import {TokenStorageService} from '../../services/token-storage.service';
+import {ChatService} from '../../services/chat.service';
+import {NotificationService} from '../../services/notification.service';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -78,18 +82,25 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   usersWithStories: Record<string, boolean> = {};
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
+  private postService=inject(PostService);
+  private userService=inject(UserService);
+  private commentService=inject(CommentService);
+  private imageService=inject(ImageUploadService);
+  private cd=inject(ChangeDetectorRef);
+  private dialog=inject(MatDialog);
+  private storyService=inject(StoryService);
+  private socketClient = inject(SocketClientService);
+  private tokenService = inject(TokenStorageService);
+  private chatService = inject(ChatService);
+  private notifSocketService = inject(NotificationService);
 
   constructor(
-    private postService: PostService,
-    private userService: UserService,
-    protected commentService: CommentService,
-    private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef,
-    private dialog: MatDialog,
-    private storyService: StoryService
   ) {}
 
   ngOnInit(): void {
+    if (this.tokenService.getToken()!=null) {
+      this.socketClient.connect();
+    }
     this.storyService.getUsersWithActiveStories()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: Record<string, boolean>) => {

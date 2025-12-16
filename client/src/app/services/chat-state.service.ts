@@ -7,6 +7,7 @@ import { ConversationDTO } from '../models/ConversationDTO';
 import { TypingDTO } from '../models/TypingDTO';
 import { ReadReceiptDTO } from '../models/ReadReceiptDTO';
 import { TokenStorageService } from './token-storage.service';
+import {DeleteMessageDTO} from '../models/DeleteMEssageDTO';
 
 @Injectable({
   providedIn: 'root'
@@ -247,5 +248,21 @@ export class ChatStateService {
   private getOtherParticipantName(conversation: ConversationDTO): string {
     const other = conversation.participants?.find(p => p.id !== this.currentUserId);
     return other ? other.username : (conversation.title || 'Чат');
+  }
+
+  public handleDeleteMessage(dto: DeleteMessageDTO): void {
+    const activeConv = this.activeConversationSubject.value;
+
+    if (activeConv && activeConv.id === dto.conversationId) {
+      const currentMessages = this.messagesSubject.value;
+
+      const updatedMessages = currentMessages.filter(m => m.id !== dto.messageId);
+
+      this.messagesSubject.next(updatedMessages);
+    }
+  }
+
+  public deleteMessage(messageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}`);
   }
 }

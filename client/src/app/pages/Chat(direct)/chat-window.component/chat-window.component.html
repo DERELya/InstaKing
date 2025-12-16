@@ -23,6 +23,20 @@
           </ng-container>
         </div>
       </div>
+
+      <button mat-icon-button
+              class="action-btn"
+              *ngIf="msg.senderId === currentUserId"
+              [matMenuTriggerFor]="msgMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #msgMenu="matMenu">
+        <button mat-menu-item (click)="deleteMessage(msg.id!)">
+          <mat-icon color="warn">delete</mat-icon>
+          <span class="color: var(--color-text)">Удалить</span>
+        </button>
+      </mat-menu>
     </div>
   </div>
 

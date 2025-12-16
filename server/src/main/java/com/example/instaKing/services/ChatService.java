@@ -1,5 +1,6 @@
 package com.example.instaKing.services;
 
+import com.example.instaKing.dto.DeleteMessageDTO;
 import com.example.instaKing.dto.MessageDTO;
 import com.example.instaKing.dto.ReadReceiptDTO;
 import com.example.instaKing.dto.TypingDTO;
@@ -11,6 +12,7 @@ import com.example.instaKing.models.enums.MessageStatus;
 import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.ConversationRepository;
 import com.example.instaKing.repositories.MessageRepository;
+import io.micrometer.core.instrument.Measurement;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -208,5 +211,35 @@ public class ChatService {
 
     public int getUnreadMessageCount(Long conversationId, Long currentUserId) {
         return messageRepository.countUnreadMessages(conversationId, currentUserId);
+    }
+
+    // ChatService.java
+
+    @Transactional
+    public void deleteMessage(Long messageId, User currentUser) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Сообщение не найдено"));
+
+        // Проверка прав: удалять может только автор
+        if (!message.getSender().getId().equals(currentUser.getId())) {
+            throw new SecurityException("Вы не можете удалить чужое сообщение");
+        }
+
+        Long conversationId = message.getConversation().getId();
+        List<User> participants = message.getConversation().getParticipants();
+
+        // 1. Удаляем из БД
+        messageRepository.delete(message);
+
+        // 2. Уведомляем ВСЕХ участников через сокеты
+        DeleteMessageDTO deleteDto = new DeleteMessageDTO(messageId, conversationId);
+
+        for (User participant : participants) {
+            messagingTemplate.convertAndSendToUser(
+                    participant.getUsername(),
+                    "/queue/delete-message", // Клиент подпишется на этот канал
+                    deleteDto
+            );
+        }
     }
 }

@@ -29,4 +29,10 @@ public class NotificationController {
         notificationService.markAsRead(id);
     }
 
+    @PostMapping("/read-all")
+    public void markAllAsRead(Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
+        notificationService.markAllAsReadForUser(user);
+    }
+
 }

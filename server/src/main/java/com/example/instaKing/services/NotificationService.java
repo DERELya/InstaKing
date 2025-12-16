@@ -82,7 +82,12 @@ public class NotificationService {
         dto.setCreatedAt(n.getCreatedAt());
         dto.setSenderId(n.getSender().getId());
         dto.setSenderUsername(n.getSender().getUsername());
-        // dto.setSenderAvatarUrl(...) // если есть
         return dto;
+    }
+
+    public void markAllAsReadForUser(User recipient) {
+        List<Notification> unread = notificationRepository.findAllByRecipientIdAndIsReadFalse(recipient.getId());
+        unread.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unread);
     }
 }

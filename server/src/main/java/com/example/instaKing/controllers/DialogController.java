@@ -59,6 +59,13 @@ public class DialogController {
         return dto;
     }
 
+    @DeleteMapping("/messages/{id}")
+    public ResponseEntity<?> deleteMessage(@PathVariable Long id, Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
+        chatService.deleteMessage(id, user);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{conversationId}/read")
     public void markAsRead(@PathVariable Long conversationId, Principal principal) {
 

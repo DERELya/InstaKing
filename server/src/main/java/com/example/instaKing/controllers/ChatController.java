@@ -32,9 +32,7 @@ public class ChatController {
         try {
             String senderUsername = principal.getName();
             User sender=userService.getUserByUsername(senderUsername);
-
             messageDto.setSenderId(sender.getId());
-
             chatService.saveAndSend(messageDto);
 
         } catch (EntityNotFoundException e) {
@@ -52,4 +50,5 @@ public class ChatController {
         String senderUsername = principal.getName();
         chatService.sendTypingNotification(typingDto, senderUsername);
     }
+
 }

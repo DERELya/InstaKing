@@ -82,8 +82,8 @@ public class PostService {
             User liker=userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Username not found"));
 
             notificationService.createNotification(
-                    liker,
                     post.getUser(),
+                    liker,
                     NotificationType.FAVORITE,
                     "Понравилась ваша публикация: "+ post.getTitle()
             );
