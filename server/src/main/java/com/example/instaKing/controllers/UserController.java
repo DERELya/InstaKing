@@ -27,25 +27,26 @@ public class UserController {
 
     private final UserService userService;
     private final ResponseErrorValidator responseErrorValidator;
-
+    private final UserFacade userFacade;
     @Autowired
-    public UserController(UserService userService, ResponseErrorValidator responseErrorValidator) {
+    public UserController(UserService userService, ResponseErrorValidator responseErrorValidator, UserFacade userFacade) {
         this.userService = userService;
         this.responseErrorValidator = responseErrorValidator;
+        this.userFacade = userFacade;
     }
 
     @GetMapping("/")
     public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
         User user = userService.getCurrentUser(principal);
 
-        UserDTO userDTO = UserFacade.userToUserDTO(user);
+        UserDTO userDTO = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId) {
         User user = userService.getUserById(Long.parseLong(userId));
-        UserDTO userDTO = UserFacade.userToUserDTO(user);
+        UserDTO userDTO = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
@@ -56,14 +57,16 @@ public class UserController {
 
         User user = userService.updateUser(userDTO, principal);
 
-        UserDTO userUpdated = UserFacade.userToUserDTO(user);
+        UserDTO userUpdated = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
 
     @GetMapping("/getUser/{username}")
     public ResponseEntity<UserDTO> getUserProfileByUsername(@PathVariable("username") String username) {
         User user = userService.getUserByUsername(username);
-        UserDTO userDTO = UserFacade.userToUserDTO(user);
+        UserDTO userDTO = userFacade.userToUserDTO(user);
+        System.out.println("PIZDA"+userDTO);
+        System.out.println("PIZDAaga"+user.getAvatarUrl());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
@@ -99,7 +102,7 @@ public class UserController {
     public ResponseEntity<?> search(@PathVariable("username") String username) {
         List<UserDTO> followingsDTO = userService.search(username)
                 .stream()
-                .map(UserFacade::userToUserDTO).collect(Collectors.toList());
+                .map(userFacade::userToUserDTO).collect(Collectors.toList());
         return new ResponseEntity<>(followingsDTO, HttpStatus.OK);
     }
 

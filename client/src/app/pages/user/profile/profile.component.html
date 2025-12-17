@@ -6,7 +6,7 @@
     <div class="profile-avatar-block">
       <label class="profile-avatar-upload-label">
         <img
-          [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+          [src]="userProfileImage || userProfileImage || 'assets/placeholder.jpg'"
           alt="avatar"
           class="profile-avatar"
           [ngClass]="{ 'story': hasStory }"

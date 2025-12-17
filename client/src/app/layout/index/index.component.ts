@@ -13,9 +13,9 @@ import { Post } from '../../models/Post';
 import { User } from '../../models/User';
 import { PostService } from '../../services/post.service';
 import { UserService } from '../../services/user.service';
-import { StoryService} from '../../services/story.service';
+import { StoryService } from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
-import { ImageUploadService } from '../../services/image-upload.service';
+import { ImageUploadService } from '../../services/image-upload.service'; // Обновленный сервис
 import { MatCardImage, MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,21 +23,21 @@ import { CommonModule, NgClass } from '@angular/common';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { Subject, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import {RouterLink, RouterModule} from '@angular/router';
+import { RouterLink, RouterModule } from '@angular/router';
 import { LikesPostComponent } from '../../pages/post/likes-post/likes-post.component';
-import {MatDialog} from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { PostInfoComponent } from '../../pages/post/post-info/post-info.component';
-import {StoryViewerComponent} from '../../pages/story/story-viewer/story-viewer.component';
-import {Story} from '../../models/Story';
-import {CreateStoryComponent} from '../../pages/story/create-story/create-story.component';
+import { StoryViewerComponent } from '../../pages/story/story-viewer/story-viewer.component';
+import { Story } from '../../models/Story';
+import { CreateStoryComponent } from '../../pages/story/create-story/create-story.component';
+import { TokenStorageService } from '../../services/token-storage.service';
+import { ChatService } from '../../services/chat.service';
+import { NotificationService } from '../../services/notification.service';
 import {SocketClientService} from '../../services/SocketClient.service';
-import {TokenStorageService} from '../../services/token-storage.service';
-import {ChatService} from '../../services/chat.service';
-import {NotificationService} from '../../services/notification.service';
 
 interface UiPost extends Post {
   isLiked: boolean;
-  avatarUrl?: string;
+  avatarUrl?: string; // Теперь это полная ссылка (String)
   showAllComments?: boolean;
   commentCount?: number;
   showHeart?: boolean;
@@ -69,7 +69,9 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   user!: User;
   isPostsLoaded = false;
   isUserDataLoaded = false;
-  userImages: { [key: string]: string } = {};
+
+  // Удалил userImages: { [key: string]: string } = {}; (Больше не нужно)
+
   private destroy$ = new Subject<void>();
   currentPage = 0;
   pageSize = 2;
@@ -82,30 +84,32 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   usersWithStories: Record<string, boolean> = {};
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
-  private postService=inject(PostService);
-  private userService=inject(UserService);
-  private commentService=inject(CommentService);
-  private imageService=inject(ImageUploadService);
-  private cd=inject(ChangeDetectorRef);
-  private dialog=inject(MatDialog);
-  private storyService=inject(StoryService);
+
+  private postService = inject(PostService);
+  private userService = inject(UserService);
+  private commentService = inject(CommentService);
+  // Делаем imageService публичным, чтобы использовать в HTML
+  public imageService = inject(ImageUploadService);
+  private cd = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+  private storyService = inject(StoryService);
   private socketClient = inject(SocketClientService);
   private tokenService = inject(TokenStorageService);
   private chatService = inject(ChatService);
   private notifSocketService = inject(NotificationService);
 
-  constructor(
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
-    if (this.tokenService.getToken()!=null) {
+    if (this.tokenService.getToken() != null) {
       this.socketClient.connect();
     }
+
+    // Загрузка сторис
     this.storyService.getUsersWithActiveStories()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: Record<string, boolean>) => {
         this.usersWithStories = response;
-        console.log(response);
         this.groupedStories = Object.keys(response).map(u => ({
           username: u,
           stories: [],
@@ -114,14 +118,17 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cd.markForCheck();
       });
 
+    // Загрузка постов
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
+        // Мы предполагаем, что postService.processSinglePost уже заполнил avatarUrl правильной ссылкой
         this.posts = posts;
         this.isPostsLoaded = true;
         this.isLoading = false;
         this.cd.markForCheck();
 
+        // Проверка избранного
         this.postService.getFavorites().subscribe(favorites => {
           const favoriteIds = new Set(favorites.map(p => p.id));
           this.posts = this.posts.map(post => ({
@@ -132,6 +139,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
 
+    // Пагинация
     this.postService.totalPages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(totalPages => {
@@ -141,14 +149,19 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cd.markForCheck();
       });
 
+    // Данные текущего юзера
     this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
       this.resetPaging();
       this.loadPosts();
     });
-
   }
+
+  // --- УДАЛЕН МЕТОД getUserImage ---
+  // Больше не нужно качать Blob. В HTML используй:
+  // [src]="imageService.getProfileImageUrl(post.usernameAvatar)" (если поле usernameAvatar содержит имя файла)
+  // или если в post.avatarUrl уже лежит готовая ссылка (как мы сделали в PostService), то просто [src]="post.avatarUrl"
 
   private resetPaging(): void {
     this.currentPage = 0;
@@ -181,7 +194,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openPostDetails(index: number) {
-    console.log(this.posts[index].addedAt);
     const dialogRef = this.dialog.open(PostInfoComponent, {
       data: { post: this.posts[index], index },
       width: '700px',
@@ -255,32 +267,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getUserImage(username?: string): string {
-    if (!username) return 'assets/placeholder.jpg';
-
-    if (this.userImages[username]) {
-      return this.userImages[username];
-    }
-
-    this.userImages[username] = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username!] = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userImages[username!] = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-
-    return this.userImages[username];
-  }
-
-
   trackByUsernamePost(index: number, username: string): string {
     return username;
   }
@@ -317,6 +303,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openStoryViewer(username: string, startStoryIndex: number = 0): void {
+    // Без изменений
     const userGroup = this.groupedStories.find(g => g.username === username);
     if (!userGroup) return;
 
@@ -362,7 +349,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-
   private preloadNeighborStories(index: number) {
     const neighbors = [index - 1, index + 1];
     for (const i of neighbors) {
@@ -385,15 +371,15 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
 
   keepOrder = () => 0;
 
-
   openCreateStoryDialog() {
-      const dialogRef=this.dialog.open(CreateStoryComponent, {
-        maxWidth: '95vw',
-        maxHeight: '90vh'
-      });
-      dialogRef.afterClosed().subscribe(result => {
-        if ( this.user?.username) {
-        }
-      });
+    const dialogRef = this.dialog.open(CreateStoryComponent, {
+      maxWidth: '95vw',
+      maxHeight: '90vh'
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (this.user?.username) {
+        // Логика после закрытия
+      }
+    });
   }
 }

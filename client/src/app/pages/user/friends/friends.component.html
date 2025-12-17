@@ -12,7 +12,7 @@
         class="like-user-row"
         *ngFor="let user of users; trackBy: trackByUsername"
       >
-        <img class="avatar" [src]="getUserImage(user.username)" alt="avatar" />
+        <img class="avatar" [src]="user.avatarUrl" alt="avatar" />
 
         <div class="user-info">
           <a

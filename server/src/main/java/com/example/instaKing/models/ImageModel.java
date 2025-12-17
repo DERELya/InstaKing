@@ -18,8 +18,6 @@ public class ImageModel {
     @Column(nullable = false)
     private String imagePath;
 
-    @JsonIgnore
-    private Long userId;
 
     @JsonIgnore
     private Long postId;

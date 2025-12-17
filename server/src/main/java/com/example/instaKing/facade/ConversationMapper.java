@@ -19,13 +19,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ConversationMapper {
     private final MessageRepository messageRepository;
+    private final UserFacade userFacade;
+
 
     public ConversationDTO toDto(Conversation conversation, User currentUser) {
         ConversationDTO dto = new ConversationDTO();
         dto.setId(conversation.getId());
         List<UserDTO> participants = conversation.getParticipants()
                 .stream()
-                .map(UserFacade::userToUserDTO)
+                .map(userFacade::userToUserDTO)
                 .collect(Collectors.toList());
         dto.setParticipants(participants);
         dto.setTitle(getConversationTitle(conversation, currentUser));

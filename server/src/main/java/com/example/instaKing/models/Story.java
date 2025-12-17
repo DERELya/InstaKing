@@ -24,6 +24,8 @@ public class Story {
 
     private String mediaUrl;
 
+    @Enumerated(EnumType.STRING)
+    private StoryVisibility storyVisibility;
     private int views;
 
     private String description;

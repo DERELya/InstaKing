@@ -4,20 +4,19 @@ import { TokenStorageService } from '../../../services/token-storage.service';
 import { PostService } from '../../../services/post.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NotificationService } from '../../../services/notification.service';
-import { ImageUploadService } from '../../../services/image-upload.service';
+import { ImageUploadService } from '../../../services/image-upload.service'; // Обновленный сервис
 import { UserService } from '../../../services/user.service';
 import { EditUserComponent } from '../edit-user/edit-user.component';
-import {ActivatedRoute, NavigationEnd, Router, RouterOutlet} from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { AddPostComponent } from '../../post/add-post/add-post.component';
 import { FollowingComponent } from '../following/following.component';
-import {filter, forkJoin, of, Subject, switchMap, takeUntil} from 'rxjs';
-import {MatIconModule} from '@angular/material/icon';
-import {CommonModule, NgIf, NgSwitch, NgSwitchCase} from '@angular/common';
-import {Story} from '../../../models/Story';
-import {StoryService} from '../../../services/story.service';
-import {hash} from 'crypto';
-import {StoryViewerComponent} from '../../story/story-viewer/story-viewer.component';
-import {MatIconButton} from '@angular/material/button';
+import { filter, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
+import { Story } from '../../../models/Story';
+import { StoryService } from '../../../services/story.service';
+import { StoryViewerComponent } from '../../story/story-viewer/story-viewer.component';
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-profile',
@@ -39,9 +38,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   user?: User;
   isUserDataLoaded = false;
   selectedFile?: File;
-  userProfileImage?: string;
-  previewUrl?: string;
-  activeTab: 'posts' | 'saved' | 'tagged'  = 'posts';
+
+  // Теперь здесь просто строка (ссылка), а не blob url
+  userProfileImage: string = 'assets/placeholder.jpg';
+
+  activeTab: 'posts' | 'saved' | 'tagged' = 'posts';
   isCurrentUser: boolean = false;
   private destroy$ = new Subject<void>();
   postsCount: number = 0;
@@ -54,22 +55,26 @@ export class ProfileComponent implements OnInit, OnDestroy {
   currentUserIndex = 0;
   currentStoryIndex = 0;
   hasStory: boolean = false;
+  isLoadingStories = false;
 
   constructor(
     private tokenService: TokenStorageService,
     private postService: PostService,
     private dialog: MatDialog,
     private notificationService: NotificationService,
-    private imageService: ImageUploadService,
+
+    // Делаем imageService публичным, чтобы использовать в HTML
+    public imageService: ImageUploadService,
+
     protected userService: UserService,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
-    private storyService:StoryService
+    private storyService: StoryService
   ) {}
 
   ngOnInit(): void {
-    // Слежение за параметрами маршрута
+    // ... логика маршрутов и подписок (без изменений) ...
     this.route.paramMap
       .pipe(
         takeUntil(this.destroy$),
@@ -88,7 +93,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       });
 
-    // Следим за изменением маршрута для синхронизации activeTab
     this.router.events
       .pipe(takeUntil(this.destroy$), filter(e => e instanceof NavigationEnd))
       .subscribe(() => {
@@ -100,20 +104,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Подписка на изменения постов
     this.postService.postCountChanged$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         if (this.user?.username) this.refreshProfileData();
       });
 
-    // Подписка на обновление аватара
     this.userService.avatarUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        if (this.user?.username && this.isCurrentUser) this.refreshProfileData();
+        if (this.user?.username && this.isCurrentUser) {
+          // Принудительно обновляем аватарку с bustCache
+          this.refreshProfileData();
+        }
       });
-
   }
 
   private refreshProfileData(): void {
@@ -138,8 +142,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.isCurrentUser = (user.username === this.tokenService.getUsernameFromToken());
         this.isUserDataLoaded = true;
         this.checkHasStory(user.username);
+
+        // Убрали imageService.getImageToUser из forkJoin, так как теперь это не запрос
         return forkJoin({
-          avatar: this.imageService.getImageToUser(profileUsername),
           followers: this.userService.getFollowers(profileUsername),
           following: this.userService.getFollowing(profileUsername),
           posts: this.postService.getPostForUser(profileUsername),
@@ -150,17 +155,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private updateProfileData(data: any) {
-    if (data.avatar) {
-      if (this.userProfileImage) URL.revokeObjectURL(this.userProfileImage);
-      this.userProfileImage = URL.createObjectURL(data.avatar);
+    // Генерируем ссылку на аватар
+    if (this.user?.avatarUrl) {
+      // Добавляем timestamp, если это текущий юзер (чтобы видеть обновления аватара сразу)
+      const bustCache = this.isCurrentUser ? `?t=${Date.now()}` : '';
+      this.userProfileImage = this.imageService.getProfileImageUrl(this.user.avatarUrl) + bustCache;
     } else {
       this.userProfileImage = 'assets/placeholder.jpg';
     }
+
     this.followersCount = data.followers?.length ?? 0;
     this.followingCount = data.following?.length ?? 0;
     this.postsCount = Array.isArray(data.posts) ? data.posts.length : 0;
     this.isFollow = data.isFollow ?? false;
-
   }
 
   setDefaultState() {
@@ -190,13 +197,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   openFollowingDialog(followers: boolean): void {
     const dialogUserFollowingConfig = new MatDialogConfig();
-    //dialogUserFollowingConfig.width = '400px';
     dialogUserFollowingConfig.panelClass = 'custom-likes-dialog-panel';
     dialogUserFollowingConfig.data = {
       followers: followers,
       username: this.user?.username
     };
-    const dialogRef=this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
+    const dialogRef = this.dialog.open(FollowingComponent, dialogUserFollowingConfig);
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.user?.username) {
         this.refreshProfileData();
@@ -207,9 +213,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.userProfileImage?.startsWith('blob:')) URL.revokeObjectURL(this.userProfileImage);
-    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+    // Убрали revokeObjectURL, больше не нужно
   }
+
+  // ... остальные методы (selectTab, pluralize, openCreatePostDialog и т.д.) без изменений ...
 
   selectTab(tab: 'posts' | 'saved' | 'tagged') {
     this.router.navigate([tab], { relativeTo: this.route });
@@ -222,34 +229,33 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   openCreatePostDialog() {
-    const dialogRef=this.dialog.open(AddPostComponent, {
+    const dialogRef = this.dialog.open(AddPostComponent, {
       width: '500px',
       maxWidth: '95vw',
       panelClass: 'custom-create-post-modal'
     });
     dialogRef.afterClosed().subscribe(result => {
-      if ( this.user?.username) {
-        // Обновление счетчика постов происходит через подписку на postCountChanged$ в ngOnInit.
+      if (this.user?.username) {
+        // ...
       }
     });
   }
 
   loadActiveStories(username:string){
-  this.storyService.getActiveStoriesForUser(username).subscribe(stories => {
-    this.stories = stories;
-    const map = new Map<string, Story[]>();
-    stories.forEach(s => {
-      if (!map.has(s.username!)) map.set(s.username!, []);
-      map.get(s.username!)!.push(s);
-    });
-    this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
+    this.storyService.getActiveStoriesForUser(username).subscribe(stories => {
+      this.stories = stories;
+      const map = new Map<string, Story[]>();
+      stories.forEach(s => {
+        if (!map.has(s.username!)) map.set(s.username!, []);
+        map.get(s.username!)!.push(s);
+      });
+      this.groupedStories = Array.from(map.entries()).map(([username, stories]) => ({ username, stories }));
 
-    this.currentUserIndex = 0;
-    this.currentStoryIndex = 0;
-    this.cd.markForCheck();
-    console.log(this.groupedStories);
-  });
-}
+      this.currentUserIndex = 0;
+      this.currentStoryIndex = 0;
+      this.cd.markForCheck();
+    });
+  }
 
   follow(username: string) {
     this.userService.follow(username).subscribe(() => {
@@ -274,8 +280,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       });
   }
-
-  isLoadingStories = false;
 
   openStoryViewer(startIndex: number = 0): void {
     this.isLoadingStories = true;

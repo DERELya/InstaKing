@@ -62,7 +62,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.messages$.subscribe(() => {
         setTimeout(() => this.scrollToBottom(), 50);
-        this.loadAvatar(this.getConversationTitle());
+        this.imageService.getProfileImageUrl(this.getConversationTitle());
         this.cdr.detectChanges();
       })
     );
@@ -133,19 +133,6 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     return message.id || index; // Используем ID, если его нет (пока летит) — индекс
   }
 
-  loadAvatar(username: string) {
-    this.imageService.getImageToUser(username).subscribe({
-      next: blob => {
-        const preview = URL.createObjectURL(blob);
-        this.avatarUrl = preview;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.avatarUrl = 'assets/placeholder.jpg';
-        this.cdr.markForCheck();
-      }
-    });
-  }
 
   deleteMessage(messageId: number) {
     if(confirm('Удалить сообщение?')) {

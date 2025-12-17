@@ -1,22 +1,25 @@
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {AsyncPipe, NgForOf, NgIf} from "@angular/common";
-import {MatIconButton} from "@angular/material/button";
-import {User} from '../../../models/User';
-import {forkJoin, map, Observable, of, Subject, switchMap, takeUntil} from 'rxjs';
-import {UserService} from '../../../services/user.service';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {ImageUploadService} from '../../../services/image-upload.service';
-import {TokenStorageService} from '../../../services/token-storage.service';
-import {MatIcon} from '@angular/material/icon';
-import {RouterLink} from '@angular/router';
-import {MatCheckbox, MatCheckboxChange} from '@angular/material/checkbox';
-import {FriendsService} from '../../../services/friends.service';
+import {ChangeDetectorRef, Component, inject, Inject, OnDestroy, OnInit} from '@angular/core';
+import { AsyncPipe, NgForOf, NgIf } from "@angular/common";
+import { MatIconButton } from "@angular/material/button";
+import { User } from '../../../models/User';
+import { forkJoin, map, Observable, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { UserService } from '../../../services/user.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ImageUploadService } from '../../../services/image-upload.service';
+import { TokenStorageService } from '../../../services/token-storage.service';
+import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox';
+import { FriendsService } from '../../../services/friends.service';
 
 interface UiUser extends User {
   isCloseFriend?: boolean;
+  // Поле avatarUrl уже есть в User, но мы перезапишем его полной ссылкой
 }
+
 @Component({
   selector: 'app-friends.component',
+  standalone: true, // Добавил standalone, так как есть imports
   imports: [
     AsyncPipe,
     MatIcon,
@@ -30,20 +33,25 @@ interface UiUser extends User {
   styleUrl: './friends.component.css'
 })
 export class FriendsComponent implements OnInit, OnDestroy {
+  private dialogRef=inject(MatDialogRef<FriendsComponent>);
+  private imageService=inject(ImageUploadService);
+  private cd=inject( ChangeDetectorRef);
+  private tokenService=inject (TokenStorageService);
+  private friendsService= inject(FriendsService);
+  private userService=inject(UserService);
+
   users$: Observable<UiUser[]> = of([]);
-  userImages: { [key: string]: string } = {};
+
+  // Удален userImages (кэш блобов не нужен)
+
   isFollowingMap: { [username: string]: boolean } = {};
   meUsername!: string | null;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private userService: UserService,
+
     @Inject(MAT_DIALOG_DATA) public data: { username: string },
-    private dialogRef: MatDialogRef<FriendsComponent>,
-    private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef,
-    private tokenService: TokenStorageService,
-    private friendsService: FriendsService
+
   ) {}
 
   ngOnDestroy(): void {
@@ -57,17 +65,17 @@ export class FriendsComponent implements OnInit, OnDestroy {
 
       switchMap(users => {
         if (users.length === 0) {
+          // Возвращаем структуру, совместимую с forkJoin
           return of({ users: [], isFollowingMap: {}, allFriendUsernames: [] });
         }
 
         const usernames = users.map(u => u.username);
 
-        users.forEach(u => this.loadUserImage(u.username));
+        // Удалили вызов loadUserImage (это теперь делается синхронно ниже)
 
         const followingBatch$ = this.userService.isFollowingBatch(usernames);
 
         const allFriendsUsernames$ = this.friendsService.getFriends().pipe(
-
           map(result => (Array.isArray(result) ? result : []) as string[])
         );
 
@@ -79,47 +87,28 @@ export class FriendsComponent implements OnInit, OnDestroy {
       }),
 
       map(({ users, isFollowingMap, allFriendUsernames }) => {
+        this.isFollowingMap = isFollowingMap || {};
+        const friendSet = new Set(allFriendUsernames || []);
 
-        this.isFollowingMap = isFollowingMap;
-
-        const friendSet = new Set(allFriendUsernames);
-
+        // Маппим пользователей в UI-модель
         const usersWithStatus = users.map(user => ({
           ...user,
-
+          // ВАЖНО: Превращаем имя файла в полный URL прямо здесь
+          avatarUrl: this.imageService.getProfileImageUrl(user.avatarUrl),
           isCloseFriend: friendSet.has(user.username)
         } as UiUser));
 
-        this.cd.markForCheck();
         return usersWithStatus;
       })
     );
   }
 
-
-
   trackByUsername(index: number, user: User) {
     return user.username;
   }
 
-
   close(): void {
     this.dialogRef.close(true);
-  }
-
-  private loadUserImage(username: string): void {
-    if (this.userImages[username]) return;
-    this.userImages[username] = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username).subscribe({
-      next: blob => {
-        this.userImages[username] = URL.createObjectURL(blob);
-        this.cd.markForCheck();
-      },
-      error: () => {
-        this.userImages[username] = 'assets/placeholder.jpg';
-        this.cd.markForCheck();
-      }
-    });
   }
 
   addFriend(friendUsername: string): Observable<any> {
@@ -145,33 +134,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
         console.log(`Статус для ${friendUsername} успешно изменен на ${isChecked}`);
       },
       error: (err) => {
-        user.isCloseFriend = !isChecked;
-        this.cd.markForCheck(); // Принудительное обновление для отката
-        console.error(`Ошибка при изменении статуса для ${friendUsername}. Статус откачен.`, err);
+        user.isCloseFriend = !isChecked; // Откат галочки при ошибке
+        this.cd.markForCheck();
+        console.error(`Ошибка при изменении статуса для ${friendUsername}`, err);
       }
     });
   }
-
-  getUserImage(username: string): string {
-    if (this.userImages[username]) {
-      return this.userImages[username];
-    }
-
-    this.userImages[username] = 'assets/placeholder.jpg';
-
-    this.imageService.getImageToUser(username)
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userImages[username] = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-    return this.userImages[username];
-  }
-
 }

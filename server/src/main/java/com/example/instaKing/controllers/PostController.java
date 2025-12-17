@@ -34,14 +34,15 @@ public class PostController {
     private final FavoriteService favoriteService;
     private final UserService userService;
     private final PostFacade postFacade;
-
+    private final Facade facade;
     @Autowired
-    public PostController(PostService postService, ResponseErrorValidator responseErrorValidator, FavoriteService favoriteService, UserService userService, PostFacade postFacade) {
+    public PostController(PostService postService, ResponseErrorValidator responseErrorValidator, FavoriteService favoriteService, UserService userService, PostFacade postFacade, Facade facade) {
         this.postService = postService;
         this.responseErrorValidator = responseErrorValidator;
         this.favoriteService = favoriteService;
         this.userService = userService;
         this.postFacade = postFacade;
+        this.facade = facade;
     }
 
     @PostMapping("/create")
@@ -69,11 +70,12 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<PostPageResponse> getPosts(@RequestParam int page,@RequestParam int size) {
+    public ResponseEntity<PostPageResponse> getPosts(@RequestParam int page,@RequestParam int size,Principal principal) {
         Page<Post> postPage = (Page<Post>) postService.getPosts( page, size);
+        User currentUser=userService.getCurrentUser(principal);
         List<PostDTO> postsDTO=postPage.getContent().
                 stream()
-                .map(Facade::postToPostDTO)
+                .map(p->postFacade.postToPostDTO(p,currentUser))
                 .collect(Collectors.toList());
         PostPageResponse response=new PostPageResponse(
                 postsDTO,

@@ -5,12 +5,16 @@ import com.example.instaKing.models.Favorite;
 import com.example.instaKing.models.Post;
 import com.example.instaKing.models.User;
 import com.example.instaKing.repositories.FavoriteRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
 public class PostFacade {
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     private final FavoriteRepository favoriteRepository;
 
     public PostFacade(FavoriteRepository favoriteRepository) {
@@ -33,6 +37,11 @@ public class PostFacade {
 
         boolean isFavorited = favoriteRepository.existsByUserAndPost(currentUser, post);
         postDTO.setFavorited(isFavorited);
+        if (post.getUser().getAvatarUrl() != null && !post.getUser().getAvatarUrl().startsWith("http")) {
+            postDTO.setAvatarUrl(baseUrl + "/images/" + post.getUser().getAvatarUrl());
+        } else {
+            postDTO.setAvatarUrl(post.getUser().getAvatarUrl());
+        }
         return postDTO;
     }
 

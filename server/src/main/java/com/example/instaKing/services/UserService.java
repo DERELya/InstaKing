@@ -31,11 +31,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UserFacade userFacade;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, UserFacade userFacade) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userFacade = userFacade;
     }
 
     public User createUser(SignUpRequest userIn) {
@@ -62,7 +64,6 @@ public class UserService {
         user.setFirstname(userDTO.getFirstname());
         user.setLastname(userDTO.getLastname());
         user.setBio(userDTO.getBio());
-
         return userRepository.save(user);
     }
 
@@ -89,14 +90,14 @@ public class UserService {
     public List<UserDTO> getFollowersUser(String username) {
         return userRepository.findAllByFollowers_Username(username)
                 .stream()
-                .map(UserFacade::userToUserDTO)
+                .map(userFacade::userToUserDTO)
                 .collect(Collectors.toList());
     }
 
     public List<UserDTO> getFollowingUsers(String username) {
         return userRepository.findAllByFollowing_Username(username)
                 .stream()
-                .map(UserFacade::userToUserDTO)
+                .map(userFacade::userToUserDTO)
                 .collect(Collectors.toList());
     }
 
@@ -180,10 +181,10 @@ public class UserService {
 
         Set<UserDTO> friends=user.getCloseFriends()
                 .stream()
-                .map(UserFacade::userToUserDTO)
+                .map(userFacade::userToUserDTO)
                 .collect(Collectors.toSet());
         User friend=userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
-        return friends.contains(UserFacade.userToUserDTO(friend));
+        return friends.contains(userFacade.userToUserDTO(friend));
     }
 }

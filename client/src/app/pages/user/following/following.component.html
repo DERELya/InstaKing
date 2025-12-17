@@ -8,25 +8,30 @@
   </div>
 
   <div class="likes-dialog-list">
-    <ng-container *ngIf="users$ | async as users">
+    <ng-container *ngIf="users && users.length > 0; else emptyState">
       <div
         class="like-user-row"
         *ngFor="let user of users; trackBy: trackByUsername"
       >
-        <img class="avatar" [src]="getUserImage(user.username)" alt="avatar" />
+        <!-- Аватарка (ссылка уже сформирована в TS) -->
+        <!-- Добавил фоллбэк на всякий случай -->
+        <img class="avatar"
+             [src]="user.avatarUrl || 'assets/placeholder.jpg'"
+             alt="avatar" />
 
         <div class="user-info">
           <a
             [routerLink]="['/profile', user.username]"
             (click)="close()"
             class="username"
-          >{{ user.username }}</a
-          >
+          >{{ user.username }}</a>
+
           <div class="fullname" *ngIf="user.firstname">
             {{ user.firstname }} {{ user.lastname }}
           </div>
         </div>
 
+        <!-- Кнопка подписки (только если это не я) -->
         <div *ngIf="user.username !== meUsername">
           <ng-container *ngIf="isFollowingMap[user.username] !== undefined">
             <button
@@ -49,5 +54,13 @@
         </div>
       </div>
     </ng-container>
+
+    <!-- Шаблон, если список пуст -->
+    <ng-template #emptyState>
+      <div class="empty-list-message">
+        Список пуст
+      </div>
+    </ng-template>
+
   </div>
 </div>

@@ -1,81 +1,42 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable, of, shareReplay, tap} from 'rxjs'; // Добавлен tap
-import { UserService } from './user.service'; // Импорт UserService
-
-const IMAGE_API = 'http://localhost:8080/api/image/';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, shareReplay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageUploadService {
 
-  // Инжектируем UserService
-  constructor(private http: HttpClient, private userService: UserService) {
-  }
+  private http = inject(HttpClient);
 
-  private userImageCache: Map<string, Observable<Blob>> = new Map();
-  private postImageCache: Map<number, Observable<Blob>> = new Map();
+  private readonly API_URL = 'http://localhost:8080/api/image/';
+  private readonly STATIC_IMAGES_URL = 'http://localhost:8080/images/';
 
+  constructor() {}
 
   uploadImageToUser(file: File): Observable<any> {
     const uploadData = new FormData();
     uploadData.append('file', file);
-    this.clearUserImageCache();
-
-    return this.http.post(IMAGE_API + 'upload', uploadData).pipe(
-      tap(() => {
-        this.userService.notifyAvatarUpdated();
-      })
-    );
+    return this.http.post(this.API_URL + 'upload', uploadData);
   }
 
   uploadImageToPost(file: File, postId: number): Observable<any> {
     const uploadData = new FormData();
     uploadData.append('file', file);
-
-    return this.http.post(IMAGE_API + postId + '/upload', uploadData);
+    return this.http.post(this.API_URL + postId + '/upload', uploadData);
   }
+  getProfileImageUrl(fileName: string | null | undefined): string {
+    if (!fileName) {
+      return 'assets/placeholder.jpg';
+    }
+    if (fileName.startsWith('http')) {
+      return fileName;
+    }
 
-  getProfileImage(): Observable<Blob> {
-    return this.http.get(IMAGE_API + 'profileImage', {responseType: 'blob'});
+    return this.STATIC_IMAGES_URL + fileName;
   }
-
-
   getImageToPost(postId: number): Observable<Blob> {
-    const cached = this.postImageCache.get(postId);
-    if (cached) {
-      return cached;
-    }
-    const req = this.http.get(IMAGE_API + postId + '/image', {responseType: 'blob'}).pipe(shareReplay(1));
-    this.postImageCache.set(postId, req);
-    return req;
+    return this.http.get(this.API_URL + postId + '/image', { responseType: 'blob' })
+      .pipe(shareReplay(1));
   }
-
-  getImageToUser(username:string):Observable<Blob>{
-    const cached = this.userImageCache.get(username);
-    if (cached) {
-      return cached;
-    }
-    const req = this.http.get(IMAGE_API+'profileImage/'+username,{responseType: 'blob'}).pipe(shareReplay(1));
-    this.userImageCache.set(username, req);
-    return req || 'assets/default-avatar.jpg';
-  }
-
-  clearUserImageCache(username?: string) {
-    if (username) {
-      this.userImageCache.delete(username);
-      return;
-    }
-    this.userImageCache.clear();
-  }
-
-  clearPostImageCache(postId?: number) {
-    if (postId !== undefined) {
-      this.postImageCache.delete(postId);
-      return;
-    }
-    this.postImageCache.clear();
-  }
-
 }

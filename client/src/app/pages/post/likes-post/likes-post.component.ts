@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
@@ -25,19 +25,20 @@ import {TokenStorageService} from '../../../services/token-storage.service';
   styleUrls: ['./likes-post.component.css']
 })
 export class LikesPostComponent implements OnInit {
+  private tokenService=inject(TokenStorageService);
+  private dialogRef=inject(MatDialogRef<LikesPostComponent>);
+  protected userService= inject(UserService);
+  private cd=inject(ChangeDetectorRef);
+  private imageService=inject(ImageUploadService);
+  private dialog=inject(MatDialog);
+  private router=inject(Router);
   users: User[] = [];
   isFollowingMap: { [username: string]: boolean } = {};
   meUsername!: string | null;
 
   constructor(
-    private tokenService: TokenStorageService,
-    private dialogRef: MatDialogRef<LikesPostComponent>,
-    protected userService: UserService,
     @Inject(MAT_DIALOG_DATA) public usernames: string[],
-    private cd: ChangeDetectorRef,
-    private imageService: ImageUploadService,
-    private dialog: MatDialog,
-    private router: Router) {
+    ) {
   }
 
   ngOnInit(): void {
@@ -52,7 +53,7 @@ export class LikesPostComponent implements OnInit {
         this.users = users;
         this.cd.markForCheck();
 
-        this.users.forEach(user => this.loadAvatar(user));
+        this.users.forEach(user => this.imageService.getProfileImageUrl(user.avatarUrl));
         this.meUsername = this.tokenService.getUsernameFromToken();
       });
     });
@@ -63,19 +64,6 @@ export class LikesPostComponent implements OnInit {
 
   }
 
-  loadAvatar(user: User) {
-    this.imageService.getImageToUser(user.username).subscribe({
-      next: blob => {
-        const preview = URL.createObjectURL(blob);
-        user.avatarUrl = preview;
-        this.cd.markForCheck();
-      },
-      error: () => {
-        user.avatarUrl = 'assets/placeholder.jpg';
-        this.cd.markForCheck();
-      }
-    });
-  }
 
 
   close() {

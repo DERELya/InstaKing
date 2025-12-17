@@ -12,4 +12,5 @@ public class CommentDTO {
     @NotEmpty
     private String message;
     private LocalDateTime createdDate;
+    private String avatarUrl;
 }

@@ -1,22 +1,21 @@
 package com.example.instaKing.services;
 
 import com.example.instaKing.dto.NotificationDTO;
+import com.example.instaKing.facade.NotificationFacade;
 import com.example.instaKing.models.Notification;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.repositories.NotificationRepository;
 import com.example.instaKing.repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 public class NotificationService {
@@ -24,12 +23,13 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
-
+    private final NotificationFacade notificationFacade;
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate, UserRepository userRepository) {
+    public NotificationService(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate, UserRepository userRepository, NotificationFacade notificationFacade) {
         this.notificationRepository = notificationRepository;
         this.messagingTemplate = messagingTemplate;
         this.userRepository = userRepository;
+        this.notificationFacade = notificationFacade;
     }
 
     @Transactional
@@ -48,7 +48,7 @@ public class NotificationService {
         Notification saved = notificationRepository.save(notification);
 
         // 3. Конвертируем в DTO
-        NotificationDTO dto = convertToDto(saved);
+        NotificationDTO dto = notificationFacade.toDTO(saved);
 
         // 4. Отправляем в WebSocket (в личную очередь получателя)
         // Клиент подпишется на: /user/queue/notifications
@@ -61,7 +61,7 @@ public class NotificationService {
 
     public List<NotificationDTO> getUserNotifications(User recipient) {
         return notificationRepository.findAllByRecipientIdOrderByCreatedAtDesc(recipient.getId())
-                .stream().map(this::convertToDto).collect(Collectors.toList());
+                .stream().map(notificationFacade::toDTO).collect(Collectors.toList());
     }
 
     @Transactional

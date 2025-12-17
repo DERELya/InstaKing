@@ -1,101 +1,87 @@
-import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {debounceTime, distinctUntilChanged, Observable, of, Subject, switchMap, take, takeUntil, tap} from 'rxjs';
-import {User} from '../../models/User';
-import {TokenStorageService} from '../../services/token-storage.service';
-import {UserService} from '../../services/user.service';
-import {Router, RouterLink} from '@angular/router';
-import {MatToolbar} from '@angular/material/toolbar';
-import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
-import {MatIconButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
-import {ImageUploadService} from '../../services/image-upload.service';
-import {CommonModule} from '@angular/common';
-import {ThemeService} from '../../services/theme.service';
-import {MatFormField, MatInput} from '@angular/material/input';
-import {FormsModule} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
-import {ChatStateService} from '../../services/chat-state.service';
-import {MatBadgeModule} from '@angular/material/badge';
-import {NotificationService} from '../../services/notification.service';
-import {NotificationDTO} from '../../models/NotificationDTO';
-
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { debounceTime, distinctUntilChanged, Observable, of, Subject, switchMap, take, takeUntil } from 'rxjs';
+import { User } from '../../models/User';
+import { TokenStorageService } from '../../services/token-storage.service';
+import { UserService } from '../../services/user.service';
+import { Router, RouterLink } from '@angular/router';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { CommonModule } from '@angular/common';
+import { ThemeService } from '../../services/theme.service';
+import { MatFormField, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatAutocomplete, MatAutocompleteTrigger, MatOption } from '@angular/material/autocomplete';
+import { ChatStateService } from '../../services/chat-state.service';
+import { MatBadgeModule } from '@angular/material/badge';
+import { NotificationService } from '../../services/notification.service';
+import { NotificationDTO } from '../../models/NotificationDTO';
 
 @Component({
   selector: 'app-navigation',
+  standalone: true,
   imports: [
-    MatIcon,
-    MatToolbar,
-    RouterLink,
-    MatMenu,
-    MatMenuItem,
-    MatIconButton,
-    MatMenuTrigger,
-    CommonModule,
-    MatFormField,
-    FormsModule,
-    MatFormFieldModule,
-    MatInput,
-    MatAutocomplete,
-    MatOption,
-    MatAutocompleteTrigger,
-    MatBadgeModule
+    MatIcon, MatToolbar, RouterLink, MatMenu, MatMenuItem, MatIconButton, MatMenuTrigger,
+    CommonModule, MatFormField, FormsModule, MatFormFieldModule, MatInput,
+    MatAutocomplete, MatOption, MatAutocompleteTrigger, MatBadgeModule
   ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
 })
 export class NavigationComponent implements OnInit, OnDestroy {
+  // Инжекты
   private chatService = inject(ChatStateService);
-  unreadCount$: Observable<number> = this.chatService.totalUnreadCount$;
-  isLoggedIn = false;
-  isDataLoaded = false;
-  user!: User;
-  userProfileImage?: string;
-  previewUrl?: string;
-
-  query = '';
-  users: any[] = [];
-  error: string | null = null;
-  private destroy$ = new Subject<void>();
-  private searchInput$ = new Subject<string>();
   private tokenService = inject(TokenStorageService);
   private userService = inject(UserService);
   public router = inject(Router);
-  private imageService = inject(ImageUploadService);
+  public imageService = inject(ImageUploadService); // Оставляем public, если нужно где-то еще
   private cd = inject(ChangeDetectorRef);
   private themeService = inject(ThemeService);
   private notificationService = inject(NotificationService);
+
+  // Потоки
+  unreadCount$: Observable<number> = this.chatService.totalUnreadCount$;
   notifications$ = this.notificationService.notifications$;
   unreadCountNot$ = this.notificationService.unreadCount$;
 
-  constructor() {
-    this.notifications$ = this.notificationService.notifications$.pipe(
-      tap(list => {
-        // При получении списка запускаем загрузку аватарок для каждого уведомления
-        list.forEach(item => this.loadNotificationAvatar(item));
-      })
-    );
-  }
+  // Состояние
+  isLoggedIn = false;
+  isDataLoaded = false;
+  user!: User;
+  userProfileImage: string = 'assets/placeholder.jpg';
 
+  query = '';
+  users: any[] = [];
+
+  private destroy$ = new Subject<void>();
+  private searchInput$ = new Subject<string>();
+
+  constructor() {}
 
   ngOnInit(): void {
     this.isLoggedIn = !!this.tokenService.getToken();
+
     if (this.isLoggedIn) {
-      this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(data => {
-        this.user = data;
-        this.isDataLoaded = true;
-        this.cd.markForCheck();
-      });
+      this.userService.getCurrentUser()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(data => {
+          this.user = data;
+          this.updateProfileImageUrl(); // Просто берет ссылку из user
+          this.isDataLoaded = true;
+          this.cd.markForCheck();
+        });
+
       this.chatService.getConversations().subscribe();
-      this.loadProfileImage();
+
       this.userService.avatarUpdated$
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => {
-          // Вызываем повторную загрузку аватара
-          this.loadProfileImage();
+          this.updateProfileImageUrl(true);
+          this.cd.markForCheck();
         });
-
-      this.cd.markForCheck();
     }
 
     this.searchInput$
@@ -108,7 +94,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (users) => {
           this.users = users;
-          this.users.forEach(user => this.loadAvatar(user));
+          this.cd.markForCheck();
         },
         error: () => {
           this.users = [];
@@ -119,43 +105,25 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
-      URL.revokeObjectURL(this.userProfileImage);
+  }
+
+  // --- УПРОЩЕННАЯ ЛОГИКА ---
+  updateProfileImageUrl(bustCache: boolean = false): void {
+    if (this.user?.avatarUrl) {
+      // 1. Берем ссылку напрямую с бэка
+      this.userProfileImage = this.user.avatarUrl;
+
+      // 2. Если нужно сбросить кэш (при загрузке новой фотки), добавляем timestamp
+      if (bustCache) {
+        const separator = this.userProfileImage.includes('?') ? '&' : '?';
+        this.userProfileImage += `${separator}t=${new Date().getTime()}`;
+      }
+    } else {
+      this.userProfileImage = 'assets/placeholder.jpg';
     }
   }
-  loadNotificationAvatar(item: NotificationDTO) {
-    if (item.senderAvatarUrl || !item.senderUsername) return;
 
-    this.imageService.getImageToUser(item.senderUsername).subscribe({
-      next: (blob) => {
-        item.senderAvatarUrl = URL.createObjectURL(blob);
-        this.cd.markForCheck();
-      },
-      error: () => {
-        // Ошибка загрузки — останется заглушка
-        this.cd.markForCheck();
-      }
-    });
-  }
-
-  loadProfileImage(): void {
-    if (this.userProfileImage && this.userProfileImage.startsWith('blob:')) {
-      URL.revokeObjectURL(this.userProfileImage);
-    }
-    this.imageService.getProfileImage().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (blob) => {
-        this.userProfileImage = URL.createObjectURL(blob);
-        this.isDataLoaded = true;
-        this.cd.markForCheck();
-      },
-      error: () => {
-        this.userProfileImage = 'assets/placeholder.jpg';
-        this.isDataLoaded = true;
-        this.cd.markForCheck();
-      }
-    });
-  }
-
+  // --- Остальные методы (logout, searchUsers, notifications) без изменений ---
   logout(): void {
     this.tokenService.logOut();
     this.router.navigate(['/login']);
@@ -168,21 +136,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   clearSearch() {
     this.query = '';
     this.users = [];
-  }
-
-
-  loadAvatar(user: User) {
-    this.imageService.getImageToUser(user.username).pipe(takeUntil(this.destroy$)).subscribe({
-      next: blob => {
-        const preview = URL.createObjectURL(blob);
-        user.avatarUrl = preview;
-        this.cd.markForCheck();
-      },
-      error: () => {
-        user.avatarUrl = 'assets/placeholder.jpg';
-        this.cd.markForCheck();
-      }
-    });
   }
 
   goToProfile(event: any, username: string) {
@@ -200,32 +153,19 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   handleNotificationClick(notification: NotificationDTO) {
-    // 1. Если оно не прочитано, помечаем
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id);
     }
-    console.log(notification);
-    // 2. Логика перехода в зависимости от типа
+    // ... switch ...
     switch (notification.type) {
       case 'LIKE':
       case 'COMMENT':
-        // Переходим к посту (предполагаем, что в content или отдельном поле есть ID поста)
-        // Но пока можно просто перейти в профиль отправителя
-        this.router.navigate(['/profile', notification.senderUsername]);
-        break;
-
       case 'FOLLOW':
         this.router.navigate(['/profile', notification.senderUsername]);
         break;
-
-      default:
-        console.log('Клик по уведомлению:', notification);
     }
   }
 
-  /**
-   * Кнопка "Прочитать все"
-   */
   markAllRead() {
     this.notificationService.markAllAsRead();
   }
@@ -239,7 +179,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   getAvatarColor(username: string): string {
     let hash = 0;
     for (let i = 0; i < username.length; i++) {

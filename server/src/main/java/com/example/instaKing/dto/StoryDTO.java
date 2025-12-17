@@ -23,6 +23,7 @@ public class StoryDTO {
     private String description;
     private StoryVisibility visibility = StoryVisibility.PUBLIC;
     private MultipartFile file;
+    private String userAvatarUrl;
 
 
 }

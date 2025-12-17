@@ -5,6 +5,7 @@ import com.example.instaKing.payload.response.ResponseForStoryMain;
 import com.example.instaKing.models.*;
 import com.example.instaKing.repositories.FavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class Facade {
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     private final FavoriteRepository favoriteRepository;
 
@@ -38,17 +41,6 @@ public class Facade {
         return favoriteDTO;
     }
 
-    public static PostDTO postToPostDTO(Post post) {
-        PostDTO postDTO = new PostDTO();
-        postDTO.setId(post.getId());
-        postDTO.setTitle(post.getTitle());
-        postDTO.setLikes(post.getLikes());
-        postDTO.setCaption(post.getCaption());
-        postDTO.setUsername(post.getUser().getUsername());
-        postDTO.setUsersLiked(post.getLikedUser());
-        postDTO.setLocation(post.getLocation());
-        return postDTO;
-    }
 
     public StoryDTO storyToStoryDTO(Story story, User currentUser) {
         StoryDTO storyDTO=new StoryDTO();
@@ -71,15 +63,14 @@ public class Facade {
         boolean viewed = story.getViewsDetails().stream()
                 .anyMatch(v -> v.getUser().getUsername().equals(currentUser.getUsername()));
         storyDTO.setViewed(viewed);
+
+        if (story.getUser().getAvatarUrl() != null && !story.getUser().getAvatarUrl().startsWith("http")) {
+            storyDTO.setUserAvatarUrl(baseUrl + "/images/" + story.getUser().getAvatarUrl());
+        } else {
+            storyDTO.setUserAvatarUrl(story.getUser().getAvatarUrl());
+        }
         return storyDTO;
     }
 
-    public ResponseForStoryMain storyDTOToResponse(StoryDTO storydto ) {
-        ResponseForStoryMain result= new ResponseForStoryMain();
-        result.setUsername(storydto.getUsername());
-        result.setViewed(storydto.isViewed());
-        result.setVisibility(storydto.getVisibility());
-        return result;
-    }
 
 }

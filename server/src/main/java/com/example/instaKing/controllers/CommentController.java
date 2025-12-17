@@ -30,12 +30,13 @@ public class CommentController {
     private CommentService commentService;
     private ResponseErrorValidator responseErrorValidator;
     private NotificationService notificationService;
-
+    private CommentFacade commentFacade;
     @Autowired
-    public CommentController(CommentService commentService, ResponseErrorValidator responseErrorValidator, NotificationService notificationService) {
+    public CommentController(CommentService commentService, ResponseErrorValidator responseErrorValidator, NotificationService notificationService, CommentFacade commentFacade) {
         this.commentService = commentService;
         this.responseErrorValidator = responseErrorValidator;
         this.notificationService = notificationService;
+        this.commentFacade = commentFacade;
     }
 
     @PostMapping("/{postId}/create")
@@ -47,7 +48,7 @@ public class CommentController {
         if (!ObjectUtils.isEmpty(errorResponse)) return errorResponse;
 
         Comment comment = commentService.saveComment(Long.parseLong(postId), commentDTO, principal);
-        CommentDTO createdComment = CommentFacade.CommentToCommentDTO(comment);
+        CommentDTO createdComment = commentFacade.CommentToCommentDTO(comment);
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 
@@ -57,7 +58,7 @@ public class CommentController {
     public ResponseEntity<List<CommentDTO>> getAllComments(@PathVariable("postId") String postId) {
         List<CommentDTO> commentsDTOList = commentService.getAllCommentForPost(Long.parseLong(postId))
                 .stream()
-                .map(CommentFacade::CommentToCommentDTO)
+                .map(commentFacade::CommentToCommentDTO)
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(commentsDTOList, HttpStatus.OK);
@@ -81,7 +82,7 @@ public class CommentController {
         Page<Comment> commentPage = (Page<Comment>) commentService.getComments(Long.parseLong(postId), page, size);
         List<CommentDTO> commentsDTO = commentPage.getContent()
                 .stream()
-                .map(CommentFacade::CommentToCommentDTO)
+                .map(commentFacade::CommentToCommentDTO)
                 .collect(Collectors.toList());
 
         CommentPageResponse response = new CommentPageResponse(

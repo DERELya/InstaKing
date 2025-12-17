@@ -11,6 +11,7 @@ public class UserDTO {
     @NotEmpty
     private String lastname;
     private String username;
-
+    private String avatarUrl;
+    @NotEmpty
     private String bio;
 }

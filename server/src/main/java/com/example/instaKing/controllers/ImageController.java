@@ -25,7 +25,7 @@ public class ImageController {
     @PostMapping("/upload")
     public ResponseEntity<MessageResponse> uploadImageToUser(@RequestParam("file") MultipartFile file,
                                                              Principal principal) throws IOException {
-        imageService.uploadImageToUser(file,principal);
+        imageService.uploadAvatarToUser(file,principal);
         return ResponseEntity.ok(new MessageResponse("Image uploaded successfully"));
     }
 
@@ -37,22 +37,7 @@ public class ImageController {
         return ResponseEntity.ok(new MessageResponse("Image uploaded successfully"));
     }
 
-    @GetMapping("/profileImage")
-    public ResponseEntity<Resource> getImageForUser(Principal principal) throws IOException {
-        Resource userImage = imageService.getImageToCurrentUser(principal);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
-                .body(userImage);
-    }
-
-    @GetMapping("/profileImage/{username}")
-    public ResponseEntity<Resource> getImageForUser(@PathVariable("username") String username) throws IOException {
-        Resource userImage = imageService.getImageToUser(username);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // Или другой формат
-                .body(userImage);
-    }
 
     @GetMapping("/{postId}/image")
     public ResponseEntity<Resource> getImageForPost(@PathVariable("postId") Long postId) throws IOException {

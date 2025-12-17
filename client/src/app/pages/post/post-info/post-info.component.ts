@@ -1,24 +1,24 @@
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule, DatePipe, NgForOf, NgIf} from '@angular/common';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatInput} from '@angular/material/input';
-import {PostService} from '../../../services/post.service';
-import {ImageUploadService} from '../../../services/image-upload.service';
-import {NotificationService} from '../../../services/notification.service';
-import {CommentService} from '../../../services/comment.service';
-import {RouterLink} from '@angular/router';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {Post} from '../../../models/Post';
-import {MatIcon} from '@angular/material/icon';
-import {LikesPostComponent} from '../likes-post/likes-post.component';
-import {TokenStorageService} from '../../../services/token-storage.service';
-import {Subject, takeUntil} from 'rxjs';
-import {TimeAgoPipe} from '../../../helper/time-ago.pipe';
-import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, DatePipe, NgForOf, NgIf } from '@angular/common';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatInput } from '@angular/material/input';
+import { PostService } from '../../../services/post.service';
+import { ImageUploadService } from '../../../services/image-upload.service'; // Обновленный сервис
+import { NotificationService } from '../../../services/notification.service';
+import { CommentService } from '../../../services/comment.service';
+import { RouterLink } from '@angular/router';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Post } from '../../../models/Post';
+import { MatIcon } from '@angular/material/icon';
+import { LikesPostComponent } from '../likes-post/likes-post.component';
+import { TokenStorageService } from '../../../services/token-storage.service';
+import { Subject, takeUntil } from 'rxjs';
+import { TimeAgoPipe } from '../../../helper/time-ago.pipe';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 
 interface UiPost extends Post {
   isLiked: boolean;
-  avatarUrl?: string;
+  avatarUrl?: string; // Это уже полная ссылка (сделали в PostService)
   showAllComments?: boolean;
 }
 
@@ -27,6 +27,7 @@ export interface PostComment {
   username: string;
   message: string;
   createdDate: string;
+  userAvatarUrl?: string; // <-- ДОБАВИЛИ ЭТО ПОЛЕ (имя файла)
 }
 
 export interface CommentPageResponse {
@@ -41,19 +42,8 @@ export interface CommentPageResponse {
   selector: 'app-post-info',
   standalone: true,
   imports: [
-    DatePipe,
-    MatButton,
-    MatIcon,
-    MatIconButton,
-    MatInput,
-    NgForOf,
-    NgIf,
-    CommonModule,
-    RouterLink,
-    TimeAgoPipe,
-    MatMenu,
-    MatMenuTrigger,
-    MatMenuItem
+    DatePipe, MatButton, MatIcon, MatIconButton, MatInput, NgForOf, NgIf,
+    CommonModule, RouterLink, TimeAgoPipe, MatMenu, MatMenuTrigger, MatMenuItem
   ],
   templateUrl: './post-info.component.html',
   styleUrl: './post-info.component.css'
@@ -61,7 +51,9 @@ export interface CommentPageResponse {
 export class PostInfoComponent implements OnInit, OnDestroy {
   meUsername: string = '';
   menuOpen = false;
-  userImages: { [key: string]: string } = {};
+
+  // Удалили userImages (больше не нужно кэшировать Blob)
+
   MAX_VISIBLE_COMMENTS = 10;
   comments: PostComment[] = [];
   totalPages: number = 0;
@@ -76,7 +68,10 @@ export class PostInfoComponent implements OnInit, OnDestroy {
     private postService: PostService,
     private notify: NotificationService,
     private commentService: CommentService,
-    private imageService: ImageUploadService,
+
+    // Делаем public, чтобы использовать в HTML
+    public imageService: ImageUploadService,
+
     private dialog: MatDialog,
     private cd: ChangeDetectorRef,
     private tokenService: TokenStorageService,
@@ -90,13 +85,15 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // При любом закрытии окна передаем обновленный пост обратно
     if (this.data.post) {
       this.dialogRef.close(this.data.post);
     }
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // ... методы close, likePost, trackBy, postComment, deleteComment ...
+  // (они не меняются, кроме того, что в postComment сервер должен вернуть коммент с аватаркой)
 
   close(): void {
     this.dialogRef.close(this.data.post);
@@ -107,7 +104,6 @@ export class PostInfoComponent implements OnInit, OnDestroy {
     const liked = post.isLiked;
     const username = this.meUsername;
 
-    // Оптимистичное обновление
     post.isLiked = !liked;
     if (liked) {
       post.usersLiked = post.usersLiked?.filter(u => u !== username) ?? [];
@@ -118,14 +114,8 @@ export class PostInfoComponent implements OnInit, OnDestroy {
 
     this.postService.likePost(post.id!, username).subscribe({
       error: () => {
-        // Откат при ошибке
         post.isLiked = liked;
-        if (liked) {
-          post.usersLiked = [...(post.usersLiked ?? []), username];
-        } else {
-          post.usersLiked = post.usersLiked?.filter(u => u !== username) ?? [];
-        }
-        this.cd.markForCheck();
+        this.cd.markForCheck(); // Откат при ошибке
       }
     });
   }
@@ -156,29 +146,8 @@ export class PostInfoComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.notify.showSnackBar('Ошибка при удалении комментария');
-        console.error('Error deleting comment', err);
       }
     });
-  }
-
-  getUserImage(username: string): string {
-    if (this.userImages[username]) {
-      return this.userImages[username];
-    }
-    this.userImages[username] = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username)
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userImages[username] = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-    return this.userImages[username];
   }
 
   onAvatarError(event: Event) {
@@ -214,16 +183,12 @@ export class PostInfoComponent implements OnInit, OnDestroy {
     this.loadComments(this.currentPage + 1);
   }
 
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
 
   onMenuAction(action: string) {
     this.menuOpen = false;
     if (action === 'delete') {
       this.deleteCurrentPost();
-    } else if (action === 'update') {
-      // твоя логика обновления
     }
   }
 
@@ -250,25 +215,22 @@ export class PostInfoComponent implements OnInit, OnDestroy {
       width: '350px'
     });
   }
+
   toggleFavorite(postId: number): void {
     const post = this.data.post;
     if (!post) return;
-
     const prevState = post.favorited ?? false;
-    post.favorited = !prevState; // Оптимистично переключаем
+    post.favorited = !prevState;
 
     this.postService.toggleFavorite(postId).subscribe({
       next: (res) => {
-        // если сервер возвращает "added" или "removed"
         post.favorited = res === 'added';
         this.cd.markForCheck();
       },
       error: () => {
-        // откат при ошибке
         post.favorited = prevState;
         this.cd.markForCheck();
       }
     });
   }
-
 }

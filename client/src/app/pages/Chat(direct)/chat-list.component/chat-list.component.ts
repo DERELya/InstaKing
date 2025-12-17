@@ -118,19 +118,7 @@ export class ChatListComponent implements OnDestroy {
     // Ставим заглушку, чтобы не пытаться грузить снова пока идет запрос
     // conversation.avatarUrl = 'loading'; // Можно раскомментировать, если нужно
 
-    this.imageService.getImageToUser(otherUser.username).subscribe({
-      next: (blob) => {
-        // Создаем безопасную ссылку из Blob
-        const objectUrl = URL.createObjectURL(blob);
-        conversation.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
-
-        // Говорим Ангуляру проверить изменения, так как подгрузка асинхронная
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        conversation.avatarUrl = null;
-      }
-    });
+    this.imageService.getProfileImageUrl(otherUser.avatarUrl);
   }
 
   // Для генерации цвета заглушки (если нет фото)

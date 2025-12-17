@@ -22,5 +22,5 @@ public class PostDTO {
     private Set<String> usersLiked;
     private boolean favorited;
     private LocalDateTime addedAt;
-
+    private String avatarUrl;
 }

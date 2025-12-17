@@ -1,15 +1,14 @@
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {Subject, takeUntil, switchMap, of} from 'rxjs';
-import {MatIconButton} from "@angular/material/button";
-import {CommonModule, NgForOf, NgIf} from "@angular/common";
-import {MatIcon} from '@angular/material/icon';
-import {User} from '../../../models/User';
-import {UserService} from '../../../services/user.service';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {RouterLink} from '@angular/router';
-import {Observable} from 'rxjs';
-import {ImageUploadService} from '../../../services/image-upload.service';
-import {TokenStorageService} from '../../../services/token-storage.service';
+import { ChangeDetectorRef, Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Subject, takeUntil, switchMap, of } from 'rxjs';
+import { MatIconButton } from "@angular/material/button";
+import { CommonModule, NgForOf, NgIf } from "@angular/common";
+import { MatIcon } from '@angular/material/icon';
+import { User } from '../../../models/User';
+import { UserService } from '../../../services/user.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { RouterLink } from '@angular/router';
+import { ImageUploadService } from '../../../services/image-upload.service';
+import { TokenStorageService } from '../../../services/token-storage.service';
 
 @Component({
   selector: 'app-following.component',
@@ -17,7 +16,7 @@ import {TokenStorageService} from '../../../services/token-storage.service';
   imports: [
     MatIcon,
     MatIconButton,
-    NgForOf,
+    NgForOf, // Можно заменить на @for в Angular 17+
     NgIf,
     RouterLink,
     CommonModule
@@ -26,37 +25,47 @@ import {TokenStorageService} from '../../../services/token-storage.service';
   styleUrl: './following.component.css'
 })
 export class FollowingComponent implements OnInit, OnDestroy {
-  users$: Observable<User[]> = of([]);
-  userImages: { [key: string]: string } = {};
+
+  private dialogRef = inject(MatDialogRef<FollowingComponent>);
+  private imageService = inject(ImageUploadService);
+  private cd = inject(ChangeDetectorRef);
+  private tokenService = inject(TokenStorageService);
+  private userService = inject(UserService);
+
+  // Используем обычный массив, чтобы избежать двойных запросов (async pipe + subscribe)
+  users: User[] = [];
+
   isFollowingMap: { [username: string]: boolean } = {};
   meUsername!: string | null;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private userService: UserService,
     @Inject(MAT_DIALOG_DATA) public data: { followers: boolean, username: string },
-    private dialogRef: MatDialogRef<FollowingComponent>,
-    private imageService: ImageUploadService,
-    private cd: ChangeDetectorRef,
-    private tokenService: TokenStorageService
   ) {}
 
   ngOnInit(): void {
     this.meUsername = this.tokenService.getUsernameFromToken();
 
-    this.users$ = this.data.followers
+    // 1. Выбираем, какой запрос делать
+    const request$ = this.data.followers
       ? this.userService.getFollowers(this.data.username)
       : this.userService.getFollowing(this.data.username);
 
-    // Загружаем пользователей и состояние подписок
-    this.users$
+    request$
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(users => {
-          const usernames = users.map(u => u.username);
-          // Сначала загружаем аватары
-          users.forEach(u => this.loadUserImage(u.username));
-          // Потом проверяем подписку
+        switchMap(usersData => {
+          this.users = usersData.map(u => ({
+            ...u,
+            avatarUrl: this.imageService.getProfileImageUrl(u.avatarUrl)
+          }));
+
+          const usernames = this.users.map(u => u.username);
+
+          // 3. Если список пуст, возвращаем пустой объект, иначе запрашиваем подписки
+          if (usernames.length === 0) {
+            return of({});
+          }
           return this.userService.isFollowingBatch(usernames);
         })
       )
@@ -75,24 +84,8 @@ export class FollowingComponent implements OnInit, OnDestroy {
     return user.username;
   }
 
-
   close(): void {
     this.dialogRef.close(true);
-  }
-
-  private loadUserImage(username: string): void {
-    if (this.userImages[username]) return;
-    this.userImages[username] = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username).subscribe({
-      next: blob => {
-        this.userImages[username] = URL.createObjectURL(blob);
-        this.cd.markForCheck();
-      },
-      error: () => {
-        this.userImages[username] = 'assets/placeholder.jpg';
-        this.cd.markForCheck();
-      }
-    });
   }
 
   follow(username: string): void {
@@ -107,27 +100,6 @@ export class FollowingComponent implements OnInit, OnDestroy {
       this.isFollowingMap[username] = false;
       this.cd.markForCheck();
     });
-  }
-  getUserImage(username: string): string {
-    if (this.userImages[username]) {
-      return this.userImages[username];
-    }
-
-    this.userImages[username] = 'assets/placeholder.jpg';
-
-    this.imageService.getImageToUser(username)
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userImages[username] = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-    return this.userImages[username];
   }
 
 }

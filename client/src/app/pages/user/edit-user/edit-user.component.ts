@@ -1,14 +1,15 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Inject, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {NotificationService} from '../../../services/notification.service';
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {UserService} from '../../../services/user.service';
-import {User} from '../../../models/User';
-import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {ImageUploadService} from '../../../services/image-upload.service';
-import {NgIf} from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NotificationService } from '../../../services/notification.service';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { UserService } from '../../../services/user.service';
+import { User } from '../../../models/User';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { ImageUploadService } from '../../../services/image-upload.service';
+import { NgIf } from '@angular/common';
+import { of, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-edit-user',
@@ -21,41 +22,75 @@ import {NgIf} from '@angular/common';
     MatButtonModule,
     MatDialogModule,
     NgIf,
-
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   templateUrl: './edit-user.component.html',
   styleUrls: ['./edit-user.component.css']
 })
-export class EditUserComponent implements OnInit {
+export class EditUserComponent implements OnInit, OnDestroy {
 
   profileEditForm!: FormGroup;
-  previewImgURL: any;
+
+  displayAvatarUrl: string = 'assets/placeholder.jpg';
+
+  private localPreviewUrl: string | null = null;
+
   selectedFile?: File;
-  userProfileImage?: string;
 
-  private dialogRef=inject(MatDialogRef<EditUserComponent>);
-  private fb= inject(FormBuilder);
-  private notificationService= inject(NotificationService);
+  private dialogRef = inject(MatDialogRef<EditUserComponent>);
+  private fb = inject(FormBuilder);
+  private notificationService = inject(NotificationService);
+  private userService = inject(UserService);
+  protected imageService = inject(ImageUploadService); // public/protected для HTML
+  private cd = inject(ChangeDetectorRef);
 
-  private userService=inject(UserService);
-  protected imageService= inject(ImageUploadService);
-  private cd=inject( ChangeDetectorRef);
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { user: User }
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.profileEditForm = this.buildProfileForm()
+    this.profileEditForm = this.buildProfileForm();
+
+    // Инициализируем текущую аватарку (Статическая ссылка)
+    this.initCurrentAvatar();
+  }
+
+  ngOnDestroy(): void {
+    // Очищаем память, если было создано локальное превью
+    if (this.localPreviewUrl) {
+      URL.revokeObjectURL(this.localPreviewUrl);
+    }
+  }
+
+  private initCurrentAvatar(): void {
+    if (this.data.user.avatarUrl) {
+      this.displayAvatarUrl = this.imageService.getProfileImageUrl(this.data.user.avatarUrl);
+    }
   }
 
   buildProfileForm(): FormGroup {
     return this.fb.group({
-      firstname: [this.data.user.firstname, Validators.compose([Validators.required])],
-      lastname: [this.data.user.lastname, Validators.compose([Validators.required])],
-      bio: [this.data.user.bio, Validators.compose([Validators.required])]
-    })
+      firstname: [this.data.user.firstname, Validators.required],
+      lastname: [this.data.user.lastname, Validators.required],
+      bio: [this.data.user.bio] // Bio может быть необязательным
+    });
+  }
+
+  onFileSelected(evt: Event): void {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    this.selectedFile = file;
+
+    // Очищаем старое превью если было
+    if (this.localPreviewUrl) {
+      URL.revokeObjectURL(this.localPreviewUrl);
+    }
+
+    // Создаем локальное превью для выбранного файла
+    this.localPreviewUrl = URL.createObjectURL(file);
+    this.displayAvatarUrl = this.localPreviewUrl; // Показываем сразу
   }
 
   submit(): void {
@@ -63,72 +98,41 @@ export class EditUserComponent implements OnInit {
       this.profileEditForm.markAllAsTouched();
       return;
     }
-    if (this.selectedFile){
-      this.imageService.uploadImageToUser(this.selectedFile).subscribe({
-        next: () => {
-          if (this.previewImgURL) {
-            URL.revokeObjectURL(this.previewImgURL);
-            this.previewImgURL = undefined;
-          }
-          this.selectedFile = undefined;
-          this.notificationService.showSnackBar('Profile image updated successfully');
-        },
-        error: () => {
-          this.notificationService.showSnackBar('Upload failed');
-        }
-      });
-    }
 
-    const dto = this.formToUser();
-    this.userService.updateUser(dto).subscribe({
+    const updatedUserDto = this.formToUser();
+
+    // 1. Сначала обновляем текстовые данные
+    this.userService.updateUser(updatedUserDto).pipe(
+      // 2. Если успешно, проверяем, есть ли файл для загрузки
+      switchMap((updatedUser) => {
+        if (this.selectedFile) {
+          // Если файл есть - грузим его
+          return this.imageService.uploadImageToUser(this.selectedFile).pipe(
+            tap(() => {
+              // Уведомляем другие компоненты, что аватарка сменилась
+              this.userService.notifyAvatarUpdated();
+            })
+          );
+        } else {
+          // Если файла нет - возвращаем Observable с null (пропускаем шаг)
+          return of(null);
+        }
+      })
+    ).subscribe({
       next: () => {
-        this.notificationService.showSnackBar('User updated');
-        this.cd.markForCheck();
-        this.dialogRef.close(dto);
-        // вернём новые данные
+        this.notificationService.showSnackBar('Профиль успешно обновлен');
+        this.dialogRef.close(updatedUserDto);
       },
-      error: () => this.notificationService.showSnackBar('Update failed')
+      error: (err) => {
+        console.error(err);
+        this.notificationService.showSnackBar('Ошибка при обновлении профиля');
+      }
     });
   }
 
   private formToUser(): User {
-    const {firstname, lastname, bio} = this.profileEditForm.value;
-    this.cd.markForCheck();
-    return {...this.data.user, firstname, lastname, bio};
-  }
-  onFileSelected(evt: Event): void {
-    const input = evt.target as HTMLInputElement;
-    if (!input.files?.length) {
-      return;
-    }
-
-    const file = input.files[0];
-    this.selectedFile = file;
-    /* создаём превью */
-    this.previewImgURL = URL.createObjectURL(file);
-    console.log('test:' + this.previewImgURL);
-  }
-
-  onUpload(): void {
-    if (!this.selectedFile) return;
-  }
-
-  getUserImage(username: string): string {
-
-    this.userProfileImage = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username)
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userProfileImage = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userProfileImage = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-    return this.userProfileImage;
+    const { firstname, lastname, bio } = this.profileEditForm.value;
+    return { ...this.data.user, firstname, lastname, bio };
   }
 
   closeDialog() {

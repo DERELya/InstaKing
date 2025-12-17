@@ -13,6 +13,7 @@ export interface Story {
   blobUrl?: string;
   description?: string;
   visibility: string;
+  userAvatarUrl?: string;
 }
 
 

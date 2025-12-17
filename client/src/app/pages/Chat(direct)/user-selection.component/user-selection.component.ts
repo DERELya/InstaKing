@@ -69,20 +69,7 @@ export class UserSelection implements OnInit, OnDestroy {
   }
 
   loadAvatar(user: User) {
-    this.imageService.getImageToUser(user.username)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.avatarUrls.push(preview); // Сохраняем для удаления
-          user.avatarUrl = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          user.avatarUrl = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
+    this.imageService.getProfileImageUrl(user.avatarUrl);
   }
 
   clearSearch() {

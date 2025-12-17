@@ -1,33 +1,33 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {MatButton} from '@angular/material/button';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ImageUploadService} from '../../../services/image-upload.service';
-import {NotificationService} from '../../../services/notification.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {TokenStorageService} from '../../../services/token-storage.service';
-import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {MatIcon} from '@angular/material/icon';
-import {NgIf} from '@angular/common';
-import {StoryService} from '../../../services/story.service';
-import {catchError, of, Subject, takeUntil, tap} from 'rxjs';
-import {MatSelect} from '@angular/material/select';
-import {MatOption} from '@angular/material/autocomplete';
-import {StoryVisibility} from '../../../models/StoryVisibility';
-
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms'; // Только FormsModule
+import { ImageUploadService } from '../../../services/image-upload.service';
+import { NotificationService } from '../../../services/notification.service';
+import { Router } from '@angular/router';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf } from '@angular/common';
+import { StoryService } from '../../../services/story.service';
+import { catchError, of, Subject, takeUntil, tap } from 'rxjs';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { StoryVisibility } from '../../../models/StoryVisibility';
+import { UserService } from '../../../services/user.service';
+import { User } from '../../../models/User';
 
 @Component({
-  selector: 'app-create-story.component',
+  selector: 'app-create-story',
   standalone: true,
   imports: [
     MatButton,
     MatFormField,
     MatInput,
     MatLabel,
-    ReactiveFormsModule,
     MatIcon,
     NgIf,
-    FormsModule,
+    FormsModule, // Важно для [(ngModel)]
     MatDialogModule,
     MatSelect,
     MatOption
@@ -35,58 +35,65 @@ import {StoryVisibility} from '../../../models/StoryVisibility';
   templateUrl: './create-story.component.html',
   styleUrl: './create-story.component.css'
 })
+export class CreateStoryComponent implements OnInit, OnDestroy {
+  // Инжекты
+  private imageService = inject(ImageUploadService);
+  private notificationService = inject(NotificationService);
+  private storyService = inject(StoryService);
+  private userService = inject(UserService);
+  private dialogRef = inject(MatDialogRef<CreateStoryComponent>);
+  private cd = inject(ChangeDetectorRef);
 
-export class CreateStoryComponent implements OnInit {
-  storyForm!: FormGroup;
-  userImages: { [key: string]: string } = {};
-  selectedFile!: File;
-  previewImgURL: any;
-  username: string = ' ';
+  // Данные формы
   description: string = '';
-  private destroy$ = new Subject<void>();
   visibility: StoryVisibility = StoryVisibility.PUBLIC;
+  selectedFile?: File;
 
+  // URL для превью (Локальный Blob)
+  previewImgURL: string | null = null;
 
+  // Данные пользователя
+  currentUser?: User;
+  userAvatarUrl: string = 'assets/placeholder.jpg'; // Ссылка на аватар
 
-  constructor(
-    private imageService: ImageUploadService,
-    private notificationService: NotificationService,
-    private router: Router,
-    private storyService: StoryService,
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private tokenService: TokenStorageService,
-    private dialogRef: MatDialogRef<CreateStoryComponent>,
-    private cd: ChangeDetectorRef
-  ) {
-  }
+  private destroy$ = new Subject<void>();
+  protected readonly StoryVisibility = StoryVisibility;
+
+  constructor() {}
 
   ngOnInit(): void {
-    this.username = this.route.snapshot.paramMap.get('username') || '';
-    if (!this.username) {
-      this.username = this.tokenService.getUsernameFromToken() || '';
-    }
-    console.log(this.username);
-    this.storyForm = this.createStoryForm();
+    // Загружаем текущего пользователя, чтобы отобразить его ник и аватарку
+    this.userService.getCurrentUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser = user;
+        this.userAvatarUrl = this.imageService.getProfileImageUrl(user.avatarUrl);
+        this.cd.markForCheck();
+      });
   }
 
-  createStoryForm(): FormGroup {
-    return this.fb.group({
-      caption: ['', Validators.compose([Validators.required])],
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // Очищаем память от локального превью файла
+    if (this.previewImgURL) {
+      URL.revokeObjectURL(this.previewImgURL);
+    }
   }
 
   onFileSelected(evt: Event): void {
     const input = evt.target as HTMLInputElement;
-    if (!input.files?.length) {
-      return;
-    }
+    if (!input.files?.length) return;
 
     const file = input.files[0];
     this.selectedFile = file;
-    /* создаём превью */
+
+    if (this.previewImgURL) {
+      URL.revokeObjectURL(this.previewImgURL);
+    }
+
+    // Создаем новое превью для выбранного файла (тут Blob оправдан, так как файл еще не на сервере)
     this.previewImgURL = URL.createObjectURL(file);
-    console.log('test:' + this.previewImgURL);
   }
 
   submit() {
@@ -94,10 +101,12 @@ export class CreateStoryComponent implements OnInit {
       this.notificationService.showSnackBar('Выберите файл изображения!');
       return;
     }
+
     const formData = new FormData();
     formData.append('file', this.selectedFile);
     formData.append('description', this.description);
     formData.append('visibility', this.visibility);
+
     this.storyService.createStory(formData)
       .pipe(
         takeUntil(this.destroy$),
@@ -113,37 +122,13 @@ export class CreateStoryComponent implements OnInit {
       .subscribe({
         next: (story) => {
           if (story) {
-            console.log('Создана история:', story);
-            this.dialogRef.close(); // закрыть окно создания
+            this.dialogRef.close(true); // Закрываем и передаем успех
           }
         }
       });
-
   }
 
   close() {
     this.dialogRef.close();
   }
-
-  getUserImage(username: string): string {
-    if (this.userImages[username]) {
-      return this.userImages[username];
-    }
-    this.userImages[username] = 'assets/placeholder.jpg';
-    this.imageService.getImageToUser(username)
-      .subscribe({
-        next: blob => {
-          const preview = URL.createObjectURL(blob);
-          this.userImages[username] = preview;
-          this.cd.markForCheck();
-        },
-        error: () => {
-          this.userImages[username] = 'assets/placeholder.jpg';
-          this.cd.markForCheck();
-        }
-      });
-    return this.userImages[username];
-  }
-
-  protected readonly StoryVisibility = StoryVisibility;
 }

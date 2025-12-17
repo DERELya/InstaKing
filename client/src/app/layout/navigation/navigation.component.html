@@ -58,7 +58,7 @@
 
       <!-- Меню профиля (оставляем #menu) -->
       <button *ngIf="isLoggedIn" [matMenuTriggerFor]="profileMenu" class="avatar-button">
-        <img [src]="previewUrl || userProfileImage || 'assets/placeholder.jpg'"
+        <img [src]="userProfileImage"
              alt="avatar"
              class="avatar-icon">
       </button>
@@ -134,13 +134,14 @@
             <mat-icon *ngIf="item.type === 'SYSTEM'" class="icon-system">info</mat-icon>
           </div>
 
-          <!-- 2. АВАТАР (Кто совершил действие) -->
           <div class="sender-avatar-wrapper">
+            <!-- ПРЯМОЙ ВЫЗОВ СЕРВИСА В ШАБЛОНЕ -->
             <img *ngIf="item.senderAvatarUrl"
                  [src]="item.senderAvatarUrl"
                  class="sender-avatar"
                  alt="avatar">
-            <!-- Заглушка, если аватара нет -->
+
+            <!-- Заглушка, если нет фото -->
             <div *ngIf="!item.senderAvatarUrl"
                  class="sender-avatar-placeholder"
                  [style.background-color]="getAvatarColor(item.senderUsername)">

@@ -30,6 +30,9 @@ public class User implements UserDetails {
     @Column(length = 3000)
     private String password;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @ElementCollection(targetClass = ERole.class)
     @CollectionTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"))
@@ -63,10 +66,6 @@ public class User implements UserDetails {
 
     @Transient
     private Collection<? extends GrantedAuthority> authorities;
-
-
-
-
 
     public User() {
     }
