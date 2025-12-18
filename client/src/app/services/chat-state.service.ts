@@ -79,10 +79,6 @@ export class ChatStateService {
     this.searchTermSubject.next(term);
   }
 
-  /**
-   * Устанавливает активный чат.
-   * ВАЖНО: Вызывай clearActiveConversation() при уходе со страницы!
-   */
   setActiveConversation(conversation: ConversationDTO): void {
     const currentActive = this.activeConversationSubject.value;
     if (currentActive?.id !== conversation.id) {
@@ -90,14 +86,12 @@ export class ChatStateService {
       this.messagesSubject.next([]); // Очистка старых сообщений
       this.loadMessageHistory(conversation.id);
 
-      // Сразу помечаем как прочитанное
       this.markAsRead(conversation.id).subscribe(() => {
         this.updateUnreadCountInList(conversation.id, 0);
       });
     }
   }
 
-  /** Сброс активного чата (вызывать в ngOnDestroy) */
   clearActiveConversation(): void {
     this.activeConversationSubject.next(null);
     this.messagesSubject.next([]);
@@ -113,9 +107,7 @@ export class ChatStateService {
     });
   }
 
-  // --- Обработка событий из WebSocket ---
 
-  /** 1. Пришло новое сообщение */
   addMessage(message: MessageDTO): void {
     const activeConv = this.activeConversationSubject.value;
     if (activeConv && activeConv.id == message.conversationId) {
@@ -145,7 +137,6 @@ export class ChatStateService {
     this.updateConversationListOnNewMessage(message);
   }
 
-  /** 2. Пришел новый диалог (создан другим юзером) */
   handleNewConversationFromSocket(newConv: ConversationDTO): void {
     const list = [...this.conversationsListSubject.value];
     const exists = list.find(c => c.id === newConv.id);
@@ -155,12 +146,14 @@ export class ChatStateService {
     }
   }
 
-  /** 3. Пришел статус "Печатает..." */
+
   handleTyping(dto: TypingDTO): void {
+
     const activeConv = this.activeConversationSubject.value;
 
 
     if (activeConv && activeConv.id === dto.conversationId) {
+
       this.typingUserSubject.next(dto.username);
 
       if (this.typingTimeout) clearTimeout(this.typingTimeout);
@@ -171,14 +164,12 @@ export class ChatStateService {
     }
   }
 
-  /** 4. Пришло уведомление о прочтении (Read Receipt) */
   handleReadReceipt(dto: ReadReceiptDTO): void {
     const activeConv = this.activeConversationSubject.value;
 
     if (activeConv && activeConv.id === dto.conversationId) {
       // В реальном приложении здесь можно менять статус сообщений (например, поле isRead = true)
       // Для простоты пока оставим как есть или добавим логику смены иконок
-      console.log(`Пользователь ${dto.readerId} прочитал сообщения в чате ${dto.conversationId}`);
     }
   }
 
@@ -187,9 +178,8 @@ export class ChatStateService {
     let list = [...this.conversationsListSubject.value];
     const index = list.findIndex(c => c.id === message.conversationId);
 
-    // Если чата нет в списке (редкий кейс, если handleNewConversation сработал позже), можно запросить его
+
     if (index === -1) {
-      // Можно вызвать this.getConversations().subscribe(), чтобы обновить весь список
       return;
     }
 
@@ -197,20 +187,15 @@ export class ChatStateService {
     conv.previewMessage = message.content;
     conv.lastMessageAt = message.createdAt;
 
-    // Увеличиваем счетчик непрочитанных, если:
-    // 1. Чат не открыт сейчас у меня
-    // 2. Отправитель — не я
     if (this.activeConversationSubject.value?.id !== message.conversationId && message.senderId !== this.currentUserId) {
       conv.unreadCount = (conv.unreadCount || 0) + 1;
     }
 
-    // Перемещаем чат наверх
     list.splice(index, 1);
     list.unshift(conv);
     this.conversationsListSubject.next(list);
   }
 
-  // --- Создание чата ---
 
   loadConversationByUserId(userId: number): void {
     this.loadingSubject.next(true);
@@ -236,7 +221,6 @@ export class ChatStateService {
   }
 
   private markAsRead(conversationId: number): Observable<void> {
-    // Убедись, что на бэкенде в DialogController есть метод @PostMapping("/{id}/read")
     return this.http.post<void>(`${this.apiUrl}/${conversationId}/read`, {}).pipe(
       catchError(e => {
         console.error("Failed to mark as read", e);

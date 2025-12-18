@@ -40,15 +40,14 @@
                 <a [routerLink]="['/profile', comment.username]" class="profile-link" (click)="close()">
 
                   <!-- 2. АВАТАР КОММЕНТАТОРА -->
-                  <img [src]="imageService.getProfileImageUrl(comment.userAvatarUrl)"
+                  <img [src]="comment.avatarUrl || 'assets/placeholder.jpg'"
                        (error)="onAvatarError($event)"
                        alt="avatar" class="ig-modal-avatar">
-
                   <div class="comment-content">
-                    <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
+                    <span class="fw-bold">{{ comment.username}}  </span>: {{ comment.message }}
                   </div>
                 </a>
-                <span class="comment-date">{{ comment.createdDate | timeAgo }}</span>
+                <span class="comment-date">{{ comment.createdAt | timeAgo }}</span>
 
                 <button *ngIf="comment.username === meUsername"
                         mat-icon-button

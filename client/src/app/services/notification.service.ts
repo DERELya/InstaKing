@@ -58,7 +58,6 @@ export class NotificationService {
     }
     return this.http.get<NotificationDTO[]>(this.apiUrl).pipe(
       tap(list => {
-        console.log('Уведомления с сервера:', list);
         this.notificationsSubject.next(list);
         this.updateUnreadCount(list);
       })

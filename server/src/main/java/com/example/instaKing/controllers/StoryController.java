@@ -42,8 +42,6 @@ public class StoryController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body("Validation error");
         }
-        System.out.println("Получено описание: " + storyDTO.getDescription());
-        System.out.println("Файл: " + storyDTO.getFile().getOriginalFilename());
 
         User user = userService.getCurrentUser(principal);
         Story story = storyService.createStory(storyDTO, principal);

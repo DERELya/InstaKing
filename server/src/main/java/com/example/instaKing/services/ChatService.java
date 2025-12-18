@@ -49,9 +49,7 @@ public class ChatService {
         this.notificationService = notificationService;
     }
 
-    /**
-     * Получает существующий приватный чат или создает новый между двумя пользователями.
-     */
+
     @Transactional
     public Conversation getOrCreatePrivateConversation(Long userAId, Long userBId) {
         List<Long> participantsIds = List.of(userAId, userBId);
@@ -73,9 +71,6 @@ public class ChatService {
         return conversationRepository.save(newConversation);
     }
 
-    /**
-     * Сохраняет сообщение в БД и рассылает его через WebSocket всем участникам.
-     */
     @Transactional
     public Message saveAndSend(MessageDTO messageDto) {
         Conversation conversation;
@@ -120,9 +115,6 @@ public class ChatService {
         return savedMessage;
     }
 
-    /**
-     * Рассылает сообщение всем участникам диалога.
-     */
     private void sendRealTimeNotification(Message savedMessage, Conversation conversation) {
         MessageDTO responseDto = convertToDto(savedMessage);
 
@@ -134,8 +126,6 @@ public class ChatService {
                     "/queue/messages",
                     responseDto
             );
-
-            System.out.println("Отправлено WS сообщение пользователю: " + username);
         }
     }
     private MessageDTO convertToDto(Message msg) {
@@ -147,9 +137,6 @@ public class ChatService {
         return dto;
     }
 
-    /**
-     * Получает историю сообщений с пагинацией.
-     */
     public List<Message> getMessageHistory(Long conversationId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return messageRepository.findByConversationId(conversationId, pageable).getContent();
@@ -183,7 +170,7 @@ public class ChatService {
     }
 
     public void sendTypingNotification(TypingDTO typingDto, String senderUsername) {
-        Conversation conversation = conversationRepository.findById(typingDto.getConversationId())
+        Conversation conversation = conversationRepository.findByIdWithParticipants(typingDto.getConversationId())
                 .orElseThrow(() -> new EntityNotFoundException("Диалог не найден"));
 
         for (User participant : conversation.getParticipants()) {

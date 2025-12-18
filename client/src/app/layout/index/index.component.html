@@ -8,14 +8,15 @@
     </div>
 
     <div
-      *ngFor="let entry of usersWithStories | keyvalue: keepOrder; trackBy: trackByUsername"
+      **ngFor="let user of (usersWithStories$ | async); trackBy: trackByUsername"
       class="story-item"
-      (click)="openStoryViewer(entry.key)">
+      (click)="openStoryViewer(user.username)">
 
-      <div class="story-circle" [ngClass]="{'has-story': entry.value, 'viewed': !entry.value}">
-        <img [src]="getUserImage(entry.key)" alt="story avatar" />
+      <div class="story-circle" [ngClass]="{'has-story': !user.viewed, 'viewed': user.viewed}">
+        <img [src]="user.avatarUrl" alt="story avatar" />
       </div>
-      <span class="story-username">{{ entry.key }}</span>
+
+      <span class="story-username">{{ user.username }}</span>
     </div>
   </div>
 </div>
@@ -31,7 +32,7 @@
             <div class="post-header">
               <div class="header-user" [routerLink]="['/profile/', post!.username]">
                 <img *ngIf="post?.username"
-                     [src]="getUserImage(post!.username!)"
+                     [src]="post.avatarUrl || 'assets/placeholder.jpg'"
                      alt="avatar" class="avatar">
                 <span class="username">{{ post!.username }}</span>
               </div>

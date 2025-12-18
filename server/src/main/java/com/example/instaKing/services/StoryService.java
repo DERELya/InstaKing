@@ -264,7 +264,6 @@ public class StoryService {
     public Resource getContent(String url) throws IOException {
         Path filePath = Paths.get(UPLOAD_DIR_FOR_STORIES + url);
         Resource resource = new UrlResource(filePath.toUri());
-        System.out.println(resource);
         if (!resource.exists() || !resource.isReadable()) {
             throw new FileNotFoundException("Image file not found: " + url);
         }

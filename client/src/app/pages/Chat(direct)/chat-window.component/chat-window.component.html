@@ -2,10 +2,19 @@
 
   <div class="chat-header">
     <div class="header-info">
-      <img class="avatar" [src]="avatarUrl" alt="avatar" />
+
+      <div class="avatar-container">
+        <img *ngIf="conversation.avatarUrl" class="avatar" [src]="conversation.avatarUrl" alt="avatar" />
+        <div *ngIf="!conversation.avatarUrl"
+             class="avatar-placeholder"
+             [ngStyle]="{'background-color': getAvatarColor()}">
+          {{ getAvatarInitials() }}
+        </div>
+      </div>
+
       <span class="chat-title">{{ getConversationTitle() }}</span>
       <span *ngIf="typingUser$ | async as user" class="typing-indicator">
-        {{ user }} печатает...
+        печатает...
       </span>
     </div>
   </div>

@@ -108,6 +108,7 @@ export class ChatListComponent implements OnDestroy {
    * Вызывается из pipe(tap) в конструкторе, а не из шаблона!
    */
   loadAvatarForConversation(conversation: ConversationDTO): void {
+
     // Если аватар уже загружен или в процессе — не грузим повторно
     if (conversation.avatarUrl) return;
 
@@ -115,13 +116,10 @@ export class ChatListComponent implements OnDestroy {
     // Если это групповой чат или юзер не найден - выходим (будет дефолтная иконка)
     if (!otherUser) return;
 
-    // Ставим заглушку, чтобы не пытаться грузить снова пока идет запрос
-    // conversation.avatarUrl = 'loading'; // Можно раскомментировать, если нужно
-
     this.imageService.getProfileImageUrl(otherUser.avatarUrl);
+    conversation.avatarUrl=otherUser.avatarUrl;
   }
 
-  // Для генерации цвета заглушки (если нет фото)
   getAvatarColor(conversation: ConversationDTO): string {
     const name = this.getConversationTitle(conversation);
     let hash = 0;

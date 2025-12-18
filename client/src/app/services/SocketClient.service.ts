@@ -34,13 +34,10 @@ export class SocketClientService {
       webSocketFactory: () => new SockJS(this.SOCKET_URL),
       connectHeaders: headers,
       reconnectDelay: 5000,
-      debug: (str) => console.log('[STOMP]: ' + str), // Можно отключить в проде
       onConnect: () => {
-        console.log('✅ Socket Connected');
         this.isConnectedSubject.next(true);
       },
       onDisconnect: () => {
-        console.log('❌ Socket Disconnected');
         this.isConnectedSubject.next(false);
       },
       onStompError: (frame) => {
@@ -58,7 +55,6 @@ export class SocketClientService {
     }
   }
 
-  // Универсальный метод подписки
   public subscribe(topic: string, callback: (message: Message) => void) {
     // Ждем, пока соединение установится, и только потом подписываемся
     this.isConnected$.pipe(

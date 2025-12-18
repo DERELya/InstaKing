@@ -39,7 +39,6 @@ export class ArchiveStoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log(this.data.username);
     this.loadStory();
   }
 

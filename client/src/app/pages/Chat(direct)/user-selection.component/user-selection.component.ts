@@ -62,9 +62,7 @@ export class UserSelection implements OnInit, OnDestroy {
     });
   }
 
-  // Изменил аргумент на объект User целиком
   onWrite(user: User) {
-    console.log("Выбран пользователь для чата:", user.username);
     this.dialogRef.close(user);
   }
 

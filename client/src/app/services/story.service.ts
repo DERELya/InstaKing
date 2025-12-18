@@ -5,6 +5,7 @@ import {environment} from '../../environments/environment';
 import {ImageUploadService} from './image-upload.service';
 import {TokenStorageService} from './token-storage.service';
 import {Story} from '../models/Story';
+import {UsersWithStory} from '../models/UsersWithStory';
 
 @Injectable({
   providedIn: 'root',
@@ -126,8 +127,8 @@ export class StoryService {
   hasActiveStoriesForUser(username: string): Observable<boolean>{
     return this.http.get<boolean>(`${this.api}hasActiveStoriesForUser/${username}`);
   }
-  getUsersWithActiveStories():Observable<Record<string,boolean>> {
-    return this.http.get<Record<string, boolean>>(`${this.api}getUsernameActiveStoriesForMe`);
+  getUsersWithActiveStories():Observable<UsersWithStory[]> {
+    return this.http.get<UsersWithStory[]>(`${this.api}getUsernameActiveStoriesForMe`);
   }
   transformStoriesFromApi(stories: Story[]): Story[] {
     return (stories || []).map((story) => {

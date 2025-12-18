@@ -60,11 +60,6 @@ export class PostService {
   private processSinglePost(post: Post): Observable<UiPost> {
     const meUsername = this.tokenService.getUsernameFromToken?.() ?? undefined;
 
-    // 1. Аватарка (Синхронно, мгновенно)
-    // post.usernameAvatar - предполагаем, что тут имя файла (напр. "photo.jpg")
-    const avatarUrlStatic = this.imageService.getProfileImageUrl(post.username);
-
-    // 2. Картинка поста (Асинхронно, Blob)
     const postImg$ = this.imageService.getImageToPost(post.id!).pipe(
       map(blob => URL.createObjectURL(blob)),
       catchError(() => of('assets/placeholder.jpg'))
@@ -82,8 +77,7 @@ export class PostService {
     }).pipe(
       map(({ postImg, commentCount }) => ({
         ...post,
-        image: postImg,         // Blob URL
-        avatarUrl: avatarUrlStatic, // Static URL
+        image: postImg,
         usersLiked: post.usersLiked ?? [],
         isLiked: meUsername ? (post.usersLiked ?? []).includes(meUsername) : false,
         commentCount

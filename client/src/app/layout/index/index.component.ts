@@ -15,13 +15,13 @@ import { PostService } from '../../services/post.service';
 import { UserService } from '../../services/user.service';
 import { StoryService } from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
-import { ImageUploadService } from '../../services/image-upload.service'; // Обновленный сервис
+import { ImageUploadService } from '../../services/image-upload.service';
 import { MatCardImage, MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule, NgClass } from '@angular/common';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
-import { Subject, takeUntil } from 'rxjs';
+import {Observable, Subject, takeUntil, tap} from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink, RouterModule } from '@angular/router';
 import { LikesPostComponent } from '../../pages/post/likes-post/likes-post.component';
@@ -34,10 +34,11 @@ import { TokenStorageService } from '../../services/token-storage.service';
 import { ChatService } from '../../services/chat.service';
 import { NotificationService } from '../../services/notification.service';
 import {SocketClientService} from '../../services/SocketClient.service';
+import {UsersWithStory} from '../../models/UsersWithStory';
 
 interface UiPost extends Post {
   isLiked: boolean;
-  avatarUrl?: string; // Теперь это полная ссылка (String)
+  avatarUrl?: string; // Готовая ссылка
   showAllComments?: boolean;
   commentCount?: number;
   showHeart?: boolean;
@@ -48,7 +49,6 @@ interface UiPost extends Post {
   standalone: true,
   imports: [
     MatIconModule,
-    MatCardImage,
     MatCardModule,
     MatFormFieldModule,
     NgClass,
@@ -69,8 +69,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   user!: User;
   isPostsLoaded = false;
   isUserDataLoaded = false;
-
-  // Удалил userImages: { [key: string]: string } = {}; (Больше не нужно)
+  usersWithStories$!: Observable<UsersWithStory[]>;
 
   private destroy$ = new Subject<void>();
   currentPage = 0;
@@ -81,14 +80,13 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUserIndex = 0;
   currentStoryIndex = 0;
 
-  usersWithStories: Record<string, boolean> = {};
+  usersWithStories: UsersWithStory[]=[];
   @ViewChildren('anchor') anchors!: QueryList<ElementRef<HTMLElement>>;
   private observer?: IntersectionObserver;
 
   private postService = inject(PostService);
   private userService = inject(UserService);
   private commentService = inject(CommentService);
-  // Делаем imageService публичным, чтобы использовать в HTML
   public imageService = inject(ImageUploadService);
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
@@ -105,30 +103,26 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketClient.connect();
     }
 
-    // Загрузка сторис
-    this.storyService.getUsersWithActiveStories()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response: Record<string, boolean>) => {
-        this.usersWithStories = response;
-        this.groupedStories = Object.keys(response).map(u => ({
-          username: u,
+
+    this.usersWithStories$ = this.storyService.getUsersWithActiveStories().pipe(
+      tap(response => {
+        this.groupedStories = response.map(user => ({
+          username: user.username,
           stories: [],
           loaded: false
         }));
-        this.cd.markForCheck();
-      });
+      }),
+      takeUntil(this.destroy$)
+    );
 
-    // Загрузка постов
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
-        // Мы предполагаем, что postService.processSinglePost уже заполнил avatarUrl правильной ссылкой
         this.posts = posts;
         this.isPostsLoaded = true;
         this.isLoading = false;
         this.cd.markForCheck();
 
-        // Проверка избранного
         this.postService.getFavorites().subscribe(favorites => {
           const favoriteIds = new Set(favorites.map(p => p.id));
           this.posts = this.posts.map(post => ({
@@ -139,7 +133,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
 
-    // Пагинация
     this.postService.totalPages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(totalPages => {
@@ -149,7 +142,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cd.markForCheck();
       });
 
-    // Данные текущего юзера
     this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
       this.user = user;
       this.isUserDataLoaded = true;
@@ -157,11 +149,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadPosts();
     });
   }
-
-  // --- УДАЛЕН МЕТОД getUserImage ---
-  // Больше не нужно качать Blob. В HTML используй:
-  // [src]="imageService.getProfileImageUrl(post.usernameAvatar)" (если поле usernameAvatar содержит имя файла)
-  // или если в post.avatarUrl уже лежит готовая ссылка (как мы сделали в PostService), то просто [src]="post.avatarUrl"
 
   private resetPaging(): void {
     this.currentPage = 0;
@@ -172,7 +159,7 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPosts(): void {
     this.isLoading = true;
-    this.postService.appendPostsPage(this.currentPage, this.pageSize, this.user.username)
+    this.postService.appendPostsPage(this.currentPage, this.pageSize)
       .subscribe({
         next: (page) => {
           if (!page || page.length === 0) {
@@ -267,22 +254,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  trackByUsernamePost(index: number, username: string): string {
-    return username;
-  }
-
-  postComment(event: Event, message: string, postId: number, postIndex: number): void {
-    event.preventDefault();
-    const post = this.posts[postIndex];
-    this.commentService.addToCommentToPost(postId, message)
-      .subscribe(data => {
-        post.comments?.push(data);
-        post.commentCount = (post.commentCount || 0) + 1;
-        this.cd.markForCheck();
-        (event.target as HTMLFormElement).reset();
-      });
-  }
-
   toggleFavorite(postId: number, i: number): void {
     const post = this.posts[i];
     if (!post) return;
@@ -303,7 +274,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openStoryViewer(username: string, startStoryIndex: number = 0): void {
-    // Без изменений
     const userGroup = this.groupedStories.find(g => g.username === username);
     if (!userGroup) return;
 
@@ -365,11 +335,9 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  trackByUsername(index: number, entry: { key: string; value: boolean }): string {
-    return entry.key;
+  trackByUsername(index: number, user: UsersWithStory): string {
+    return user.username;
   }
-
-  keepOrder = () => 0;
 
   openCreateStoryDialog() {
     const dialogRef = this.dialog.open(CreateStoryComponent, {
@@ -378,7 +346,6 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (this.user?.username) {
-        // Логика после закрытия
       }
     });
   }

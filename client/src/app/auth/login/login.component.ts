@@ -73,7 +73,6 @@ export class LoginComponent implements OnInit{
       window.location.reload();
 
     }, error => {
-      console.log(error);
       this.notificationService.showSnackBar(error.message)
     })
 

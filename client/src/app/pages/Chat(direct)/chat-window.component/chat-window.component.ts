@@ -4,7 +4,7 @@ import { ChatService } from '../../../services/chat.service';
 import { TokenStorageService } from '../../../services/token-storage.service';
 import { Observable, Subscription } from 'rxjs';
 import { MatIconButton } from '@angular/material/button';
-import { AsyncPipe, DatePipe, NgForOf, NgIf, NgClass } from '@angular/common';
+import {AsyncPipe, DatePipe, NgForOf, NgIf, NgClass, NgStyle} from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -34,7 +34,8 @@ import {MatMenuItem, MatMenuModule, MatMenuTrigger} from '@angular/material/menu
     TextFieldModule,
     MatMenuModule,
     MatMenuTrigger,
-    MatMenuItem
+    MatMenuItem,
+    NgStyle
   ]
 })
 export class ChatWindowComponent implements OnInit, OnDestroy {
@@ -47,7 +48,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
   private tokenService = inject(TokenStorageService);
 
   public messages$: Observable<MessageDTO[]> = this.chatStateService.messages$;
-  public typingUser$ = this.chatStateService.typingUser$; // Стрим "печатает"
+  public typingUser$ = this.chatStateService.typingUser$;
 
   public messageInput: string = '';
   public currentUserId: number;
@@ -79,7 +80,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
 
     const messageDto: MessageDTO = {
-      content: this.messageInput.trim(), // Убираем пробелы по краям
+      content: this.messageInput.trim(),
       conversationId: this.conversation.id,
       senderId: this.currentUserId,
       createdAt: new Date(),
@@ -90,7 +91,6 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     this.messageInput = '';
   }
 
-  // Обработка ввода (Shift+Enter - новая строка, Enter - отправка)
   onEnter(event: Event): void {
     const e = event as KeyboardEvent;
     if (!e.shiftKey) {
@@ -99,10 +99,9 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Отправка статуса "печатает"
+
   onTyping(): void {
     const now = Date.now();
-    // Шлем событие не чаще раза в 3 секунды
     if (now - this.lastTypingSent > 3000 && this.conversation.id) {
       this.lastTypingSent = now;
       this.chatService.sendTyping({
@@ -125,12 +124,11 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    // Очищаем активный чат при закрытии окна
     this.chatStateService.clearActiveConversation();
   }
 
   trackByMessageId(index: number, message: MessageDTO): number | string {
-    return message.id || index; // Используем ID, если его нет (пока летит) — индекс
+    return message.id || index;
   }
 
 
@@ -140,5 +138,20 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
         error: (err) => console.error('Ошибка удаления', err)
       });
     }
+  }
+
+  getAvatarColor(): string {
+    const name = this.getConversationTitle();
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
+  }
+
+  getAvatarInitials(): string {
+    const title = this.getConversationTitle();
+    return title ? title.slice(0, 2).toUpperCase() : '??';
   }
 }

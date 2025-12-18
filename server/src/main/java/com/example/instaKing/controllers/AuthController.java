@@ -49,7 +49,6 @@ public class AuthController {
         ResponseEntity<Object> erros = responseErrorValidator.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(erros)) return erros;
 
-        System.out.println(signUpRequest.toString());
         personValidator.validate(signUpRequest);
         userService.createUser(signUpRequest);
         return ResponseEntity.ok(new MessageResponse("UserService registered successfully"));

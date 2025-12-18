@@ -65,8 +65,6 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserProfileByUsername(@PathVariable("username") String username) {
         User user = userService.getUserByUsername(username);
         UserDTO userDTO = userFacade.userToUserDTO(user);
-        System.out.println("PIZDA"+userDTO);
-        System.out.println("PIZDAaga"+user.getAvatarUrl());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 

@@ -59,7 +59,7 @@ export class LikesPostComponent implements OnInit {
     });
     this.userService.isFollowingBatch(this.usernames).subscribe(map => {
       this.isFollowingMap = map;
-      console.log(this.isFollowingMap);
+
     });
 
   }

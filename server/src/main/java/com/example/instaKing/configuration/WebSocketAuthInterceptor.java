@@ -66,13 +66,10 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
                         accessor.setUser(authentication);
 
-                        System.out.println("PIZDA: Authentication SUCCESSFUL via Header! User: " + userId);
                     }
                 } catch (Exception e) {
-                    System.err.println("PIZDA: Exception during Header JWT processing: " + e.getMessage());
                 }
             } else {
-                System.err.println("PIZDA: JWT not found in Authorization header.");
             }
         }
 

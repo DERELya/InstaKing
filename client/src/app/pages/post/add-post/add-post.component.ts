@@ -80,13 +80,11 @@ export class AddPostComponent implements OnInit {
           return this.imageUploadService.uploadImageToPost(this.selectedFile, postId).pipe(
 
             switchMap(() => {
-              console.log('Файл изображения успешно загружен на сервер. Обновляем UI.');
               return this.postService.refreshPostImage(postId);
             }),
 
 
             catchError((uploadErr) => {
-              console.error('Ошибка при загрузке файла, но пост создан.', uploadErr);
               return of(null);
             })
           );
@@ -108,7 +106,6 @@ export class AddPostComponent implements OnInit {
           this.router.navigate(['/profile', this.username]);
         },
         error: () => {
-          console.log('Операция создания поста завершилась с ошибкой.');
         }
       });
   }
@@ -121,9 +118,8 @@ export class AddPostComponent implements OnInit {
 
     const file = input.files[0];
     this.selectedFile = file;
-    /* создаём превью */
     this.previewImgURL = URL.createObjectURL(file);
-    console.log('test:' + this.previewImgURL);
+
   }
 
   clickOnMyPosts() {

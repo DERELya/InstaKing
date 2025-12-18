@@ -3,5 +3,5 @@ export interface PostComment {
   message: string;
   username: string;
   createdAt: string;
-  userAvatarUrl: string;
+  avatarUrl: string;
 }

@@ -29,5 +29,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     @Query("SELECT c FROM Conversation c LEFT JOIN FETCH c.participants WHERE c.id = :id")
     Optional<Conversation> findByIdWithParticipants(@Param("id") Long id);
+
 }
 

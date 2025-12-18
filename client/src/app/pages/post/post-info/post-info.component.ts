@@ -15,21 +15,13 @@ import { TokenStorageService } from '../../../services/token-storage.service';
 import { Subject, takeUntil } from 'rxjs';
 import { TimeAgoPipe } from '../../../helper/time-ago.pipe';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import {PostComment} from '../../../models/PostComment';
 
 interface UiPost extends Post {
   isLiked: boolean;
-  avatarUrl?: string; // Это уже полная ссылка (сделали в PostService)
+  avatarUrl?: string;
   showAllComments?: boolean;
 }
-
-export interface PostComment {
-  id: number;
-  username: string;
-  message: string;
-  createdDate: string;
-  userAvatarUrl?: string; // <-- ДОБАВИЛИ ЭТО ПОЛЕ (имя файла)
-}
-
 export interface CommentPageResponse {
   comments: PostComment[];
   totalElements: number;

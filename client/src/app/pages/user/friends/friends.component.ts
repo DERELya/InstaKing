@@ -131,12 +131,10 @@ export class FriendsComponent implements OnInit, OnDestroy {
       next: () => {
         user.isCloseFriend = isChecked;
         this.cd.markForCheck();
-        console.log(`Статус для ${friendUsername} успешно изменен на ${isChecked}`);
       },
       error: (err) => {
-        user.isCloseFriend = !isChecked; // Откат галочки при ошибке
+        user.isCloseFriend = !isChecked;
         this.cd.markForCheck();
-        console.error(`Ошибка при изменении статуса для ${friendUsername}`, err);
       }
     });
   }
