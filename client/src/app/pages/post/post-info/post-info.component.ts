@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, inject, Inject, OnDestroy, OnInit} from '@angular/core';
 import { CommonModule, DatePipe, NgForOf, NgIf } from '@angular/common';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatInput } from '@angular/material/input';
@@ -16,6 +16,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TimeAgoPipe } from '../../../helper/time-ago.pipe';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import {PostComment} from '../../../models/PostComment';
+import {UserService} from '../../../services/user.service';
 
 interface UiPost extends Post {
   isLiked: boolean;
@@ -43,9 +44,7 @@ export interface CommentPageResponse {
 export class PostInfoComponent implements OnInit, OnDestroy {
   meUsername: string = '';
   menuOpen = false;
-
-  // Удалили userImages (больше не нужно кэшировать Blob)
-
+  myAvatarUrl: string = '';
   MAX_VISIBLE_COMMENTS = 10;
   comments: PostComment[] = [];
   totalPages: number = 0;
@@ -53,6 +52,7 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   pageSize: number = 10;
   loadingComments = false;
   private destroy$ = new Subject<void>();
+  private userService=inject(UserService);
 
   constructor(
     public dialogRef: MatDialogRef<PostInfoComponent>,
@@ -72,7 +72,13 @@ export class PostInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.data.post.isLiked = (this.data.post.usersLiked ?? []).includes(this.meUsername);
+    const usersLiked = this.data.post.usersLiked ?? [];
+    this.data.post.isLiked = usersLiked.some(u => u.username === this.meUsername);
+
+    // 2. ДОБАВЛЕНО: Получаем аватар текущего юзера для оптимистичного лайка
+    this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
+      this.myAvatarUrl = user.avatarUrl;
+    });
     this.loadComments(0);
   }
 
@@ -84,30 +90,46 @@ export class PostInfoComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ... методы close, likePost, trackBy, postComment, deleteComment ...
-  // (они не меняются, кроме того, что в postComment сервер должен вернуть коммент с аватаркой)
-
   close(): void {
     this.dialogRef.close(this.data.post);
   }
 
   likePost(): void {
     const post: UiPost = this.data.post;
-    const liked = post.isLiked;
-    const username = this.meUsername;
+    const wasLikedBefore = post.isLiked;
+    const myUsername = this.meUsername;
 
-    post.isLiked = !liked;
-    if (liked) {
-      post.usersLiked = post.usersLiked?.filter(u => u !== username) ?? [];
+    // 1. Оптимистичное обновление UI
+    post.isLiked = !wasLikedBefore;
+
+    if (wasLikedBefore) {
+      // Удаляем наш лайк (сравниваем по полю username)
+      post.usersLiked = post.usersLiked?.filter(u => u.username !== myUsername) ?? [];
     } else {
-      post.usersLiked = [...(post.usersLiked ?? []), username];
+      // Добавляем наш лайк как объект
+      const myLike = {
+        username: myUsername,
+        avatarUrl: this.myAvatarUrl // Убедитесь, что это поле заполнено
+      };
+      post.usersLiked = [myLike, ...(post.usersLiked ?? [])]; // Добавляем в начало для наглядности
     }
+
     this.cd.markForCheck();
 
-    this.postService.likePost(post.id!, username).subscribe({
-      error: () => {
-        post.isLiked = liked;
-        this.cd.markForCheck(); // Откат при ошибке
+    // 2. Запрос к серверу
+    this.postService.likePost(post.id!, myUsername).subscribe({
+      next: (updatedPost: Post) => {
+        // Синхронизируем данные с ответом сервера
+        post.usersLiked = updatedPost.usersLiked;
+        this.cd.markForCheck();
+      },
+      error: (err) => {
+        console.error('Ошибка при лайке:', err);
+        post.isLiked = wasLikedBefore;
+        if (!wasLikedBefore) {
+          post.usersLiked = post.usersLiked?.filter(u => u.username !== myUsername) ?? [];
+        }
+        this.cd.markForCheck();
       }
     });
   }
@@ -142,9 +164,6 @@ export class PostInfoComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAvatarError(event: Event) {
-    (event.target as HTMLImageElement).src = 'assets/placeholder.jpg';
-  }
 
   loadComments(page: number = 0) {
     const postId = this.data.post.id!;

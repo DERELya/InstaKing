@@ -6,7 +6,6 @@ import com.example.instaKing.exceptions.UserNotFoundException;
 import com.example.instaKing.facade.UserFacade;
 import com.example.instaKing.models.User;
 import com.example.instaKing.models.enums.ERole;
-import com.example.instaKing.models.enums.NotificationType;
 import com.example.instaKing.payload.request.SignUpRequest;
 import com.example.instaKing.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -17,7 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
@@ -179,12 +177,17 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        Set<UserDTO> friends=user.getCloseFriends()
+        Set<UserDTO> friends = user.getCloseFriends()
                 .stream()
                 .map(userFacade::userToUserDTO)
                 .collect(Collectors.toSet());
-        User friend=userRepository.findByUsername(friendUsername)
+        User friend = userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("Friend not found"));
         return friends.contains(userFacade.userToUserDTO(friend));
+    }
+
+    public String getAvatarUrl(String s) {
+        return userRepository.findAvatarUrlByUsername(s).orElse("assets/placeholder.jpg");
+
     }
 }

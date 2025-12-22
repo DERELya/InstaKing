@@ -16,7 +16,7 @@ import { UserService } from '../../services/user.service';
 import { StoryService } from '../../services/story.service';
 import { CommentService } from '../../services/comment.service';
 import { ImageUploadService } from '../../services/image-upload.service';
-import { MatCardImage, MatCardModule } from '@angular/material/card';
+import {  MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule, NgClass } from '@angular/common';
@@ -99,10 +99,9 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor() {}
 
   ngOnInit(): void {
-    if (this.tokenService.getToken() != null) {
+    if (this.tokenService.getToken()) {
       this.socketClient.connect();
     }
-
 
     this.usersWithStories$ = this.storyService.getUsersWithActiveStories().pipe(
       tap(response => {
@@ -118,36 +117,32 @@ export class IndexComponent implements OnInit, AfterViewInit, OnDestroy {
     this.postService.posts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(posts => {
+        console.log('Posts received in component:', posts);
         this.posts = posts;
-        this.isPostsLoaded = true;
+        this.isPostsLoaded = posts.length > 0;
         this.isLoading = false;
         this.cd.markForCheck();
-
-        this.postService.getFavorites().subscribe(favorites => {
-          const favoriteIds = new Set(favorites.map(p => p.id));
-          this.posts = this.posts.map(post => ({
-            ...post,
-            favorited: favoriteIds.has(post.id)
-          }));
-          this.cd.markForCheck();
-        });
       });
+
 
     this.postService.totalPages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(totalPages => {
-        if (typeof totalPages === 'number' && totalPages > 0) {
-          this.noMorePosts = this.currentPage >= (totalPages - 1);
-        }
+        this.noMorePosts = this.currentPage >= (totalPages - 1);
         this.cd.markForCheck();
       });
 
-    this.userService.getCurrentUser().pipe(takeUntil(this.destroy$)).subscribe(user => {
-      this.user = user;
-      this.isUserDataLoaded = true;
-      this.resetPaging();
-      this.loadPosts();
-    });
+    // 4. Инициализация пользователя и ПЕРВАЯ загрузка
+    this.userService.getCurrentUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.user = user;
+        this.isUserDataLoaded = true;
+
+
+        this.resetPaging();
+        this.loadPosts();
+      });
   }
 
   private resetPaging(): void {

@@ -1,4 +1,5 @@
 import {PostComment} from './PostComment';
+import {LikedUser} from './LikedUser';
 export interface Post{
   id?:number;
   title: string;
@@ -6,7 +7,7 @@ export interface Post{
   caption: string;
   image?: string;
   likes?: number;
-  usersLiked?: string[];
+  usersLiked?: LikedUser[];
   comments?: PostComment [];
   username?: string;
   createdAt?: string;
@@ -14,3 +15,4 @@ export interface Post{
   favorited?: boolean;
   addedAt?: string;
 }
+

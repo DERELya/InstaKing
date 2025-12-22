@@ -9,6 +9,7 @@ import {
   Observable,
   of,
   switchMap,
+  take,
   tap,
   throwError,
 } from 'rxjs';
@@ -16,16 +17,18 @@ import { environment } from '../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
 import { ImageUploadService } from './image-upload.service';
 import { CommentService } from './comment.service';
+import {LikedUser} from '../models/LikedUser';
 
 export interface UiPost extends Post {
   isLiked: boolean;
-  avatarUrl?: string; // Строка (Static URL)
-  image?: string;     // Строка (Blob URL, созданный через URL.createObjectURL)
+  avatarUrl?: string;
+  image?: string;
   commentCount?: number;
+  favorited?: boolean;
 }
 
 interface PostPageResponse {
-  comments: Post[];
+  posts: Post[];
   totalPages: number;
   pageNumber: number;
 }
@@ -51,81 +54,80 @@ export class PostService {
 
   constructor() {}
 
-  /**
-   * Обработка одного поста.
-   * Аватар -> Статика.
-   * Картинка поста -> Запрос Blob.
-   * Комменты -> Запрос Count.
-   */
   private processSinglePost(post: Post): Observable<UiPost> {
-    const meUsername = this.tokenService.getUsernameFromToken?.() ?? undefined;
+    const meUsername = this.tokenService.getUsernameFromToken?.() ?? '';
 
     const postImg$ = this.imageService.getImageToPost(post.id!).pipe(
+      take(1),
       map(blob => URL.createObjectURL(blob)),
       catchError(() => of('assets/placeholder.jpg'))
     );
 
-    // 3. Количество комментариев (Асинхронно)
     const commentCount$ = this.commentService.getCountCommentsToPost(post.id!).pipe(
+      take(1),
       catchError(() => of(0))
     );
 
-    // Собираем всё вместе
     return forkJoin({
-      postImg: postImg$,
-      commentCount: commentCount$
+      imgUrl: postImg$,
+      count: commentCount$
     }).pipe(
-      map(({ postImg, commentCount }) => ({
-        ...post,
-        image: postImg,
-        usersLiked: post.usersLiked ?? [],
-        isLiked: meUsername ? (post.usersLiked ?? []).includes(meUsername) : false,
-        commentCount
-      } as UiPost))
+      map(({ imgUrl, count }) => {
+        let safeLikes: LikedUser[] = [];
+
+        // Проверяем, что usersLiked существует и это не массив (т.е. наш Map)
+        if (post.usersLiked && typeof post.usersLiked === 'object' && !Array.isArray(post.usersLiked)) {
+          // Используем type assertion (post.usersLiked as any), чтобы избежать ошибки TS7015
+          const rawLikes = post.usersLiked as any;
+
+          safeLikes = Object.keys(rawLikes).map(username => ({
+            username: username,
+            avatarUrl: 'assets/placeholder.jpg' // Твой выбор - всегда ставить заглушку
+          }));
+        } else if (Array.isArray(post.usersLiked)) {
+          safeLikes = post.usersLiked;
+        }
+
+        return {
+          ...post,
+          image: imgUrl,
+          commentCount: count,
+          usersLiked: safeLikes,
+          isLiked: meUsername ? safeLikes.some(u => u.username === meUsername) : false
+        } as UiPost;
+      })
     );
   }
-
-  // --- Остальные методы (почти без изменений) ---
 
   loadPostsByPage(page: number, size: number): Observable<{ posts: UiPost[]; totalPages: number; pageNumber: number }> {
-    return this.http
-      .get<PostPageResponse>(`${this.api}posts?page=${page}&size=${size}`)
-      .pipe(
-        switchMap((resp) => {
-          const posts = resp?.comments ?? [];
-          if (posts.length === 0) return of({ posts: [], totalPages: 0, pageNumber: 0 });
+    return this.http.get<PostPageResponse>(`${this.api}posts?page=${page}&size=${size}`).pipe(
+      switchMap(resp => {
+        const rawPosts = resp?.posts ?? [];
+        if (rawPosts.length === 0) return of({ posts: [], totalPages: 0, pageNumber: 0 });
 
-          return forkJoin(posts.map((post) => this.processSinglePost(post))).pipe(
-            map((uiPosts) => ({
-              posts: uiPosts,
-              totalPages: resp.totalPages,
-              pageNumber: resp.pageNumber
-            }))
-          );
-        })
-      );
-  }
-
-  appendPostsPage(page: number, size: number): Observable<UiPost[]> {
-    return this.loadPostsByPage(page, size).pipe(
-      tap(({ posts, totalPages }) => {
-        this.mergeAndEmit(posts, false);
-        this.totalPagesSubject.next(totalPages);
+        return forkJoin(rawPosts.map(p => this.processSinglePost(p))).pipe(
+          map(uiPosts => ({
+            posts: uiPosts,
+            totalPages: resp.totalPages,
+            pageNumber: resp.pageNumber
+          }))
+        );
       }),
-      map(({ posts }) => posts)
+      catchError(err => {
+        console.error('Критическая ошибка загрузки:', err);
+        return throwError(() => err);
+      })
     );
   }
+
 
   createPost(post: Post): Observable<UiPost> {
     return this.http.post<Post>(this.api + 'create', post).pipe(
-      switchMap(createdPost => this.processSinglePost(createdPost)),
-      tap((uiPost: UiPost) => {
-        this.postsSubject.next([uiPost, ...this.postsSubject.getValue()]);
+      switchMap(created => this.processSinglePost(created)),
+      tap((uiPost) => {
+        const current = this.postsSubject.getValue();
+        this.postsSubject.next([uiPost, ...current]);
         this.postCountChanged.next();
-      }),
-      catchError(err => {
-        console.error('Ошибка при создании поста:', err);
-        return throwError(() => err);
       })
     );
   }
@@ -134,43 +136,30 @@ export class PostService {
     const currentPosts = this.postsSubject.getValue();
     const postToRefresh = currentPosts.find(p => p.id === postId);
 
-    if (!postToRefresh) {
-      return throwError(() => new Error(`Пост ${postId} не найден`));
-    }
+    if (!postToRefresh) return throwError(() => new Error(`Пост ${postId} не найден`));
 
-    // Заново качаем Blob
     return this.imageService.getImageToPost(postId).pipe(
-      map(blob => URL.createObjectURL(blob)),
-      catchError(() => of('assets/placeholder.jpg')),
-      map(newImageUrl => {
-        const updatedPost = { ...postToRefresh, image: newImageUrl } as UiPost;
-
-        // Обновляем в списке
-        const newPosts = currentPosts.map(p => p.id === postId ? updatedPost : p);
+      take(1),
+      map(blob => {
+        const newUrl = URL.createObjectURL(blob);
+        const updated = { ...postToRefresh, image: newUrl };
+        const newPosts = currentPosts.map(p => p.id === postId ? updated : p);
         this.postsSubject.next(newPosts);
-
-        return updatedPost;
-      })
+        return updated;
+      }),
+      catchError(() => of(postToRefresh))
     );
   }
 
-  // --- Вспомогательные ---
-
   private mergeAndEmit(newPosts: UiPost[], replace: boolean = false): void {
     if (replace) {
-      const seen = new Set<number>();
-      const deduped = newPosts.filter(p => {
-        if (!p.id || seen.has(p.id)) return false;
-        seen.add(p.id);
-        return true;
-      });
-      this.postsSubject.next(deduped);
+      this.postsSubject.next(newPosts);
       return;
     }
     const current = this.postsSubject.getValue();
     const existingIds = new Set(current.map(p => p.id));
-    const filtered = newPosts.filter(p => !existingIds.has(p.id));
-    this.postsSubject.next([...current, ...filtered]);
+    const uniqueNew = newPosts.filter(p => !existingIds.has(p.id));
+    this.postsSubject.next([...current, ...uniqueNew]);
   }
 
   clearPosts(): void {
@@ -178,40 +167,26 @@ export class PostService {
     this.totalPagesSubject.next(0);
   }
 
-  // Загрузка постов профиля
   getPostForUser(username: string): Observable<Post[]> {
     return this.http.get<Post[]>(this.api + 'user/' + username);
   }
 
   loadProfilePosts(profileUsername: string) {
     this.getPostForUser(profileUsername).pipe(
-      switchMap((posts: Post[]) =>
-        posts.length === 0
-          ? of([])
-          : forkJoin(posts.map(post => this.processSinglePost(post)))
-      )
-    ).subscribe({
-      next: uiPosts => this.mergeAndEmit(uiPosts, true),
-      error: () => {}
-    });
+      switchMap(posts => posts.length ? forkJoin(posts.map(p => this.processSinglePost(p))) : of([])),
+      take(1)
+    ).subscribe(uiPosts => this.mergeAndEmit(uiPosts, true));
   }
 
-  // Избранное
   getFavorites(): Observable<Post[]> {
     return this.http.get<Post[]>(`${environment.apiHost}favorite`);
   }
 
   loadProfileFavoritePosts() {
     this.getFavorites().pipe(
-      switchMap((posts: Post[]) =>
-        posts.length === 0
-          ? of([])
-          : forkJoin(posts.map(post => this.processSinglePost(post)))
-      )
-    ).subscribe({
-      next: uiPosts => this.mergeAndEmit(uiPosts, true),
-      error: () => {}
-    });
+      switchMap(posts => posts.length ? forkJoin(posts.map(p => this.processSinglePost(p))) : of([])),
+      take(1)
+    ).subscribe(uiPosts => this.mergeAndEmit(uiPosts, true));
   }
 
   toggleFavorite(postId: number): Observable<string> {
@@ -219,32 +194,50 @@ export class PostService {
   }
 
   deletePost(id: number): Observable<any> {
-    return this.http.post(this.api + id + '/delete', null).pipe(
+    return this.http.post(`${this.api}${id}/delete`, null).pipe(
       tap(() => {
-        const updatedPosts = this.postsSubject.getValue().filter(p => p.id !== id);
-        this.postsSubject.next(updatedPosts);
+        const filtered = this.postsSubject.getValue().filter(p => p.id !== id);
+        this.postsSubject.next(filtered);
         this.postCountChanged.next();
       })
     );
   }
 
-  likePost(id: number, username: string): Observable<any> {
-    return this.http.post(this.api + id + '/' + username + '/like', null).pipe(
-      tap(() => {
+  likePost(id: number, username: string): Observable<Post> {
+    return this.http.post<Post>(`${this.api}${id}/${username}/like`, null).pipe(
+      tap((updatedPostFromServer) => {
         const currentPosts = this.postsSubject.getValue();
         const updatedPosts = currentPosts.map(post => {
           if (post.id === id) {
-            const isCurrentlyLiked = (post.usersLiked || []).includes(username);
-            let newUsersLiked = post.usersLiked ? [...post.usersLiked] : [];
-            let newIsLiked = !isCurrentlyLiked;
-            if (newIsLiked) newUsersLiked.push(username);
-            else newUsersLiked = newUsersLiked.filter(u => u !== username);
-            return { ...post, usersLiked: newUsersLiked, isLiked: newIsLiked } as UiPost;
+            // Берем массив лайков из ответа сервера
+            const newLikes: LikedUser[] = Array.isArray(updatedPostFromServer.usersLiked)
+              ? updatedPostFromServer.usersLiked
+              : [];
+
+            return {
+              ...post,
+              ...updatedPostFromServer,
+              usersLiked: newLikes,
+              isLiked: newLikes.some(u => u.username === username)
+            } as UiPost;
           }
           return post;
         });
         this.postsSubject.next(updatedPosts);
       })
+    );
+  }
+
+  // --- Остальные методы (appendPostsPage, mergeAndEmit и т.д.) ---
+  // Скопируй их из предыдущего кода, они используют mergeAndEmit и не зависят от структуры лайков напрямую
+
+  appendPostsPage(page: number, size: number): Observable<UiPost[]> {
+    return this.loadPostsByPage(page, size).pipe(
+      tap(({ posts, totalPages }) => {
+        this.mergeAndEmit(posts, false);
+        this.totalPagesSubject.next(totalPages);
+      }),
+      map(({ posts }) => posts)
     );
   }
 

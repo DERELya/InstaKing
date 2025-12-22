@@ -4,11 +4,13 @@ import com.example.instaKing.dto.*;
 import com.example.instaKing.payload.response.ResponseForStoryMain;
 import com.example.instaKing.models.*;
 import com.example.instaKing.repositories.FavoriteRepository;
+import com.example.instaKing.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,10 +20,11 @@ public class Facade {
     private String baseUrl;
 
     private final FavoriteRepository favoriteRepository;
-
+    private final UserService userService;
     @Autowired
-    public Facade(FavoriteRepository favoriteRepository) {
+    public Facade(FavoriteRepository favoriteRepository, UserService userService) {
         this.favoriteRepository = favoriteRepository;
+        this.userService = userService;
     }
 
     public FavoriteDTO postToFavoriteDTO(Favorite favorite, User currentUser) {
@@ -31,7 +34,11 @@ public class Facade {
         postDTO.setLikes(favorite.getPost().getLikes());
         postDTO.setCaption(favorite.getPost().getCaption());
         postDTO.setUsername(favorite.getPost().getUser().getUsername());
-        postDTO.setUsersLiked(favorite.getPost().getLikedUser());
+        HashMap<String,String> usersLiked = new HashMap<>();
+        for (String s:favorite.getPost().getLikedUser()){
+            usersLiked.put(s,userService.getAvatarUrl(s));
+        }
+        postDTO.setUsersLiked(usersLiked);
         postDTO.setLocation(favorite.getPost().getLocation());
         boolean isFavorited = favoriteRepository.existsByUserAndPost(currentUser, favorite.getPost());
         postDTO.setFavorited(isFavorited);

@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PostPageResponse {
-    private List<PostDTO> comments;
+    private List<PostDTO> posts;
     private long totalElements;
     private int totalPages;
     private int pageNumber;

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Set;
 
 @Data
@@ -19,7 +20,7 @@ public class PostDTO {
 
     private Integer likes;
 
-    private Set<String> usersLiked;
+    private HashMap<String,String> usersLiked;
     private boolean favorited;
     private LocalDateTime addedAt;
     private String avatarUrl;

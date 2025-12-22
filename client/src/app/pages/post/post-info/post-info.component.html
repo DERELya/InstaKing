@@ -1,113 +1,175 @@
 <div class="fullscreen-modal" (click)="close()">
 
   <div class="fullscreen-content" (click)="$event.stopPropagation()">
+    <!-- Кнопка закрыть -->
     <div class="modal-img-block">
       <img class="modal-photo"
            [src]="data.post.image"
            alt="photo"/>
     </div>
-
     <div class="info-block">
-      <div>
-        <div class="ig-modal-author-bar">
-          <div class="ig-modal-author-info">
-
-            <!-- 1. АВАТАР АВТОРА ПОСТА -->
-            <!-- Используем уже готовую ссылку из UiPost (сделанную в PostService) -->
-            <img [src]="data.post.avatarUrl || 'assets/placeholder.jpg'"
-                 alt="avatar"
-                 class="ig-modal-avatar">
-
-            <span class="username">{{ data.post.username }}</span>
-          </div>
-          <!-- ... кнопки меню ... -->
-          <div class="ig-modal-actions">
-            <!-- ... -->
-            <button class="close-btn" (click)="close()">✕</button>
-          </div>
+      <div class="ig-modal-author-bar">
+        <div class="ig-modal-author-info">
+          <img [src]="data.post.avatarUrl!" alt="avatar" class="ig-modal-avatar">
+          <span class="username">{{ data.post.username }}</span>
         </div>
-
-        <span class="title">{{ data.post.caption }}</span>
-        <!-- (исправил title на caption, обычно в постах caption) -->
-      </div>
-
-      <!-- КОММЕНТАРИИ -->
-      <div class="comments-scrollable-block">
-        <div *ngIf="comments.length > 0">
-          <div style="text-align:left">
-            <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
-              <div class="comment-item">
-                <a [routerLink]="['/profile', comment.username]" class="profile-link" (click)="close()">
-
-                  <!-- 2. АВАТАР КОММЕНТАТОРА -->
-                  <img [src]="comment.avatarUrl || 'assets/placeholder.jpg'"
-                       (error)="onAvatarError($event)"
-                       alt="avatar" class="ig-modal-avatar">
-                  <div class="comment-content">
-                    <span class="fw-bold">{{ comment.username}}  </span>: {{ comment.message }}
-                  </div>
-                </a>
-                <span class="comment-date">{{ comment.createdAt | timeAgo }}</span>
-
-                <button *ngIf="comment.username === meUsername"
-                        mat-icon-button
-                        (click)="deleteComment(comment.id!)"
-                        class="delete-comment-btn">
-                  <mat-icon style="margin-left:-12px; font-size: 16px;">close</mat-icon>
-                </button>
-              </div>
-            </ng-container>
-
-            <button *ngIf="currentPage + 1 < totalPages && !loadingComments"
-                    mat-button
-                    (click)="loadNextPage()"
-                    style="padding:0 0 8px 0;text-transform:none;color:#888;font-size:13px;">
-              Показать ещё комментарии
+        <div class="ig-modal-actions">
+          <button matIconButton [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>
+              </mat-icon>
+              <span>Redial</span>
+            </button>
+            <button mat-menu-item disabled>
+              <mat-icon>voicemail</mat-icon>
+              <span>Check voice mail</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>notifications_off</mat-icon>
+              <span>Disable alerts</span>
+            </button>
+          </mat-menu>
+          <button *ngIf="data.post.username===meUsername" class="dots-btn" (click)="toggleMenu()" aria-label="Меню">
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="4" cy="12" r="2" fill="currentColor"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+              <circle cx="20" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="close-btn" (click)="close()" aria-label="Закрыть">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M10 10 L22 22 M22 10 L10 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="dots-menu" *ngIf="menuOpen">
+            <button class="dots-menu-item delete" (click)="onMenuAction('delete')">
+              <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
+                <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 5v4m0 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Удалить пост
+            </button>
+            <button class="dots-menu-item update" (click)="onMenuAction('update')">
+              <svg width="18" height="18" fill="none" style="vertical-align:middle;margin-right:8px;">
+                <rect x="4" y="4" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                <rect x="7" y="7" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Редактировать пост
             </button>
           </div>
         </div>
       </div>
+      <span class="title" >{{data.post.title}}</span>
+      <span  *ngIf="data.post.favorited" class="favoritetext" >added to favorite {{data.post.addedAt | date:'dd.MM.yyyy'}} </span>
+      <!-- ... -->
+      <div class="comments-scrollable-block">
+        <div *ngIf="comments.length > 0">
+          <div style="text-align:left" >
+            <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
+              <p> </p>
+              <div class="comment-item">
+                <a [routerLink]="['/profile', comment.username]" class="profile-link" (click)="close()">
+                  <img *ngIf="comment.username"
+                       [src]="comment.avatarUrl!"
+                       alt="avatar" class="ig-modal-avatar">
+                  <div class="comment-content">
+                    <span class="fw-bold">{{ comment.username }}</span>: {{ comment.message }}
+                  </div>
 
-      <!-- ЛАЙКИ И ДЕЙСТВИЯ -->
+
+                </a>
+                <span class="comment-date">{{ comment.createdAt | timeAgo }}</span>
+                <button *ngIf="comment.username === meUsername"
+                        mat-icon-button
+                        (click)="deleteComment(comment.id!)"
+                        class="delete-comment-btn"
+                        aria-label="Удалить комментарий">
+                  <mat-icon class="comment-date" style="margin-left:-12px">close</mat-icon>
+                </button>
+
+              </div>
+
+
+
+            </ng-container>
+
+            <button *ngIf="currentPage + 1 < totalPages && !loadingComments"
+                    mat-button
+                    type="button"
+                    (click)="loadNextPage()"
+                    style="padding:0 0 8px 0;text-transform:none;color:#888;font-size:13px;">
+              Показать ещё комментарии
+            </button>
+
+            <span *ngIf="loadingComments" style="font-size:13px;color:#888;">Загрузка...</span>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-info-block">
         <section class="actions">
-          <!-- ... кнопки лайка/сохранения ... -->
+          <div class="actions-horizontal">
+            <button mat-icon-button (click)="likePost()">
+              <mat-icon [ngClass]="{ liked: data.post.isLiked }">favorite</mat-icon>
+            </button>
+            <button mat-icon-button>
+              <mat-icon>chat_bubble_outline</mat-icon>
+            </button>
+          </div>
+          <button mat-icon-button (click)="toggleFavorite(data.post.id!)">
+            <mat-icon [ngClass]="{ liked: data.post!.favorited }">bookmark_border</mat-icon>
+          </button>
         </section>
+        <section class="likes" *ngIf="data.post.usersLiked && data.post.usersLiked.length > 0">
+  <span class="likes-avatars">
+    <ng-container *ngFor="let user of data.post.usersLiked.slice(0, 3); let idx = index">
+      <img
+        [src]="user.avatarUrl || 'assets/placeholder.jpg'"
+        [style.z-index]="10 - idx"
+        [style.margin-left.px]="idx > 0 ? -12 : 0"
+        alt="avatar"
+        class="ig-modal-avatar like-avatar"/>
+    </ng-container>
+  </span>
 
-        <section class="likes" *ngIf="data.post.usersLiked && data.post.usersLiked!.length > 0">
-          <span class="likes-avatars">
-            <ng-container *ngFor="let username of data.post.usersLiked!.slice(0, 3); let idx = index">
-              <!--
-                 ПРОБЛЕМА: Здесь у нас только username (строка).
-                 Мы не знаем имя файла аватарки.
-                 ВРЕМЕННО: Ставим заглушку.
-                 ЧТОБЫ ИСПРАВИТЬ: Нужно чтобы бэк возвращал список объектов в usersLiked.
-              -->
-              <img [src]="'assets/placeholder.jpg'"
-                   [style.z-index]="10 - idx"
-                   [style.margin-left.px]="idx > 0 ? -12 : 0"
-                   alt="avatar"
-                   class="ig-modal-avatar like-avatar"/>
-            </ng-container>
-          </span>
           <span class="likes-label">
-            Нравится <b>{{ data.post.usersLiked![0] }}</b>
-            <ng-container *ngIf="data.post.usersLiked!.length > 1">
-              и ещё <b><a class="like-username" (click)="openLikesDialog()"> {{ data.post.usersLiked!.length - 1 }} </a></b>
-            </ng-container>
-          </span>
+    Нравится
+    <b>
+      <a [routerLink]="['/profile', data.post.usersLiked[0].username]"
+         class="like-username"
+         (click)="close()">
+        {{ data.post.usersLiked[0].username }}
+      </a>
+    </b>
+
+    <ng-container *ngIf="data.post.usersLiked.length > 1">
+      и ещё
+      <b>
+        <a class="like-username" (click)="openLikesDialog()">
+          {{ data.post.usersLiked.length - 1 }}
+        </a>
+      </b>
+    </ng-container>
+  </span>
         </section>
 
         <form class="add-comment-form d-flex align-items-center"
               (submit)="postComment($event, commentInput.value)">
-          <input #commentInput matInput class="form-control flex-grow-1" placeholder="Комментарий..." required>
-          <button mat-icon-button type="submit" class="send-btn ms-2">
+          <input #commentInput
+                 matInput
+                 class="form-control flex-grow-1"
+                 placeholder="Комментарий..." required>
+          <button mat-icon-button type="submit" class="send-btn ms-2" aria-label="Отправить комментарий">
             <mat-icon>send</mat-icon>
           </button>
         </form>
       </div>
 
-      <time class="timestamp">{{ data.post.addedAt | date:'mediumDate' }}</time>
+      <time class="timestamp">{{ data.post.createdAt | date:'mediumDate' }}</time>
     </div>
   </div>
 </div>
+

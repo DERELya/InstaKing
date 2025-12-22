@@ -8,7 +8,7 @@
     </div>
 
     <div
-      **ngFor="let user of (usersWithStories$ | async); trackBy: trackByUsername"
+      *ngFor="let user of (usersWithStories$ | async); trackBy: trackByUsername"
       class="story-item"
       (click)="openStoryViewer(user.username)">
 
@@ -76,10 +76,9 @@
 
               <section class="likes-section" *ngIf="post.usersLiked && post.usersLiked!.length > 0">
                 <span class="likes-text">
-                  Нравится <b>{{ post.usersLiked![0] }}</b>
-                  <ng-container *ngIf="post.usersLiked!.length > 1">
-                    и <b class="others-link" (click)="openLikesDialog(i)">ещё {{ post.usersLiked!.length - 1 }}</b>
-                  </ng-container>
+                  Нравится <b>{{ post.usersLiked[0].username }}</b> <ng-container *ngIf="post.usersLiked.length > 1">
+                     и <b class="others-link" (click)="openLikesDialog(i)">ещё {{ post.usersLiked.length - 1 }}</b>
+                 </ng-container>
                 </span>
               </section>
 

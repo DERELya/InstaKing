@@ -2,6 +2,8 @@ package com.example.instaKing.repositories;
 
 import com.example.instaKing.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByUsernameContaining(String username);
 
     User getUserByUsername(String username);
+
+    @Query("SELECT u.avatarUrl FROM User u WHERE u.username = :username")
+    Optional<String> findAvatarUrlByUsername(@Param("username") String username);
 }
